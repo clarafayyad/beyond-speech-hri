@@ -4,3 +4,5 @@ numpy
 tensorflow
 retina-face
 tf-keras
+librosa
+sounddevice
