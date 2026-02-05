@@ -1,0 +1,507 @@
+{
+  "1.png": {
+    "objects": [
+      "puzzle pieces",
+      "letters A, B, C, D"
+    ],
+    "actions_relationships": [
+      "puzzle pieces fitting together"
+    ],
+    "setting_environment": "beige background",
+    "attributes": [
+      "gray color",
+      "bold white letters",
+      "interlocking shapes"
+    ],
+    "associations": [
+      "puzzle",
+      "alphabet",
+      "sequence",
+      "connection",
+      "assembly"
+    ]
+  },
+  "10.png": {
+    "objects": [
+      "house",
+      "moon",
+      "tree",
+      "bushes"
+    ],
+    "actions_relationships": [
+      "house in front of moon",
+      "tree next to house",
+      "bushes near house"
+    ],
+    "setting_environment": "nighttime",
+    "attributes": [
+      "dark",
+      "silhouette",
+      "spiky roof",
+      "bare branches",
+      "large moon"
+    ],
+    "associations": [
+      "night",
+      "eerie",
+      "architecture",
+      "nature",
+      "shadow"
+    ]
+  },
+  "11.png": {
+    "objects": [
+      "fish",
+      "wheel"
+    ],
+    "actions_relationships": [
+      "fish inside wheel"
+    ],
+    "setting_environment": "abstract",
+    "attributes": [
+      "black and white",
+      "circular",
+      "striped pattern on wheel",
+      "scales on fish"
+    ],
+    "associations": [
+      "movement",
+      "containment",
+      "rotation",
+      "aquatic",
+      "exercise",
+      "mechanical"
+    ]
+  },
+  "12.png": {
+    "objects": [
+      "window",
+      "brick wall"
+    ],
+    "actions_relationships": [
+      "window is open",
+      "brick wall is visible through window"
+    ],
+    "setting_environment": "indoor or outdoor setting with a view of a brick wall",
+    "attributes": [
+      "window has two open panels",
+      "brick pattern is rectangular"
+    ],
+    "associations": [
+      "construction",
+      "architecture",
+      "barrier",
+      "view",
+      "obstruction"
+    ]
+  },
+  "13.png": {
+    "objects": [
+      "owl",
+      "lantern",
+      "branch"
+    ],
+    "actions_relationships": [
+      "owl holding lantern",
+      "owl perched on branch"
+    ],
+    "setting_environment": "neutral background",
+    "attributes": [
+      "black and white illustration",
+      "detailed feathers",
+      "glowing lantern"
+    ],
+    "associations": [
+      "night",
+      "wisdom",
+      "light",
+      "forest",
+      "nocturnal",
+      "guidance"
+    ]
+  },
+  "14.png": {
+    "objects": [
+      "three human figures",
+      "wings",
+      "striped clothing",
+      "power lines",
+      "utility pole",
+      "insulators"
+    ],
+    "actions_relationships": [
+      "figures sitting on power lines",
+      "figures have wings",
+      "figures wearing striped clothing"
+    ],
+    "setting_environment": "outdoor scene with power lines",
+    "attributes": [
+      "monochrome",
+      "stylized",
+      "illustrative"
+    ],
+    "associations": [
+      "electricity",
+      "balance",
+      "fantasy",
+      "insects",
+      "urban"
+    ]
+  },
+  "15.png": {
+    "objects": [
+      "large circular structure",
+      "multiple small circular compartments",
+      "triangular support structure",
+      "background with a small corner detail"
+    ],
+    "actions_relationships": [
+      "compartments attached to circular structure",
+      "circular structure supported by triangular base"
+    ],
+    "setting_environment": "plain background with a textured appearance",
+    "attributes": [
+      "black and white color scheme",
+      "geometric shapes",
+      "symmetrical design"
+    ],
+    "associations": [
+      "amusement rides",
+      "rotation",
+      "elevation",
+      "mechanical structures",
+      "leisure activities"
+    ]
+  },
+  "16.png": {
+    "objects": [
+      "road",
+      "clouds",
+      "iron",
+      "bollards"
+    ],
+    "actions_relationships": [
+      "road leading to iron",
+      "iron surrounded by clouds",
+      "bollards along the road"
+    ],
+    "setting_environment": "abstract illustration",
+    "attributes": [
+      "curved road",
+      "dashed lines on road",
+      "stylized clouds",
+      "iron in the clouds"
+    ],
+    "associations": [
+      "transportation",
+      "domestic appliance",
+      "weather",
+      "pathway",
+      "obstacles"
+    ]
+  },
+  "17.png": {
+    "objects": [
+      "silhouette of an animal",
+      "features resembling a kangaroo",
+      "features resembling a stegosaurus"
+    ],
+    "actions_relationships": [],
+    "setting_environment": "plain background",
+    "attributes": [
+      "black and gray coloration",
+      "upright posture",
+      "spikes on back",
+      "long tail with spikes"
+    ],
+    "associations": [
+      "hybrid creature",
+      "prehistoric features",
+      "marsupial features",
+      "animal silhouette",
+      "fantasy creature"
+    ]
+  },
+  "18.png": {
+    "objects": [
+      "metallic vehicle",
+      "periscope",
+      "sharp legs",
+      "tail fin"
+    ],
+    "actions_relationships": [
+      "vehicle supported by legs",
+      "periscope on top of vehicle"
+    ],
+    "setting_environment": "neutral background",
+    "attributes": [
+      "gray color",
+      "shiny surface",
+      "mechanical appearance"
+    ],
+    "associations": [
+      "underwater exploration",
+      "machinery",
+      "technology",
+      "transportation"
+    ]
+  },
+  "19.png": {
+    "objects": [
+      "glass dome",
+      "metal bolt",
+      "metal nut",
+      "pedestal stand"
+    ],
+    "actions_relationships": [
+      "bolt and nut placed together",
+      "dome covering bolt and nut"
+    ],
+    "setting_environment": "indoor display setting",
+    "attributes": [
+      "transparent dome",
+      "metallic objects",
+      "circular stand"
+    ],
+    "associations": [
+      "protection",
+      "display",
+      "hardware",
+      "containment",
+      "isolation"
+    ]
+  },
+  "2.png": {
+    "objects": [
+      "flask",
+      "beaker",
+      "test tube",
+      "stand",
+      "tubes",
+      "liquid",
+      "knot"
+    ],
+    "actions_relationships": [
+      "tubes connecting flasks and beakers",
+      "liquid inside flasks and beakers",
+      "knot tied around tubes"
+    ],
+    "setting_environment": "laboratory equipment setup",
+    "attributes": [
+      "glassware",
+      "transparent",
+      "curved tubes",
+      "dark liquid",
+      "intricate connections"
+    ],
+    "associations": [
+      "chemistry",
+      "experimentation",
+      "science",
+      "laboratory",
+      "complexity"
+    ]
+  },
+  "20.png": {
+    "objects": [
+      "wooden soldier figure",
+      "rag doll figure",
+      "table",
+      "mug",
+      "glass"
+    ],
+    "actions_relationships": [
+      "rag doll figure holding mug",
+      "wooden soldier figure sitting on box",
+      "table between figures"
+    ],
+    "setting_environment": "indoor, simple background",
+    "attributes": [
+      "black and white color scheme",
+      "striped clothing on rag doll",
+      "military uniform on wooden soldier"
+    ],
+    "associations": [
+      "toys",
+      "tea time",
+      "play",
+      "childhood",
+      "imagination"
+    ]
+  },
+  "3.png": {
+    "objects": [
+      "drafting table",
+      "paper",
+      "drawing of a house",
+      "tape",
+      "drafting tool"
+    ],
+    "actions_relationships": [
+      "paper is taped to the drafting table",
+      "drawing of a house is on the paper",
+      "drafting tool is on the table"
+    ],
+    "setting_environment": "indoor",
+    "attributes": [
+      "black and white drawing",
+      "simple house sketch",
+      "drafting table is upright"
+    ],
+    "associations": [
+      "architecture",
+      "design",
+      "planning",
+      "construction",
+      "creativity"
+    ]
+  },
+  "4.png": {
+    "objects": [
+      "bottle",
+      "cork",
+      "paper",
+      "stick figure drawings"
+    ],
+    "actions_relationships": [
+      "paper inside bottle",
+      "cork sealing bottle",
+      "stick figures drawn on paper"
+    ],
+    "setting_environment": "neutral background",
+    "attributes": [
+      "bottle is transparent",
+      "paper is rolled",
+      "drawings are simple"
+    ],
+    "associations": [
+      "message in a bottle",
+      "communication",
+      "isolation",
+      "family",
+      "art",
+      "containment"
+    ]
+  },
+  "5.png": {
+    "objects": [
+      "flower",
+      "roots",
+      "leaves"
+    ],
+    "actions_relationships": [
+      "flower growing above roots",
+      "roots spreading out"
+    ],
+    "setting_environment": "neutral background",
+    "attributes": [
+      "black and white",
+      "simple lines",
+      "minimalist design"
+    ],
+    "associations": [
+      "nature",
+      "growth",
+      "plant life",
+      "underground",
+      "botany"
+    ]
+  },
+  "6.png": {
+    "objects": [
+      "skunk",
+      "shower",
+      "showerhead",
+      "shower curtain",
+      "soap bubbles"
+    ],
+    "actions_relationships": [
+      "skunk standing under shower",
+      "water falling from showerhead",
+      "skunk holding a brush",
+      "soap bubbles on skunk"
+    ],
+    "setting_environment": "bathroom",
+    "attributes": [
+      "striped tail",
+      "black and white colors",
+      "rectangular shower base"
+    ],
+    "associations": [
+      "cleaning",
+      "hygiene",
+      "water",
+      "animal",
+      "bathroom activity"
+    ]
+  },
+  "7.png": {
+    "objects": [
+      "bed",
+      "wave"
+    ],
+    "actions_relationships": [
+      "bed is on top of wave",
+      "wave is flowing"
+    ],
+    "setting_environment": "abstract, no specific environment",
+    "attributes": [
+      "bed has four posts",
+      "wave is stylized",
+      "image is monochrome"
+    ],
+    "associations": [
+      "sleep",
+      "water",
+      "movement",
+      "surreal"
+    ]
+  },
+  "8.png": {
+    "objects": [
+      "chest",
+      "teeth",
+      "tongue"
+    ],
+    "actions_relationships": [
+      "chest with open lid",
+      "teeth protruding from lid",
+      "tongue extending from inside"
+    ],
+    "setting_environment": "neutral background",
+    "attributes": [
+      "metallic appearance",
+      "sharp teeth",
+      "cartoon style"
+    ],
+    "associations": [
+      "danger",
+      "surprise",
+      "storage",
+      "fantasy",
+      "unexpected"
+    ]
+  },
+  "9.png": {
+    "objects": [
+      "cactus",
+      "sombrero"
+    ],
+    "actions_relationships": [
+      "cactus is positioned inside the sombrero"
+    ],
+    "setting_environment": "plain background",
+    "attributes": [
+      "cactus has spines",
+      "sombrero has a zigzag pattern",
+      "sombrero has a chin strap"
+    ],
+    "associations": [
+      "desert",
+      "Mexico",
+      "plants",
+      "hats",
+      "cultural symbols"
+    ]
+  }
+}

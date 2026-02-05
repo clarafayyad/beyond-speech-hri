@@ -6,3 +6,6 @@ retina-face
 tf-keras
 librosa
 sounddevice
+openai
+pillow
+
