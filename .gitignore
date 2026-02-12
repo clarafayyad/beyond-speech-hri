@@ -20,3 +20,4 @@ config/
 *.log
 
 src/speech/test_audio
+assets/audio
