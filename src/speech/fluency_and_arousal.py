@@ -1,7 +1,7 @@
 import sounddevice as sd
 import numpy as np
 
-from src.audio.prosody import ProsodyService
+from src.speech.prosody import ProsodyService
 
 SAMPLE_RATE = 16000
 CHUNK_SIZE = int(SAMPLE_RATE * 1.0)  # 1 second

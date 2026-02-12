@@ -18,3 +18,5 @@ config/
 
 # Logs
 *.log
+
+src/speech/test_audio

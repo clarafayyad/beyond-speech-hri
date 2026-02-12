@@ -1,8 +1,8 @@
 import cv2
-from src.audio.audio_stream import AudioStream
+from src.speech.fluency_and_arousal import AudioStream
 from video.camera_stream import CameraStream
 from video.facial_affect import FacialAffectService
-from audio.prosody import ProsodyService
+from speech.prosody import ProsodyService
 
 # -----------------------------
 # Initialize video
