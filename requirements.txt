@@ -13,3 +13,4 @@ python-dotenv~=1.2.1
 pandas
 seaborn
 matplotlib
+social-interaction-cloud
