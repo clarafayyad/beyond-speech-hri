@@ -19,6 +19,6 @@ config/
 # Logs
 *.log
 
-src/speech/test_audio
+multimodal_perception/speech/test_audio
 assets/audio
-src/data/
+multimodal_perception/data/

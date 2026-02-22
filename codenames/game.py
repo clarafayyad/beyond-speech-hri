@@ -82,7 +82,7 @@ class CodenamesGame:
         map_y = (total_height - map_height) // 2
         canvas.paste(map_img, (map_x, map_y))
 
-        canvas.save("board_with_map.png")
+        # canvas.save("board_with_map.png")
         canvas.show()
         print(f"Board + map saved to board_with_map.png (map: {self.map_name})")
 
