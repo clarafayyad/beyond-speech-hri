@@ -1,14 +1,15 @@
+from agents.conversational_agent import ConversationalAgent
 from interaction.prompts import SYSTEM_PROMPT, build_user_prompt
 from interaction.utils import normalize_feedback
 
 
 class TurnManager:
-    def __init__(self, agent, game_state):
+    def __init__(self, agent: ConversationalAgent, game_state):
         self.agent = agent
         self.game_state = game_state
 
     def make_guess(self, clue_word):
-        response = self.agent.talk_llm(
+        response = self.agent.prompt_llm(
             system_prompt=SYSTEM_PROMPT,
             user_prompt=build_user_prompt(clue_word, self.game_state)
         )

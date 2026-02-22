@@ -1,9 +1,10 @@
+from agents.conversational_agent import ConversationalAgent
 from interaction.turn_manager import TurnManager
 from interaction.utils import parse_clue
 
 
 class GameLoop:
-    def __init__(self, agent, game_state, max_turns=6):
+    def __init__(self, agent: ConversationalAgent, game_state, max_turns=6):
         self.agent = agent
         self.game_state = game_state
         self.max_turns = max_turns
