@@ -1,3 +1,4 @@
+import re
 import time
 import asyncio
 from json import load
@@ -31,9 +32,7 @@ from sic_framework.services.llm.openai_gpt import GPT
 from sic_framework.services.llm import GPTConf, GPTRequest
 from dotenv import load_dotenv
 
-from agents.tts_manager import NaoqiTTSConf, TTSConf, GoogleTTSConf, TTSCacher
-
-load_dotenv("../config/.env")
+from agents.tts_manager import NaoqiTTSConf, TTSConf, GoogleTTSConf, TTSCacher, ElevenLabsTTSConf, ElevenLabsTTS
 
 
 class InteractionConf:
@@ -84,17 +83,11 @@ class DialogManager:
         self.background_loop = asyncio.new_event_loop()
         self.background_thread = Thread(target=self._start_loop, daemon=True)
         self.background_thread.start()
+        print('Complete')
 
-        print('complete')
+        load_dotenv("../config/.env")
 
         print("\n SETTING UP OPENAI")
-        # Generate your personal openai api key here: https://platform.openai.com/api-keys
-        # Either add your openai key to your systems variables (and comment the next line out) or
-        # create a .openai_env file in the conf/openai folder and add your key there like this:
-        # OPENAI_API_KEY="your key"
-        if env_path:
-            load_dotenv(env_path)
-
         try:
             # Setup GPT client
             conf = GPTConf(openai_key=environ["OPENAI_API_KEY"])
@@ -115,11 +108,27 @@ class DialogManager:
                                                            ssml_gender=self.tts_conf.google_tts_voice_gender))
             self.sample_rate = init_reply.sample_rate
             print('Google TTS activated')
+        elif isinstance(self.tts_conf, ElevenLabsTTSConf):
+            self.sample_rate = 22050
+            self.tts = ElevenLabsTTS(elevenlabs_key=environ["ELEVENLABS_API_KEY"],
+                                     voice_id=self.tts_conf.voice_id,
+                                     model_id=self.tts_conf.model_id,
+                                     sample_rate=self.sample_rate,
+                                     speaking_rate=self.tts_conf.speaking_rate,
+                                     stability=self.tts_conf.stability)
+            connect_to_elevenlabs_future = asyncio.run_coroutine_threadsafe(self.tts.connect(),
+                                                                            self.background_loop)
+            try:
+                connect_to_elevenlabs_future.result()
+                asyncio.run_coroutine_threadsafe(self.tts.speak("Initializing text to speech"),
+                                                 self.background_loop).result()
+                print('Elevenlabs TTS activated')
+            except Exception as e:
+                self.logger.error("Failed to connect to elevenlabs", exc_info=e)
         elif isinstance(self.tts_conf, NaoqiTTSConf):
             pass
         else:
             raise ValueError(f"Unknown tts_conf {self.tts_conf}")
-
         self.tts_cacher = TTSCacher()
         print("Complete")
 
@@ -215,8 +224,128 @@ class DialogManager:
         elif isinstance(self.tts_conf, GoogleTTSConf):
             self.google_say(text, speaking_rate=speaking_rate, sleep_time=sleep_time, animated=animated,
                             amplified=amplified, always_regenerate=always_regenerate)
+        elif isinstance(self.tts_conf, ElevenLabsTTSConf):
+            self.elevenlabs_say(text, sleep_time=sleep_time, amplified=amplified,
+                                always_regenerate=always_regenerate, chunking=True)
         else:
             raise ValueError(f'Unsupported tts_conf type: {type(self.tts_conf)}')
+
+    def elevenlabs_say(self, text, sleep_time=None, amplified=False, always_regenerate=False, chunking=True):
+        if not chunking:
+            text_chunks = [text]
+        else:
+            text_chunks = self._split_text(text, max_len=80)
+
+        for chunk in text_chunks:
+            # Normalize and hash text
+            tts_key = self.tts_cacher.make_tts_key(chunk, self.tts_conf)
+
+            if not always_regenerate:
+                audio_file = self.tts_cacher.load_audio_file(tts_key)
+                if audio_file:
+                    self.log_utterance(speaker='robot', text=f'{chunk} (cache)')
+                    self.play_audio(audio_file, log=False)
+                    continue
+
+            # Generate new audio
+            audio_bytes = self.elevenlabs_generate_chunk_audio(chunk, amplified)
+
+            # Play audio
+            self.speaker.request(AudioRequest(audio_bytes, self.sample_rate))
+            self.log_utterance(speaker='robot', text=f'{chunk}')
+
+            # Sleep if requested
+            if sleep_time and sleep_time > 0:
+                sleep(sleep_time)
+
+    def play_audio(self, audio_file, amplified=False, log=True):
+        with wave.open(audio_file, 'rb') as wf:
+            # Get parameters
+            sample_width = wf.getsampwidth()
+            framerate = wf.getframerate()
+            n_frames = wf.getnframes()
+
+            # Ensure format is 16-bit (2 bytes per sample)
+            if sample_width != 2:
+                raise ValueError("WAV file is not 16-bit audio. Sample width = {} bytes.".format(sample_width))
+
+            audio = wf.readframes(n_frames)
+            if amplified:
+                audio = self._amplify_audio(audio)
+
+            self.speaker.request(AudioRequest(audio, framerate))
+            if log:
+                self.log_utterance(speaker='robot', text=f'plays {audio_file}')
+
+    def elevenlabs_generate_audio(self, text, amplified=False, renew_all=False):
+        text_chunks = self._split_text(text, max_len=80)
+        for chunk in text_chunks:
+            if not renew_all:
+                tts_key = self.tts_cacher.make_tts_key(chunk, self.tts_conf)
+                if tts_key in self.tts_cacher.tts_cache:
+                    continue
+            self.elevenlabs_generate_chunk_audio(chunk, amplified)
+
+    def elevenlabs_generate_chunk_audio(self, text, amplified=False):
+        # Normalize and hash text
+        tts_key = self.tts_cacher.make_tts_key(text, self.tts_conf)
+
+        # ElevenLabs TTS returns bytes
+        audio_bytes = asyncio.run_coroutine_threadsafe(self.tts.speak(text), self.background_loop).result()
+
+        if audio_bytes and amplified:
+            audio_bytes = self._amplify_audio(audio_bytes)
+
+        # Save to cache file
+        self.tts_cacher.save_audio_file(tts_key, audio_bytes, self.sample_rate)
+
+        return audio_bytes
+
+    @staticmethod
+    def _split_text(text: str, max_len: int = 80, min_tail: int = 20):
+        """
+            Split text into natural chunks of ~max_len characters.
+            - First, split by sentence boundaries (.?!)
+            - Then, split long sentences further at commas or spaces
+              while avoiding tiny fragments at the end.
+            """
+        text = text.strip()
+
+        if len(text) <= max_len:
+            return [text]
+
+        chunks = []
+
+        # Step 1: split at sentence boundaries, including no-space cases
+        sentences = re.split(r'(?<=[,.?!])(?=\s|[A-Z])', text)
+
+        for sentence in sentences:
+            sentence = sentence.strip()
+            if not sentence:
+                continue
+
+            while len(sentence) > max_len:
+                # Try to find a good split point
+                chunk = sentence[:max_len]
+
+                # Prefer splitting at last comma or space in chunk
+                break_pos = max(chunk.rfind(','), chunk.rfind(' '))
+
+                if break_pos == -1 or break_pos < max_len // 3:
+                    # fallback: just split at max_len
+                    break_pos = max_len
+
+                # Avoid leaving tiny tail
+                if len(sentence) - break_pos < min_tail:
+                    break_pos = len(sentence)
+
+                chunks.append(sentence[:break_pos].strip())
+                sentence = sentence[break_pos:].strip()
+
+            if sentence:
+                chunks.append(sentence)
+
+        return chunks
 
     def listen(self):
         return input("Listening, enter response")
