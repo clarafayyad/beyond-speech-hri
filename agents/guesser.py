@@ -36,7 +36,7 @@ class Guesser:
         return self.llm_agent.prompt_llm(system_prompt, user_prompt)
 
     def say(self, text):
-        self.dialog_manager.say(text)
+        self.dialog_manager.say(text, always_regenerate=True)
 
     def listen(self) -> str:
         return self.dialog_manager.listen()

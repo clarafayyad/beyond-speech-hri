@@ -33,40 +33,7 @@ from dotenv import load_dotenv
 
 from agents.tts_manager import NaoqiTTSConf, TTSConf, GoogleTTSConf, TTSCacher
 
-"""
-
-IMPORTANT
-First, you need to set-up Google Cloud Console with dialogflow and Google TTS:
-
-1. Dialogflow: https://socialrobotics.atlassian.net/wiki/spaces/CBSR/pages/2205155343/Getting+a+google+dialogflow+key 
-2. TTS: https://console.cloud.google.com/apis/api/texttospeech.googleapis.com/ 
-2a. note: you need to set-up a paid account with a credit card. You get $300,- free tokens, which is more then enough
-for testing this agent. So in practice it will not cost anything.
-3. Create a keyfile as instructed in (1) and save it conf/dialogflow/google-key.json
-3a. note: never share the keyfile online. 
-
-Secondly you need to configure your dialogflow agent.
-4. In your empty dialogflow agent do the following things:
-4a. remove all default intents
-4b. go to settings -> import and export -> and import the resources/droomrobot_dialogflow_agent.zip into your
-dialogflow agent. That gives all the necessary intents and entities that are part of this example (and many more)
-
-Thirdly, you need an openAI key:
-5. Generate your personal openai api key here: https://platform.openai.com/api-keys
-6. Either add your openai key to your systems variables or
-create a .openai_env file in the conf/openai folder and add your key there like this:
-OPENAI_API_KEY="your key"
-
-Forth, the redis server, Dialogflow, Google TTS and OpenAI gpt service need to be running:
-
-7. pip install --upgrade social_interaction_cloud[dialogflow,google-tts,openai-gpt,alphamini]
-8. run: conf/redis/redis-server.exe conf/redis/redis.conf
-9. run in new terminal: run-dialogflow 
-10. run in new terminal: run-google-tts
-11. run in new terminal: run-gpt
-12. add in the main: the ip address, id, and password of the alphamini and the ip-address of the redis server (= ip address of you laptop)
-13. Run this script
-"""
+load_dotenv("../config/.env")
 
 
 class InteractionConf:
@@ -131,7 +98,7 @@ class DialogManager:
         try:
             # Setup GPT client
             conf = GPTConf(openai_key=environ["OPENAI_API_KEY"])
-            self.gpt = GPT(conf=conf)
+            # self.gpt = GPT(conf=conf)
         except KeyError:
             self.logger.warning("No openAI key available")
             self.gpt = None
@@ -140,7 +107,6 @@ class DialogManager:
         print("\n SETTING UP TTS")
         self.tts_conf = tts_conf
         if isinstance(self.tts_conf, GoogleTTSConf):
-
             # setup the tts service
             self.tts = Text2Speech(conf=Text2SpeechConf(keyfile_json=dialogflow_conf.keyfile_json,
                                                         speaking_rate=self.tts_conf.speaking_rate))
@@ -200,10 +166,6 @@ class DialogManager:
 
     def google_say(self, text, speaking_rate=None, sleep_time=None, animated=None, amplified=False,
                    always_regenerate=False):
-        # Animate
-        if animated:
-            self.animation()  # TODO implement animated say outside the TTS
-
         # Generate cache key and load cached speech audio if available.
         tts_key = self.tts_cacher.make_tts_key(text, self.tts_conf)
         audio_file = self.tts_cacher.load_audio_file(tts_key)
@@ -238,11 +200,8 @@ class DialogManager:
             sleep(sleep_time)
 
     def naoqi_say(self, text, sleep_time=None, animated=False):
-        if not isinstance(self.device_manager, Pepper):
-            return
-
         self.device_manager.tts.request(
-            NaoqiTextToSpeechRequest(text, animated=animated, language='Dutch'))
+            NaoqiTextToSpeechRequest(text, animated=animated, language='English'))
 
         # Sleep if requested
         if sleep_time and sleep_time > 0:
