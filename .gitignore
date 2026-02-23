@@ -19,6 +19,8 @@ config/
 # Logs
 *.log
 
+# Bulky data
 multimodal_perception/speech/test_audio
 assets/audio
 multimodal_perception/data/
+src/tts_cache
