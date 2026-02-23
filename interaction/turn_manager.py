@@ -1,29 +1,29 @@
-from agents.conversational_agent import ConversationalAgent
+from agents.guesser import Guesser
 from interaction.prompts import SYSTEM_PROMPT, build_user_prompt
 from interaction.utils import normalize_feedback
 
 
 class TurnManager:
-    def __init__(self, agent: ConversationalAgent, game_state):
-        self.agent = agent
+    def __init__(self, guesser: Guesser, game_state):
+        self.guesser = guesser
         self.game_state = game_state
 
     def make_guess(self, clue_word):
-        response = self.agent.prompt_llm(
+        response = self.guesser.prompt_llm(
             system_prompt=SYSTEM_PROMPT,
             user_prompt=build_user_prompt(clue_word, self.game_state)
         )
 
         guess_idx = response["guess_index"]
-        self.agent.say(f"I choose card {guess_idx}.")
+        self.guesser.say(f"I choose card {guess_idx}.")
         return guess_idx
 
     def get_feedback(self):
-        self.agent.say("Please tell me the result.")
-        feedback = normalize_feedback(self.agent.listen())
+        self.guesser.say("Please tell me the result.")
+        feedback = normalize_feedback(self.guesser.listen())
 
         if feedback is None:
-            self.agent.say("Please say blue, red, neutral, or assassin.")
+            self.guesser.say("Please say blue, red, neutral, or assassin.")
             return self.get_feedback()
 
         return feedback
@@ -47,21 +47,21 @@ class TurnManager:
             guesses += 1
 
             if result == "assassin":
-                self.agent.say("I chose the assassin. We lose.")
+                self.guesser.random_assassin_reaction()
                 self.game_state.game_over = True
                 self.game_state.win = False
                 return
 
             if result == "red":
-                self.agent.say("That was red. Turn ends.")
+                self.guesser.random_red_reaction()
                 break
 
             if result == "blue":
-                self.agent.say("Blue card. Continuing.")
+                self.guesser.random_blue_reaction()
                 continue
 
             if result == "neutral":
-                self.agent.say("Neutral card. Continuing.")
+                self.guesser.random_neutral_reaction()
                 continue
 
         self.game_state.turn += 1

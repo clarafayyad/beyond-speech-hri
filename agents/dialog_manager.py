@@ -31,8 +31,7 @@ from sic_framework.services.llm.openai_gpt import GPT
 from sic_framework.services.llm import GPTConf, GPTRequest
 from dotenv import load_dotenv
 
-from tts_manager import NaoqiTTSConf, TTSConf, GoogleTTSConf, TTSCacher
-
+from agents.tts_manager import NaoqiTTSConf, TTSConf, GoogleTTSConf, TTSCacher
 
 """
 
@@ -68,6 +67,7 @@ Forth, the redis server, Dialogflow, Google TTS and OpenAI gpt service need to b
 12. add in the main: the ip address, id, and password of the alphamini and the ip-address of the redis server (= ip address of you laptop)
 13. Run this script
 """
+
 
 class InteractionConf:
 
@@ -260,13 +260,14 @@ class DialogManager:
             raise ValueError(f'Unsupported tts_conf type: {type(self.tts_conf)}')
 
     def listen(self):
-        try:
-            reply = self.dialogflow.request(GetIntentRequest(self.request_id), timeout=10)
-            if reply.response.query_result.query_text:
-                return reply.response.query_result.query_text
-            return None
-        except TimeoutError as e:
-            print("Error:", e)
+        return input("Listening, enter response")
+        # try:
+        #     reply = self.dialogflow.request(GetIntentRequest(self.request_id), timeout=10)
+        #     if reply.response.query_result.query_text:
+        #         return reply.response.query_result.query_text
+        #     return None
+        # except TimeoutError as e:
+        #     print("Error:", e)
 
     def _on_dialog(self, message):
         if message.response:
