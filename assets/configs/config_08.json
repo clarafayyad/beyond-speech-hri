@@ -1,0 +1,54 @@
+{
+  "board_id": "08",
+  "cards": [
+    "16.png",
+    "10.png",
+    "13.png",
+    "7.png",
+    "20.png",
+    "19.png",
+    "17.png",
+    "1.png",
+    "8.png",
+    "3.png",
+    "9.png",
+    "11.png",
+    "6.png",
+    "18.png",
+    "15.png",
+    "4.png",
+    "5.png",
+    "2.png",
+    "14.png",
+    "12.png"
+  ],
+  "map_name": "4",
+  "map": {
+    "blue": [
+      2,
+      3,
+      4,
+      12,
+      15,
+      16,
+      17,
+      19
+    ],
+    "red": [
+      0,
+      1,
+      8,
+      10,
+      11,
+      13,
+      18
+    ],
+    "neutral": [
+      5,
+      7,
+      9
+    ],
+    "assassin": 6
+  },
+  "board_image": "boards/board_08.png"
+}

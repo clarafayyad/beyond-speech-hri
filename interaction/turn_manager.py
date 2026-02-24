@@ -33,7 +33,6 @@ class TurnManager:
         guesses = 0
 
         while guesses < max_guesses and not self.game_state.game_over:
-            self.guesser.display_service.clear_display()
             guess_idx = self.make_guess(clue_word)
             result = self.get_feedback()
 
@@ -67,3 +66,4 @@ class TurnManager:
                 continue
 
         self.game_state.turn += 1
+        self.guesser.display_service.clear_display()

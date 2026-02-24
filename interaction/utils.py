@@ -4,6 +4,7 @@ NUMBER_WORDS = {
     "zero": 0,
     "one": 1,
     "two": 2,
+    "to": 2,
     "three": 3,
     "four": 4,
     "five": 5,
@@ -65,6 +66,8 @@ def parse_clue(clue_text: str):
 
 
 def normalize_feedback(feedback: str):
+    if feedback is None:
+        return None
     feedback = feedback.lower().strip()
     if feedback == "innocent":
         return "neutral"
