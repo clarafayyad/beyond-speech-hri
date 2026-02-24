@@ -88,9 +88,7 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
-    def display_guess(self, guess_index):
+    def display_guess(self, file_path):
         if not isinstance(self.device_manager, Pepper):
             return
-        guess_index += 1 # offset to match file names
-        image_filename = f"{guess_index}.png"
-        self.display_service.show_image(image_filename)
+        self.display_service.show_image(file_path)

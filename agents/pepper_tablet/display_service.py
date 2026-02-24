@@ -114,6 +114,10 @@ class PepperTabletDisplayService:
         self.pepper.tablet.send_message(UrlMessage(self.server_url))
         time.sleep(DISPLAY_TIME)
 
+    def clear_display(self):
+        self._create_idle_screen()
+        self._reload_tablet()
+
     def _create_idle_screen(self):
         self._create_image_page("images/codenames.png")
 

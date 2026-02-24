@@ -348,14 +348,14 @@ class DialogManager:
         return chunks
 
     def listen(self):
-        return input("Listening, enter response")
-        # try:
-        #     reply = self.dialogflow.request(GetIntentRequest(self.request_id), timeout=10)
-        #     if reply.response.query_result.query_text:
-        #         return reply.response.query_result.query_text
-        #     return None
-        # except TimeoutError as e:
-        #     print("Error:", e)
+        # return input("Listening, enter response")
+        try:
+            reply = self.dialogflow.request(GetIntentRequest(self.request_id), timeout=10)
+            if reply.response.query_result.query_text:
+                return reply.response.query_result.query_text
+            return None
+        except TimeoutError as e:
+            print("Error:", e)
 
     def _on_dialog(self, message):
         if message.response:
