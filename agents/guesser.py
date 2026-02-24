@@ -2,17 +2,24 @@ import random
 from json import load
 from os.path import abspath, join
 
+from sic_framework.devices import Pepper
 from sic_framework.devices.naoqi_shared import Naoqi
 from sic_framework.services.dialogflow import DialogflowConf
 
 from agents.dialog_manager import DialogManager
 from agents.llm_agent import LLMAgent
+from agents.pepper_tablet.display_service import PepperTabletDisplayService
 
 
 class Guesser:
     def __init__(self, device_manager, tts_conf):
+        self.device_manager = device_manager
         self.dialog_manager = self.build_dialog_manager(device_manager, tts_conf)
         self.llm_agent = LLMAgent()
+
+        if isinstance(self.device_manager, Pepper):
+            self.display_service = PepperTabletDisplayService(pepper=device_manager)
+
 
     @staticmethod
     def build_dialog_manager(device_manager, tts_conf):
@@ -80,3 +87,10 @@ class Guesser:
             "Mm… yeah. I found the assassin. We lost."
         ]
         self.say(random.choice(reactions))
+
+    def display_guess(self, guess_index):
+        if not isinstance(self.device_manager, Pepper):
+            return
+        guess_index += 1 # offset to match file names
+        image_filename = f"{guess_index}.png"
+        self.display_service.show_image(image_filename)

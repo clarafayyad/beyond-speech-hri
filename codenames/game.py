@@ -46,6 +46,7 @@ class CodenamesGame:
 
     def generate_board_image(self):
         # Load card images
+        # TODO: this is taking too long!
         images = [
             Image.open(os.path.join(CARDS_DIR, card)).convert("RGBA").resize(CARD_SIZE)
             for card in self.board

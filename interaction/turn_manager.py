@@ -16,6 +16,7 @@ class TurnManager:
 
         guess_idx = response["guess_index"]
         self.guesser.say(f"I choose card {guess_idx}.")
+        self.guesser.display_guess(guess_idx)
         return guess_idx
 
     def get_feedback(self):
