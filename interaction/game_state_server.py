@@ -3,7 +3,7 @@ import threading
 
 app = Flask(__name__)
 
-# This will be injected from your main program
+# This will be injected from the main program
 game_state = None
 
 

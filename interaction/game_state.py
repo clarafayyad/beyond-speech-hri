@@ -1,3 +1,5 @@
+from interaction.game_state_server import start_game_state_server
+
 
 class GameState:
     def __init__(self, board, card_descriptions):
@@ -8,6 +10,8 @@ class GameState:
         self.turn = 0
         self.game_over = False
         self.win = None
+
+        start_game_state_server(self)
 
     def is_revealed(self, idx):
         return idx in self.revealed
