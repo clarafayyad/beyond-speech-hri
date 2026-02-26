@@ -26,6 +26,7 @@ STOPWORDS = {
     "clue", "would", "be", "i", "say"
 }
 
+MAX_GUESS_NUMBER = 8
 
 def parse_clue(clue_text: str):
     if not clue_text or not clue_text.strip():
@@ -48,7 +49,7 @@ def parse_clue(clue_text: str):
             number = NUMBER_WORDS[tok]
             number_idx = i
 
-    if number is None or number <= 0:
+    if number is None or number <= 0 or number > MAX_GUESS_NUMBER:
         raise ValueError("No valid number found.")
 
     # 2) Find nearest content word BEFORE the number

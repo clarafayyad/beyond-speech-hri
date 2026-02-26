@@ -2,7 +2,7 @@ import time
 
 from agents.guesser import Guesser
 from interaction.prompts import SYSTEM_PROMPT, build_user_prompt
-from interaction.game_state import RED, BLUE, NEUTRAL, ASSASSIN
+from interaction.game_state import RED, BLUE, NEUTRAL, ASSASSIN, TOTAL_BLUE, TOTAL_RED
 
 
 class TurnManager:
@@ -32,7 +32,9 @@ class TurnManager:
         guesses = 0
 
         while guesses < max_guesses and not self.game_state.game_over:
+            self.guesser.dialog_manager.animate_thinking()
             self.guesser.say_random_thinking()
+
             guess_idx = self.make_guess(clue_word)
             result = self.get_feedback(guess_idx)
 
@@ -65,5 +67,20 @@ class TurnManager:
                 self.guesser.say_random_neutral_reaction()
                 continue
 
+        if self.guessed_all_blue_cards():
+            self.game_state.game_over = True
+            self.game_state.win = True
+        elif self.placed_all_red_cards():
+            self.game_state.game_over = True
+            self.game_state.win = False
+
         self.game_state.turn += 1
-        self.guesser.display_service.clear_display()
+        self.guesser.clear_display()
+
+    def guessed_all_blue_cards(self):
+        blue_revealed = sum(1 for color in self.game_state.revealed.values() if color == BLUE)
+        return blue_revealed == TOTAL_BLUE
+
+    def placed_all_red_cards(self):
+        red_placed = sum(1 for color in self.game_state.revealed.values() if color == RED)
+        return red_placed == TOTAL_RED

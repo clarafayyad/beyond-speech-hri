@@ -5,6 +5,9 @@ BLUE = 'blue'
 NEUTRAL = 'neutral'
 ASSASSIN = 'assassin'
 
+TOTAL_BLUE = 8
+TOTAL_RED = 7
+
 
 class GameState:
     def __init__(self, board, card_descriptions):

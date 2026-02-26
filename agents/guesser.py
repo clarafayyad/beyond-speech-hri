@@ -1,6 +1,8 @@
+import os.path
 import random
 from json import load
 from os.path import abspath, join
+from PIL import Image
 
 from sic_framework.devices import Pepper
 from sic_framework.devices.naoqi_shared import Naoqi
@@ -42,8 +44,8 @@ class Guesser:
     def prompt_llm(self, system_prompt: str, user_prompt: str) -> dict:
         return self.llm_agent.prompt_llm(system_prompt, user_prompt)
 
-    def say(self, text):
-        self.dialog_manager.say(text, always_regenerate=True)
+    def say(self, text, sleep_time=0):
+        self.dialog_manager.say(text, always_regenerate=True, sleep_time=sleep_time)
 
     def listen(self) -> str:
         return self.dialog_manager.listen()
@@ -178,7 +180,27 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
+    def say_random_guess(self, card_idx):
+        reactions = [
+            f"Hmm… I think I'll pick {card_idx}.",
+            f"My guess is {card_idx}. Fingers crossed!",
+            f"I choose {card_idx}! Let’s see how I did.",
+            f"Alright, {card_idx} feels right to me.",
+            f"Going with {card_idx} as my guess.",
+            f"I have a good feeling about {card_idx}, so I pick it."
+        ]
+        self.say(random.choice(reactions))
+
     def display_guess(self, file_path):
+        if isinstance(self.device_manager, Pepper):
+            self.display_service.show_image(file_path)
+            return
+
+        file_path = os.path.join("../assets/cards/", file_path)
+        img = Image.open(file_path)
+        img.show()
+
+    def clear_display(self):
         if not isinstance(self.device_manager, Pepper):
             return
-        self.display_service.show_image(file_path)
+        self.display_service.clear_display()

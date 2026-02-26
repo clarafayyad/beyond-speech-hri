@@ -1,3 +1,4 @@
+import random
 import re
 import time
 import asyncio
@@ -15,6 +16,7 @@ from sic_framework.core import sic_logging
 from sic_framework.core.message_python2 import AudioRequest
 from sic_framework.core.sic_application import SICApplication
 from sic_framework.devices import Pepper
+from sic_framework.devices.common_naoqi.naoqi_motion import NaoqiAnimationRequest
 from sic_framework.devices.common_naoqi.naoqi_text_to_speech import NaoqiTextToSpeechRequest
 from sic_framework.devices.desktop import Desktop
 from sic_framework.devices.device import SICDeviceManager
@@ -403,3 +405,17 @@ class DialogManager:
         # Convert back to int16 bytes
         audio_int16 = (compressed_audio * 32767).astype(np.int16)
         return audio_int16.tobytes()
+
+    def animate_thinking(self):
+        if not isinstance(self.device_manager, Pepper):
+            return
+        thinking_animations = [
+            "animations/Stand/Gestures/Thinking_1",
+            "animations/Stand/Gestures/Thinking_3",
+            "animations/Stand/Gestures/Thinking_4",
+            "animations/Stand/Gestures/Thinking_6",
+            "animations/Stand/Gestures/Thinking_8"
+        ]
+        self.device_manager.motion.request(NaoqiAnimationRequest(random.choice(thinking_animations)), block=False)
+
+
