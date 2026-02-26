@@ -63,14 +63,3 @@ def parse_clue(clue_text: str):
         raise ValueError("No clue word found before number.")
 
     return clue_word, number
-
-
-def normalize_feedback(feedback: str):
-    if feedback is None:
-        return None
-    feedback = feedback.lower().strip()
-    if feedback == "innocent":
-        return "neutral"
-    if feedback not in {"blue", "red", "neutral", "assassin"}:
-        return None
-    return feedback

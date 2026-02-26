@@ -48,7 +48,7 @@ class Guesser:
     def listen(self) -> str:
         return self.dialog_manager.listen()
 
-    def random_red_reaction(self):
+    def say_random_red_reaction(self):
         reactions = [
             "Oh— uh… no. That’s red. Yeah… turn’s over.",
             "Hmm. Nope. Red card. That didn’t work.",
@@ -58,7 +58,7 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
-    def random_blue_reaction(self):
+    def say_random_blue_reaction(self):
         reactions = [
             "Oh! Yes— that’s blue!",
             "Nice… yeah, blue card. That worked.",
@@ -68,7 +68,7 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
-    def random_neutral_reaction(self):
+    def say_random_neutral_reaction(self):
         reactions = [
             "Uh… okay. That’s neutral. Just a bystander.",
             "Hmm… no agent there. Neutral card.",
@@ -78,7 +78,7 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
-    def random_assassin_reaction(self):
+    def say_random_assassin_reaction(self):
         reactions = [
             "Oh— oh no… that’s the assassin. We lost.",
             "Uh… yeah. That’s bad. Assassin card. Game over.",
@@ -88,7 +88,7 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
-    def random_start_game(self):
+    def say_random_start_game(self):
         reactions = [
             "Alright! Let’s fire up our brains and start Codenames!",
             "Game on! I’m ready when you are.",
@@ -99,7 +99,7 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
-    def random_human_turn(self):
+    def say_random_human_turn(self):
         reactions = [
             "It’s your turn! Please give me a clue.",
             "Your move, spymaster. I’m listening.",
@@ -110,7 +110,7 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
-    def random_clue_not_understood(self):
+    def say_random_clue_not_understood(self):
         reactions = [
             "Hmm… I didn’t quite get that. Could you try again?",
             "My circuits are confused. Please repeat the clue.",
@@ -121,7 +121,7 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
-    def random_repeat_clue(self, clue, guesses):
+    def say_random_repeat_clue(self, clue, guesses):
         reactions = [
             f"Alright! The clue is {clue}, and I can guess {guesses} times.",
             f"Got it! Clue {clue}, with {guesses} guesses allowed.",
@@ -132,7 +132,7 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
-    def random_game_over(self):
+    def say_random_game_over(self):
         reactions = [
             "That’s the end of the game!",
             "Game over! Well played.",
@@ -143,7 +143,7 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
-    def random_win_reaction(self):
+    def say_random_win_reaction(self):
         reactions = [
             "We won! Great teamwork!",
             "Victory! Excellent clues and guesses!",
@@ -154,7 +154,7 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
-    def random_loss_reaction(self):
+    def say_random_loss_reaction(self):
         reactions = [
             "Ah… we lost this one. Still a good try!",
             "That’s a loss, but we played well.",
@@ -165,7 +165,7 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
-    def random_thinking(self):
+    def say_random_thinking(self):
         reactions = [
             "Hmm… let me think.",
             "Processing… please wait.",

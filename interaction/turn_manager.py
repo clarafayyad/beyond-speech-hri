@@ -1,6 +1,8 @@
+import time
+
 from agents.guesser import Guesser
 from interaction.prompts import SYSTEM_PROMPT, build_user_prompt
-from interaction.utils import normalize_feedback
+from interaction.game_state import RED, BLUE, NEUTRAL, ASSASSIN
 
 
 class TurnManager:
@@ -19,24 +21,20 @@ class TurnManager:
         self.guesser.display_guess(self.game_state.board[guess_idx])
         return guess_idx
 
-    def get_feedback(self):
-        # TODO: check game state for the appropriate idx instead
-        self.guesser.say("Please tell me the result.")
-        feedback = normalize_feedback(self.guesser.listen())
+    def get_feedback(self, guess_idx):
+        while guess_idx not in self.game_state.revealed:
+            print("Waiting for feedback...")
+            time.sleep(0.5)
 
-        if feedback is None or feedback == "":
-            self.guesser.say("Please say blue, red, neutral, or assassin.")
-            return self.get_feedback()
-
-        return feedback
+        return self.game_state.revealed[guess_idx]
 
     def play_turn(self, clue_word, max_guesses):
         guesses = 0
 
         while guesses < max_guesses and not self.game_state.game_over:
-            self.guesser.say(self.guesser.random_thinking())
+            self.guesser.say_random_thinking()
             guess_idx = self.make_guess(clue_word)
-            result = self.get_feedback()
+            result = self.get_feedback(guess_idx)
 
             self.game_state.revealed[guess_idx] = result
             self.game_state.history.append({
@@ -49,22 +47,22 @@ class TurnManager:
 
             guesses += 1
 
-            if result == "assassin":
-                self.guesser.random_assassin_reaction()
+            if result == ASSASSIN:
+                self.guesser.say_random_assassin_reaction()
                 self.game_state.game_over = True
                 self.game_state.win = False
                 return
 
-            if result == "red":
-                self.guesser.random_red_reaction()
+            if result == RED:
+                self.guesser.say_random_red_reaction()
                 break
 
-            if result == "blue":
-                self.guesser.random_blue_reaction()
+            if result == BLUE:
+                self.guesser.say_random_blue_reaction()
                 continue
 
-            if result == "neutral":
-                self.guesser.random_neutral_reaction()
+            if result == NEUTRAL:
+                self.guesser.say_random_neutral_reaction()
                 continue
 
         self.game_state.turn += 1

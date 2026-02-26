@@ -1,12 +1,17 @@
 from interaction.game_state_server import start_game_state_server
 
+RED = 'red'
+BLUE = 'blue'
+NEUTRAL = 'neutral'
+ASSASSIN = 'assassin'
+
 
 class GameState:
     def __init__(self, board, card_descriptions):
-        self.board = board                      # list of card filenames
+        self.board = board  # list of card filenames
         self.card_descriptions = card_descriptions
-        self.revealed = {}                      # idx -> blue | red | neutral | assassin
-        self.history = []                       # structured guess history
+        self.revealed = {}  # idx -> blue | red | neutral | assassin
+        self.history = []  # structured guess history
         self.turn = 0
         self.game_over = False
         self.win = None
@@ -32,7 +37,7 @@ class GameState:
 
     @staticmethod
     def is_valid_team(team):
-        return team in {'red', 'blue', 'assassin', 'neutral'}
+        return team in {RED, BLUE, NEUTRAL, ASSASSIN}
 
     def unreveal_card(self, idx):
         if idx in self.revealed:
