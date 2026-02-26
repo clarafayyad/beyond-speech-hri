@@ -11,11 +11,10 @@ class GameLoop:
         self.turn_manager = TurnManager(guesser, game_state)
 
     def play(self):
-        # TODO: optional: explain the game to the player before starting
-        self.guesser.say("Let's start the game.")
+        self.guesser.say(self.guesser.random_start_game())
 
         while not self.game_state.game_over and self.game_state.turn < self.max_turns:
-            self.guesser.say("Waiting for your clue...")
+            self.guesser.say(self.guesser.random_human_turn())
             raw_clue = self.guesser.listen()
             while raw_clue is None or raw_clue == "":
                 print("No input detected from listener; listening again")
@@ -24,16 +23,16 @@ class GameLoop:
             try:
                 clue_word, num = parse_clue(raw_clue)
             except Exception:
-                self.guesser.say("I did not understand the clue. Please try again.")
+                self.guesser.say(self.guesser.random_clue_not_understood())
                 continue
 
-            self.guesser.say(f"I will make up to {num} guesses.")
+            self.guesser.say(self.guesser.random_repeat_clue(clue_word, num))
             self.turn_manager.play_turn(clue_word, num)
 
         if not self.game_state.game_over:
-            self.guesser.say("The game is over.")
+            self.guesser.say(self.guesser.random_game_over())
 
         if self.game_state.win is True:
-            self.guesser.say("We won. Good job.")
+            self.guesser.say(self.guesser.random_win_reaction())
         elif self.game_state.win is False:
-            self.guesser.say("Sorry. We lost.")
+            self.guesser.say(self.guesser.random_loss_reaction())

@@ -20,6 +20,7 @@ class TurnManager:
         return guess_idx
 
     def get_feedback(self):
+        # TODO: check game state for the appropriate idx instead
         self.guesser.say("Please tell me the result.")
         feedback = normalize_feedback(self.guesser.listen())
 
@@ -33,6 +34,7 @@ class TurnManager:
         guesses = 0
 
         while guesses < max_guesses and not self.game_state.game_over:
+            self.guesser.say(self.guesser.random_thinking())
             guess_idx = self.make_guess(clue_word)
             result = self.get_feedback()
 

@@ -88,6 +88,96 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
+    def random_start_game(self):
+        reactions = [
+            "Alright! Let’s fire up our brains and start Codenames!",
+            "Game on! I’m ready when you are.",
+            "Welcome to Codenames. May our clues be clever!",
+            "Let the guessing begin! I promise to think very hard.",
+            "Okay team, activating game mode. Beep boop.",
+            "New game starting! I have a good feeling about this one."
+        ]
+        self.say(random.choice(reactions))
+
+    def random_human_turn(self):
+        reactions = [
+            "It’s your turn! Please give me a clue.",
+            "Your move, spymaster. I’m listening.",
+            "I’m ready for your clue. Impress me!",
+            "Clue time! What do you have for me?",
+            "All ears! What’s the clue?",
+            "Go ahead, give me a clever hint."
+        ]
+        self.say(random.choice(reactions))
+
+    def random_clue_not_understood(self):
+        reactions = [
+            "Hmm… I didn’t quite get that. Could you try again?",
+            "My circuits are confused. Please repeat the clue.",
+            "Sorry, I didn’t understand that clue. One more time?",
+            "That clue puzzled me. Can you rephrase it?",
+            "I think something went wrong in my brain. Please try again.",
+            "Oops! I didn’t catch that. Another attempt, please."
+        ]
+        self.say(random.choice(reactions))
+
+    def random_repeat_clue(self, clue, guesses):
+        reactions = [
+            f"Alright! The clue is {clue}, and I can guess {guesses} times.",
+            f"Got it! Clue {clue}, with {guesses} guesses allowed.",
+            f"I will guess based on {clue}. I have {guesses} guesses.",
+            f"You said {clue}, so I get {guesses} chances. Let’s go!",
+            f"Clue received: {clue}. Number of guesses: {guesses}.",
+            f"Okay, {clue} it is! I may guess {guesses} times."
+        ]
+        self.say(random.choice(reactions))
+
+    def random_game_over(self):
+        reactions = [
+            "That’s the end of the game!",
+            "Game over! Well played.",
+            "And… that concludes our game.",
+            "The mission is complete. Game over.",
+            "No more guesses! The game has ended.",
+            "That’s it! Codenames finished."
+        ]
+        self.say(random.choice(reactions))
+
+    def random_win_reaction(self):
+        reactions = [
+            "We won! Great teamwork!",
+            "Victory! Excellent clues and guesses!",
+            "Nice job! We make a great team.",
+            "Yes! We did it!",
+            "Mission successful. Well played!",
+            "We won the game! High five! …Emotionally."
+        ]
+        self.say(random.choice(reactions))
+
+    def random_loss_reaction(self):
+        reactions = [
+            "Ah… we lost this one. Still a good try!",
+            "That’s a loss, but we played well.",
+            "Oops! The other team got us this time.",
+            "Sorry, we lost. Let’s do better next round!",
+            "Defeat detected. But I had fun!",
+            "We didn’t win, but I enjoyed playing with you."
+        ]
+        self.say(random.choice(reactions))
+
+    def random_thinking(self):
+        reactions = [
+            "Hmm… let me think.",
+            "Processing… please wait.",
+            "Thinking very hard right now.",
+            "Analyzing the board…",
+            "My brain is working at maximum capacity.",
+            "Give me a moment to calculate.",
+            "Beep boop… thinking.",
+            "This requires deep thought."
+        ]
+        self.say(random.choice(reactions))
+
     def display_guess(self, file_path):
         if not isinstance(self.device_manager, Pepper):
             return
