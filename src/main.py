@@ -22,7 +22,6 @@ guesser = None
 game = CodenamesGame()
 game_state = GameState(
     board=game.board,
-    board_image=game.board_image,
     card_descriptions=json.load(open("../assets/card_descriptions.json"))
 )
 
