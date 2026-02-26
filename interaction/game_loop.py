@@ -17,6 +17,9 @@ class GameLoop:
         while not self.game_state.game_over and self.game_state.turn < self.max_turns:
             self.guesser.say("Waiting for your clue...")
             raw_clue = self.guesser.listen()
+            while raw_clue is None or raw_clue == "":
+                print("No input detected from listener; listening again")
+                raw_clue = self.guesser.listen()
 
             try:
                 clue_word, num = parse_clue(raw_clue)
