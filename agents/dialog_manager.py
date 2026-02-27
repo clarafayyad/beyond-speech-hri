@@ -1,13 +1,8 @@
 import random
 import re
-import time
 import asyncio
-from json import load
-import queue
 import wave
 from os import environ
-from os.path import abspath, join
-from pathlib import Path
 from threading import Thread
 from time import sleep, strftime
 
@@ -20,33 +15,25 @@ from sic_framework.devices.common_naoqi.naoqi_motion import NaoqiAnimationReques
 from sic_framework.devices.common_naoqi.naoqi_text_to_speech import NaoqiTextToSpeechRequest
 from sic_framework.devices.desktop import Desktop
 from sic_framework.devices.device import SICDeviceManager
-from sic_framework.services.dialogflow.dialogflow import (
-    Dialogflow,
-    DialogflowConf,
-    GetIntentRequest,
-)
-from sic_framework.services.google_tts.google_tts import (
-    GetSpeechRequest,
-    Text2Speech,
-    Text2SpeechConf,
-)
-from sic_framework.services.llm.openai_gpt import GPT
+from sic_framework.services.dialogflow.dialogflow import DialogflowConf
 from sic_framework.services.llm import GPTConf, GPTRequest
 from dotenv import load_dotenv
 
-from agents.tts_manager import NaoqiTTSConf, TTSConf, GoogleTTSConf, TTSCacher, ElevenLabsTTSConf, ElevenLabsTTS
+from agents.stt_manager import RealTimeSTTService, DialogFlowSTTService
+from agents.tts_manager import NaoqiTTSConf, TTSConf, TTSCacher, ElevenLabsTTSConf, ElevenLabsTTS
 
 
 class InteractionConf:
 
     def __init__(self, speaking_rate=None, sleep_time=0, animated=True, max_attempts=2, amplified=False,
-                 always_regenerate=False):
+                 always_regenerate=False, real_time_stt=True):
         self.speaking_rate = speaking_rate
         self.sleep_time = sleep_time
         self.animated = animated
         self.max_attempts = max_attempts
         self.amplified = amplified
         self.always_regenerate = always_regenerate
+        self.real_time_stt = real_time_stt
 
     @staticmethod
     def apply_config_defaults(config_attr, param_names):
@@ -65,7 +52,7 @@ class InteractionConf:
 
 class DialogManager:
     def __init__(self, device_manager: SICDeviceManager, dialogflow_conf: DialogflowConf,
-                 tts_conf: TTSConf = NaoqiTTSConf, env_path=None, microphone_device=None):
+                 tts_conf: TTSConf = NaoqiTTSConf, microphone_device=None):
 
         print("\n SETTING UP BASIC PROCESSING")
         # Development Logging
@@ -101,16 +88,7 @@ class DialogManager:
 
         print("\n SETTING UP TTS")
         self.tts_conf = tts_conf
-        if isinstance(self.tts_conf, GoogleTTSConf):
-            # setup the tts service
-            self.tts = Text2Speech(conf=Text2SpeechConf(keyfile_json=dialogflow_conf.keyfile_json,
-                                                        speaking_rate=self.tts_conf.speaking_rate))
-            init_reply = self.tts.request(GetSpeechRequest(text="Ik ben aan het initializeren",
-                                                           voice_name=self.tts_conf.google_tts_voice_name,
-                                                           ssml_gender=self.tts_conf.google_tts_voice_gender))
-            self.sample_rate = init_reply.sample_rate
-            print('Google TTS activated')
-        elif isinstance(self.tts_conf, ElevenLabsTTSConf):
+        if isinstance(self.tts_conf, ElevenLabsTTSConf):
             self.sample_rate = 22050
             self.tts = ElevenLabsTTS(elevenlabs_key=environ["ELEVENLABS_API_KEY"],
                                      voice_id=self.tts_conf.voice_id,
@@ -153,12 +131,12 @@ class DialogManager:
             raise ValueError(f"DeviceManager {self.device_manager} is currently not supported")
         print("Complete")
 
-        print("\n SETTING UP DIALOGFLOW")
-        # initiate Dialogflow object
-        self.dialogflow = Dialogflow(ip="localhost", conf=dialogflow_conf, input_source=self.mic)
-        # flag to signal when the app should listen (i.e. transmit to dialogflow)
-        self.request_id = np.random.randint(10000)
-        self.dialogflow.register_callback(self._on_dialog)
+        print("\n SETTING UP STT")
+        if self.interaction_conf.real_time_stt:
+            # TODO: pass mic index as a param to this func
+            self.stt_service = RealTimeSTTService(mic_index=3)
+        else:
+            self.stt_service = DialogFlowSTTService(mic_index=self.mic, dialogflow_conf=dialogflow_conf)
         print("Complete and ready for interaction!")
 
     def log_writer(self, log_path):
@@ -175,41 +153,6 @@ class DialogManager:
             timestamp = strftime("%Y-%m-%d %H:%M:%S")
             self._log_queue.put(f"[{timestamp}] {speaker}: {text}")
 
-    def google_say(self, text, speaking_rate=None, sleep_time=None, animated=None, amplified=False,
-                   always_regenerate=False):
-        # Generate cache key and load cached speech audio if available.
-        tts_key = self.tts_cacher.make_tts_key(text, self.tts_conf)
-        audio_file = self.tts_cacher.load_audio_file(tts_key)
-
-        # If requested and available play cached speech audio
-        if not always_regenerate and audio_file:
-            self.log_utterance(speaker='robot', text=f'{text} (cache)')
-            self.play_audio(audio_file, log=False)
-        else:  # Else generate new speech audio
-            reply = self.tts.request(GetSpeechRequest(
-                text=text,
-                voice_name=self.tts_conf.google_tts_voice_name,
-                ssml_gender=self.tts_conf.google_tts_voice_gender,
-                speaking_rate=speaking_rate or self.tts_conf.speaking_rate
-            ))
-            audio_bytes = reply.waveform
-            sample_rate = reply.sample_rate
-
-            # Amplify audio if needed
-            if audio_bytes and amplified:
-                audio_bytes = self._amplify_audio(audio_bytes)
-
-            # Play audio
-            self.speaker.request(AudioRequest(audio_bytes, sample_rate))
-            self.log_utterance(speaker='robot', text=text)
-
-            # Save to cache file
-            self.tts_cacher.save_audio_file(tts_key, audio_bytes, sample_rate)
-
-        # Sleep if requested
-        if sleep_time and sleep_time > 0:
-            sleep(sleep_time)
-
     def naoqi_say(self, text, sleep_time=None, animated=False):
         self.device_manager.tts.request(
             NaoqiTextToSpeechRequest(text, animated=animated, language='English'))
@@ -220,12 +163,10 @@ class DialogManager:
 
     @InteractionConf.apply_config_defaults('interaction_conf', ['speaking_rate', 'sleep_time', 'animated', 'amplified',
                                                                 'always_regenerate'])
-    def say(self, text, speaking_rate=None, sleep_time=None, animated=None, amplified=False, always_regenerate=False):
+    def say(self, text, speaking_rate, sleep_time=None, animated=None, amplified=False, always_regenerate=False):
+        print("Saying: ", text)
         if isinstance(self.tts_conf, NaoqiTTSConf):
             self.naoqi_say(text, sleep_time=sleep_time, animated=animated)
-        elif isinstance(self.tts_conf, GoogleTTSConf):
-            self.google_say(text, speaking_rate=speaking_rate, sleep_time=sleep_time, animated=animated,
-                            amplified=amplified, always_regenerate=always_regenerate)
         elif isinstance(self.tts_conf, ElevenLabsTTSConf):
             self.elevenlabs_say(text, sleep_time=sleep_time, amplified=amplified,
                                 always_regenerate=always_regenerate, chunking=True)
@@ -350,21 +291,10 @@ class DialogManager:
         return chunks
 
     def listen(self):
-        # return input("Listening, enter response")
-        try:
-            reply = self.dialogflow.request(GetIntentRequest(self.request_id), timeout=10)
-            if reply.response.query_result.query_text:
-                return reply.response.query_result.query_text
-            return None
-        except TimeoutError as e:
-            print("Error:", e)
-
-    def _on_dialog(self, message):
-        if message.response:
-            transcript = message.response.recognition_result.transcript
-            print("Transcript:", transcript)
-            if message.response.recognition_result.is_final:
-                self.log_utterance(speaker='child', text=transcript)
+        print("Listening...")
+        transcript = self.stt_service.listen()
+        print("Heard: ", transcript)
+        return transcript
 
     def _start_loop(self):
         asyncio.set_event_loop(self.background_loop)
@@ -417,5 +347,3 @@ class DialogManager:
             "animations/Stand/Gestures/Thinking_8"
         ]
         self.device_manager.motion.request(NaoqiAnimationRequest(random.choice(thinking_animations)), block=False)
-
-

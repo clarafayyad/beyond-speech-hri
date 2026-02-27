@@ -83,4 +83,4 @@ class TurnManager:
 
     def placed_all_red_cards(self):
         red_placed = sum(1 for color in self.game_state.revealed.values() if color == RED)
-        return red_placed == TOTAL_RED
+        return red_placed == TOTAL_RED - 1

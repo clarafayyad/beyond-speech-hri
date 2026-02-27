@@ -1,7 +1,7 @@
 import os.path
 import random
+import sys
 from json import load
-from os.path import abspath, join
 from PIL import Image
 
 from sic_framework.devices import Pepper
@@ -11,6 +11,7 @@ from sic_framework.services.dialogflow import DialogflowConf
 from agents.dialog_manager import DialogManager
 from agents.llm_agent import LLMAgent
 from agents.pepper_tablet.display_service import PepperTabletDisplayService
+from agents.stt_manager import RealTimeSTTService
 
 
 class Guesser:
@@ -21,7 +22,6 @@ class Guesser:
 
         if isinstance(self.device_manager, Pepper):
             self.display_service = PepperTabletDisplayService(pepper=device_manager)
-
 
     @staticmethod
     def build_dialog_manager(device_manager, tts_conf):
@@ -37,9 +37,8 @@ class Guesser:
             timeout=7)
 
         return DialogManager(device_manager=device_manager,
-                                            dialogflow_conf=dialogflow_conf,
-                                            tts_conf=tts_conf,
-                                            env_path=abspath(join("config", "env", ".env")))
+                             dialogflow_conf=dialogflow_conf,
+                             tts_conf=tts_conf)
 
     def prompt_llm(self, system_prompt: str, user_prompt: str) -> dict:
         return self.llm_agent.prompt_llm(system_prompt, user_prompt)
@@ -204,3 +203,14 @@ class Guesser:
         if not isinstance(self.device_manager, Pepper):
             return
         self.display_service.clear_display()
+
+    def shutdown(self):
+        print("🛑 Shutting down STT...")
+        if not isinstance(self.dialog_manager.stt_service, RealTimeSTTService):
+            return
+        try:
+            self.dialog_manager.stt_service.recorder.shutdown()
+        except Exception:
+            pass
+        sys.exit(0)
+
