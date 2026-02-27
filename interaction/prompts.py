@@ -7,7 +7,7 @@ STRICT RULES:
 - You receive ONE clue word.
 - Choose EXACTLY ONE unrevealed card index.
 - You do NOT know team colors.
-- Avoid revealed cards.
+- AVOID revealed cards.
 - Do NOT explain outside JSON.
 - Output MUST be valid JSON.
 - Do NOT include markdown or extra text.
