@@ -47,8 +47,8 @@ pip install --upgrade social_interaction_cloud[dialogflow,openai-gpt]
 ```
 
 #### 4.2 Start Redis
-cd into your sic_applications directory and run:
 ```bash
+cd sic_applications
 conf/redis/redis-server.exe conf/redis/redis.conf
 ```
 
