@@ -209,7 +209,7 @@ class Guesser:
         if not isinstance(self.dialog_manager.stt_service, RealTimeSTTService):
             return
         try:
-            self.dialog_manager.stt_service.recorder.stop()
+            self.dialog_manager.stt_service.recorder.shutdown()
         except Exception:
             pass
         sys.exit(0)
