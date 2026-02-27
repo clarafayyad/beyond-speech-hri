@@ -10,10 +10,7 @@ from interaction.game_state import GameState
 from interaction.game_loop import GameLoop
 from agents.guesser import Guesser
 
-import warnings
-
 if __name__ == "__main__":
-    warnings.filterwarnings("ignore")
 
     # Configurations & Conversational Agent Setup
     # device_manager = Pepper(ip='10.0.0.148')
