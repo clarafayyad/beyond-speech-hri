@@ -24,20 +24,7 @@ class GameLoop:
             print(f"Playing Turn {self.game_state.turn}")
             self.guesser.say_random_human_turn()
 
-            clue_received = False
-            while not clue_received:
-                raw_clue = self.guesser.listen()
-                while raw_clue is None or raw_clue == "":
-                    print("No input detected from listener; listening again")
-                    raw_clue = self.guesser.listen()
-                try:
-                    clue_word, num = parse_clue(raw_clue)
-                except Exception:
-                    self.guesser.say_random_clue_not_understood()
-                    continue
-                clue_received = True
-
-            self.guesser.say_random_repeat_clue(clue_word, num)
+            clue_word, num = self.receive_clue()
             self.turn_manager.play_turn(clue_word, num)
 
             if not self.game_state.game_over:
@@ -51,3 +38,66 @@ class GameLoop:
             self.guesser.say_random_win_reaction()
         elif self.game_state.win is False:
             self.guesser.say_random_loss_reaction()
+
+    def receive_clue(self) -> tuple[str, int]:
+        while True:
+            # --- Listen until we get some input ---
+            raw_clue = self.guesser.listen()
+            while not raw_clue:
+                print("No input detected from listener; listening again")
+                raw_clue = self.guesser.listen()
+
+            # --- Try to parse the clue ---
+            try:
+                clue_word, num = parse_clue(raw_clue)
+            except Exception:
+                self.guesser.say_random_clue_not_understood()
+                continue  # restart from listening
+
+            # --- Confirm understanding ---
+            self.guesser.say_random_repeat_clue(clue_word, num)
+            self.guesser.say("Did I get the clue right?")
+
+            feedback = self.guesser.listen()
+            if self.is_clue_well_received(feedback):
+                return clue_word, num
+
+            # --- Not confirmed → ask to repeat and loop ---
+            self.guesser.say("Oh, could you repeat?")
+
+    @staticmethod
+    def is_clue_well_received(feedback: str) -> bool:
+        """
+        Returns True only if the spymaster clearly confirms
+        the clue was understood correctly.
+        """
+        if not feedback:
+            return False
+
+        t = feedback.lower().strip()
+
+        # Strong acceptance signals
+        accept_phrases = [
+            "yes", "yeah", "yep", "correct", "right", "exactly",
+            "that's right", "you got it", "perfect", "ok", "okay",
+            "sounds good"
+        ]
+
+        # Strong rejection / correction signals
+        reject_phrases = [
+            "no", "nope", "not", "wrong", "incorrect",
+            "repeat", "again", "say it again",
+            "didn't", "did not", "don't", "do not",
+            "wait", "hold on", "sorry"
+        ]
+
+        # If rejection appears anywhere → False
+        if any(p in t for p in reject_phrases):
+            return False
+
+        # Clear acceptance → True
+        if any(p in t for p in accept_phrases):
+            return True
+
+        # Everything else is treated as not well received
+        return False
