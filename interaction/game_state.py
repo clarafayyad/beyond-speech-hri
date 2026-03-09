@@ -7,6 +7,7 @@ ASSASSIN = 'assassin'
 
 TOTAL_BLUE = 8
 TOTAL_RED = 7
+INITIAL_RED = 2
 
 
 class GameState:
@@ -49,3 +50,7 @@ class GameState:
             print(f"[GAMESTATE] Card {idx} unrevealed (was {prev})")
             return True
         return False
+
+    def are_initial_red_cards_placed(self):
+        red_placed = sum(1 for color in self.revealed.values() if color == RED)
+        return red_placed == INITIAL_RED

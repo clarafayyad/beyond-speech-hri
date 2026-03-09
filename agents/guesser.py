@@ -133,6 +133,21 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
+    def say_verify_received_clue(self):
+        reactions = [
+            "Did I get the clue right?",
+            "Is that the clue you meant?",
+            "Just checking—did I hear the clue correctly?",
+            "Let me confirm: is that the clue?",
+            "Did I understand the clue properly?",
+            "Is that correct?",
+            "Got it… or did I?",
+            "Did I catch the clue right?",
+            "Am I interpreting the clue correctly?",
+            "Just to be sure, is that the clue?"
+        ]
+        self.say(random.choice(reactions))
+
     def say_random_game_over(self):
         reactions = [
             "That’s the end of the game!",

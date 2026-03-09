@@ -1,10 +1,11 @@
 from agents.guesser import Guesser
+from interaction.game_state import GameState
 from interaction.turn_manager import TurnManager
 from interaction.utils import parse_clue
 
 
 class GameLoop:
-    def __init__(self, guesser: Guesser, game_state, max_turns=5):
+    def __init__(self, guesser: Guesser, game_state: GameState, max_turns=5):
         self.guesser = guesser
         self.game_state = game_state
         self.max_turns = max_turns
@@ -15,10 +16,13 @@ class GameLoop:
         self.guesser.say_random_start_game()
         self.guesser.say("I'm waiting for you to place the red cards, let me know when you're ready.", sleep_time=0.5)
 
+        # Wait for the spymaster to place the initial red cards
         response = self.guesser.listen()
-        while not response or response == "" or "ready" not in response:
+        red_cards_placed = self.game_state.are_initial_red_cards_placed()
+        while not response or response == "" or "ready" not in response or not red_cards_placed:
             print("Spymaster not ready yet, waiting...")
             response = self.guesser.listen()
+            red_cards_placed = self.game_state.are_initial_red_cards_placed()
 
         while not self.game_state.game_over and self.game_state.turn < self.max_turns:
             print(f"Playing Turn {self.game_state.turn}")
@@ -56,14 +60,14 @@ class GameLoop:
 
             # --- Confirm understanding ---
             self.guesser.say_random_repeat_clue(clue_word, num)
-            self.guesser.say("Did I get the clue right?")
+            self.guesser.say_verify_received_clue()
 
             feedback = self.guesser.listen()
             if self.is_clue_well_received(feedback):
                 return clue_word, num
 
             # --- Not confirmed → ask to repeat and loop ---
-            self.guesser.say("Oh, could you repeat?")
+            self.guesser.say("Oh, could you repeat the clue?")
 
     @staticmethod
     def is_clue_well_received(feedback: str) -> bool:
