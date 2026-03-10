@@ -2,7 +2,6 @@ import json
 
 from sic_framework.devices import Pepper
 from sic_framework.devices.common_desktop.desktop_speakers import SpeakersConf
-from sic_framework.devices.common_naoqi.naoqi_motion import NaoqiAnimationRequest
 from sic_framework.devices.desktop import Desktop
 
 from agents.tts_manager import ElevenLabsTTSConf
