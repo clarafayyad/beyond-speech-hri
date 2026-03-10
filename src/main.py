@@ -1,11 +1,9 @@
 import json
 
 from sic_framework.devices import Pepper
-from sic_framework.devices.common_desktop.desktop_speakers import SpeakersConf
-from sic_framework.devices.desktop import Desktop
 
 from agents.tts_manager import ElevenLabsTTSConf
-from codenames.game import CodenamesGame
+from interaction.game import CodenamesGame
 from interaction.game_state import GameState
 from interaction.game_loop import GameLoop
 from agents.guesser import Guesser

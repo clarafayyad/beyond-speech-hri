@@ -3,8 +3,6 @@ import json
 import random
 from PIL import Image
 
-from codenames.spymaster import Spymaster
-
 CONFIG_DIR = "../assets/configs"
 CARDS_DIR = "../assets/cards"
 BOARD_DIR = "../assets"
@@ -36,8 +34,6 @@ class CodenamesGame:
         # Show the chosen configuration
         Image.open(os.path.join(BOARD_DIR, self.board_image)).show()
 
-        self.spymaster = Spymaster(self.board, self.map)
-
         print(f"Loaded board {self.board_id}")
         print(f"Board image: {self.board_image}")
         print("GAME SETUP COMPLETE!")
@@ -49,6 +45,3 @@ class CodenamesGame:
         print("Board (row-wise indices 0–19):")
         for idx, card in enumerate(self.board):
             print(f"{idx}: {card}")
-
-    def get_spymaster_view(self):
-        return self.spymaster.blue_indices, self.spymaster.assassin_index
