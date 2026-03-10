@@ -194,14 +194,18 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
-    def say_random_guess(self, card_idx):
+    def say_random_guess(self):
         reactions = [
-            f"Hmm… I think I'll pick {card_idx}.",
-            f"My guess is {card_idx}. Fingers crossed!",
-            f"I choose {card_idx}! Let’s see how I did.",
-            f"Alright, {card_idx} feels right to me.",
-            f"Going with {card_idx} as my guess.",
-            f"I have a good feeling about {card_idx}, so I pick it."
+            "I'm considering this card.",
+            "Here is the card I'm thinking about.",
+            "This one looks promising.",
+            "I think this might be the one.",
+            "Take a look at this card.",
+            "This is my current guess.",
+            "I'm leaning toward this card.",
+            "This card matches the clue the best.",
+            "This might be the correct one.",
+            "I'm pointing to this card.",
         ]
         self.say(random.choice(reactions))
 

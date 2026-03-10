@@ -17,8 +17,8 @@ class TurnManager:
         )
 
         guess_idx = response["guess_index"]
-        self.guesser.say(f"I choose card {guess_idx}.")
         self.guesser.display_guess(self.game_state.board[guess_idx])
+        self.guesser.say_random_guess()
         return guess_idx
 
     def get_feedback(self, guess_idx):
