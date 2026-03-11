@@ -19,11 +19,25 @@ def _load_random_config():
         return json.load(f)
 
 
+def _load_config(config_number):
+    config_str = str(config_number)
+    if config_number < 10:
+        config_str = "0" + config_str
+    config_file_name = "config_" + config_str + ".json"
+    with open(os.path.join(CONFIG_DIR, config_file_name), "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
 class CodenamesGame:
-    def __init__(self):
+    def __init__(self, config_number=None):
         print("\nSETTING UP GAME")
 
-        config = _load_random_config()
+        if not config_number:
+            print("Loading random board configuration...")
+            config = _load_random_config()
+        else:
+            print(f"Loading board configuration #{config_number}...")
+            config = _load_config(config_number)
 
         self.board_id = config["board_id"]
         self.board = config["cards"]

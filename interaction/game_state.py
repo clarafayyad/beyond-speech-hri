@@ -1,3 +1,5 @@
+import json
+
 from interaction.game_state_server import start_game_state_server
 
 RED = 'red'
@@ -9,11 +11,13 @@ TOTAL_BLUE = 8
 TOTAL_RED = 7
 INITIAL_RED = 2
 
+CARD_DESCRIPTIONS_PATH = "../assets/card_descriptions.json"
+
 
 class GameState:
-    def __init__(self, board, card_descriptions):
+    def __init__(self, board):
         self.board = board  # list of card filenames
-        self.card_descriptions = card_descriptions
+        self.card_descriptions = json.load(open(CARD_DESCRIPTIONS_PATH))
         self.revealed = {}  # idx -> blue | red | neutral | assassin
         self.history = []  # structured guess history
         self.turn = 0

@@ -52,7 +52,7 @@ class InteractionConf:
 
 class DialogManager:
     def __init__(self, device_manager: SICDeviceManager, dialogflow_conf: DialogflowConf,
-                 tts_conf: TTSConf = NaoqiTTSConf, microphone_device=None):
+                 tts_conf: TTSConf = NaoqiTTSConf, interaction_conf: InteractionConf = None, microphone_device=None):
 
         print("\n SETTING UP BASIC PROCESSING")
         # Development Logging
@@ -66,7 +66,9 @@ class DialogManager:
         self._log_thread = None
 
         # Interaction configuration
-        self.interaction_conf = InteractionConf()
+        self.interaction_conf = interaction_conf
+        if interaction_conf is None:
+            self.interaction_conf = InteractionConf()
 
         # Background loop
         self.background_loop = asyncio.new_event_loop()

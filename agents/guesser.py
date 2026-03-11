@@ -15,16 +15,16 @@ from agents.stt_manager import RealTimeSTTService
 
 
 class Guesser:
-    def __init__(self, device_manager, tts_conf):
+    def __init__(self, device_manager, tts_conf, interaction_conf=None):
         self.device_manager = device_manager
-        self.dialog_manager = self.build_dialog_manager(device_manager, tts_conf)
+        self.dialog_manager = self.build_dialog_manager(device_manager, tts_conf, interaction_conf)
         self.llm_agent = LLMAgent()
 
         if isinstance(self.device_manager, Pepper):
             self.display_service = PepperTabletDisplayService(pepper=device_manager)
 
     @staticmethod
-    def build_dialog_manager(device_manager, tts_conf):
+    def build_dialog_manager(device_manager, tts_conf, interaction_conf):
         if isinstance(device_manager, Naoqi):
             sample_rate_hertz = 16000
         else:
@@ -38,7 +38,8 @@ class Guesser:
 
         return DialogManager(device_manager=device_manager,
                              dialogflow_conf=dialogflow_conf,
-                             tts_conf=tts_conf)
+                             tts_conf=tts_conf,
+                             interaction_conf=interaction_conf)
 
     def prompt_llm(self, system_prompt: str, user_prompt: str) -> dict:
         return self.llm_agent.prompt_llm(system_prompt, user_prompt)
