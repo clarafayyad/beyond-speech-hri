@@ -67,5 +67,5 @@ def classify_clue_difficulty(audio_path):
 
 
 if __name__ == "__main__":
-    result = classify_clue_difficulty("speech/test_audio/uncertain_clue_2.wav")
+    result = classify_clue_difficulty("audio/test_audio/uncertain_clue_2.wav")
     print(result)
