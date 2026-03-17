@@ -1,101 +1,65 @@
 import re
 
-LOW_HESITATION = 1      # filled pauses, thinking sounds
-MEDIUM_HESITATION = 2   # uncertainty / hedging language
-HIGH_HESITATION = 3     # explicit difficulty / risk statements
-
-MAX_TIER_SUM = 8        # caps influence (≈ 2 strong signals)
-
 FILLERS = {
-    "uh": LOW_HESITATION,
-    "um": LOW_HESITATION,
-    "uhm": LOW_HESITATION,
-    "erm": LOW_HESITATION,
-    "er": LOW_HESITATION,
-    "hmm": LOW_HESITATION,
-    "mmm": LOW_HESITATION,
+        "uh", "um", "hmm", "ah", "uhmmmmmm", "uhm", "uhmm", "uhmmmm", "uhmmmmm", "hm", "hmmm", "hmmmm", "...",
+        # original
+        "okay", "alright", "oh", "mm", "mhmmm", "mm-hmm",  # basic hesitations
+        "you know", "actually", "let's see", "so", "then", "right", "all right", "oh my god", "yeah", "okay, okay",
+        "let me see", "i'll say", "i'm going to say", "i think", "i'm just going to", "i'm not at all", "shoot",
+        "great", "focus",
+        "huh", "er", "eh", "wow", "gee", "yikes", "oops", "fuck", "shit"  # additional interjections
+                                                                  "well", "like", "kind of", "sort of", "I guess",
+        "maybe", "possibly", "probably", "I mean",  # thinking fillers
+        "let's do", "let's go", "alright then", "okay then", "oh no", "oh yeah", "oh okay",  # discourse markers
+        "hmmm", "mmkay", "mmhmm", "mmm", "aha", "woah",  # sound-based fillers
+        "you might", "so yeah", "you see", "so uh", "and then", "then uh"  # mixed hesitation phrases
 }
 
 UNCERTAINTY_PHRASES = {
-    "maybe": MEDIUM_HESITATION,
-    "i think": MEDIUM_HESITATION,
-    "kind of": MEDIUM_HESITATION,
-    "sort of": MEDIUM_HESITATION,
-    "probably": MEDIUM_HESITATION,
-    "not sure": MEDIUM_HESITATION,
-    "i guess": MEDIUM_HESITATION,
-    "hopefully": MEDIUM_HESITATION,
-    "i hope": MEDIUM_HESITATION,
+    "maybe", "i think", "kind of", "sort of", "probably",
+    "not sure", "i guess", "hopefully", "i hope"
 }
 
 META_DIFFICULTY_PHRASES = {
-    # Direct difficulty
-    "this is hard": HIGH_HESITATION,
-    "this is difficult": HIGH_HESITATION,
-    "this is tricky": HIGH_HESITATION,
-
-    # Risk awareness
-    "this is dangerous": HIGH_HESITATION,
-    "this is risky": HIGH_HESITATION,
-    "this might be risky": HIGH_HESITATION,
-    "this is ambiguous": HIGH_HESITATION,
-    "ambiguous": HIGH_HESITATION,
-    "not clear": HIGH_HESITATION,
-
-    # Apologies / hedging responsibility
-    "sorry": HIGH_HESITATION,
-    "i apologize": HIGH_HESITATION,
-
-    # Game-specific uncertainty
-    "i don't love this": HIGH_HESITATION,
-    "this is a stretch": HIGH_HESITATION,
-    "this is a reach": HIGH_HESITATION,
-    "i'm not confident": HIGH_HESITATION,
-
-    # Assassin awareness
-    "watch out for the assassin": HIGH_HESITATION,
-    "watch out": HIGH_HESITATION,
-    "careful": HIGH_HESITATION,
+    "this is hard",  "this is hard", "this is difficult", "this is tricky", "hard", "tough", "difficult", "tricky",
+    "this is dangerous", "this is risky", "this might be risky", "dangerous", "risky",
+    "this is ambiguous", "ambiguous", "not clear",
+    "sorry", "i apologize",
+    "i don't love this", "this is a stretch", "this is a reach",
+    "i'm not confident",
+    "watch out for the assassin", "watch out", "careful",
 }
 
 STRESS_WORDS = {
-    "fuck": MEDIUM_HESITATION,
-    "shit": MEDIUM_HESITATION,
-    "damn": LOW_HESITATION,
+    "fuck", "shit", "damn"
 }
 
 
-def get_verbal_hesitation_score(transcript):
+def count_hesitation_words(transcript):
     """
-    Returns a normalized hesitation score ∈ [0, 1]
-    Tier-based, Codenames-specific, interpretable.
+    Returns the total number of hesitation words/phrases in the transcript.
     """
     if not transcript:
-        return 0.0
+        return 0
 
     text = transcript.lower()
     tokens = re.findall(r"\b\w+\b", text)
 
-    score = 0
+    count = 0
 
-    # Token-level fillers
+    # Count fillers (token-level)
     for token in tokens:
-        score += FILLERS.get(token, 0)
+        if token in FILLERS:
+            count += 1
 
-    # Phrase-level uncertainty
-    for phrase, tier in UNCERTAINTY_PHRASES.items():
-        if phrase in text:
-            score += tier
+    # Count phrase-level matches (can count multiple occurrences)
+    for phrase in UNCERTAINTY_PHRASES:
+        count += text.count(phrase)
 
-    # Strong meta-statements
-    for phrase, tier in META_DIFFICULTY_PHRASES.items():
-        if phrase in text:
-            score += tier
+    for phrase in META_DIFFICULTY_PHRASES:
+        count += text.count(phrase)
 
-    # Stress words
-    for phrase, tier in STRESS_WORDS.items():
-        if phrase in text:
-            score += tier
+    for phrase in STRESS_WORDS:
+        count += text.count(phrase)
 
-    # Normalize + cap
-    return min(1.0, score / MAX_TIER_SUM)
+    return count

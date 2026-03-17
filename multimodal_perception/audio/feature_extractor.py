@@ -7,18 +7,21 @@ import subprocess
 import tempfile
 import webrtcvad
 from wordfreq import zipf_frequency
+import parselmouth
+import numpy as np
+from scipy.stats import linregress
 
 from multimodal_perception.audio.disfluency import DisfluencyDetector
 from multimodal_perception.audio.transcribe_audio import WhisperTranscriber
-from multimodal_perception.audio.verbal_hesitation import get_verbal_hesitation_score
+from multimodal_perception.audio.verbal_hesitation import count_hesitation_words, FILLERS
 
 AUDIO_FOLDER = "../../assets/audio/pilot_v2"
 INPUT_CSV = "../data/pilot_v2.csv"
-OUTPUT_CSV = "features_output.csv"
+OUTPUT_CSV = "../data/audio_features_output_v3.csv"
 
 STOPWORDS = {"this", "that", "is", "but", "and", "so", "well", "already"}
 NUMBER_TOKENS = {"1", "2", "3", "4", "5", "6", "7", "8",
-                 "one", "two", "three", "four", "five", "six", "seven", "eight"}
+                 "one", "two", "to", "too", "three", "four", "for", "five", "six", "seven", "eight"}
 
 SILENCE_THRESHOLD = 0.02
 MIN_SILENCE_DUR = 0.3
@@ -30,9 +33,31 @@ MIN_SPEECH_DUR = 0.1
 whisper = WhisperTranscriber()
 disfluency_detector = DisfluencyDetector()
 
+
 def load_audio(path):
     y, sr = librosa.load(path, sr=16000)
     return y, sr
+
+
+def normalize_audio(y, target_db=-20):
+    """ Loudness Normalization """
+    rms = np.sqrt(np.mean(y ** 2))
+    if rms == 0:
+        return y
+    scalar = 10 ** (target_db / 20) / rms
+    return y * scalar
+
+
+def reduce_noise(y, sr):
+    noise_sample = y[:int(0.5 * sr)]  # first 0.5s as noise
+    noise_profile = np.mean(np.abs(noise_sample))
+    y_denoised = np.where(np.abs(y) < noise_profile, 0, y)
+    return y_denoised
+
+
+def trim_silence(y):
+    yt, _ = librosa.effects.trim(y, top_db=30)
+    return yt
 
 
 def convert_to_wav(input_path):
@@ -75,6 +100,65 @@ def extract_pause_features(y, sr):
     return len(pauses), pauses.mean(), pauses.max()
 
 
+def extract_pause_features_vad(y, sr):
+    vad = webrtcvad.Vad(2)
+
+    frame_duration = 30  # ms
+    frame_size = int(sr * frame_duration / 1000)
+
+    audio_int16 = (y * 32768).astype(np.int16)
+    bytes_audio = audio_int16.tobytes()
+
+    step = frame_size * 2
+    speech_flags = []
+
+    for i in range(0, len(bytes_audio), step):
+        frame = bytes_audio[i:i + step]
+        if len(frame) < step:
+            frame += b'\0' * (step - len(frame))
+        speech_flags.append(vad.is_speech(frame, sr))
+
+    frame_time = frame_duration / 1000.0
+
+    pauses = []
+    current = 0
+
+    for is_speech in speech_flags:
+        if not is_speech:
+            current += 1
+        else:
+            if current > 0:
+                pauses.append(current * frame_time)
+                current = 0
+
+    if len(pauses) == 0:
+        return 0, 0, 0
+
+    pauses = np.array(pauses)
+
+    return len(pauses), pauses.mean(), pauses.max()
+
+
+def pause_position_features(asr_words):
+    if not asr_words or len(asr_words) < 2:
+        return 0, 0
+
+    pauses_before_clue = 0
+    pauses_mid = 0
+
+    for i in range(1, len(asr_words)):
+        gap = asr_words[i]["start"] - asr_words[i - 1]["end"]
+
+        if gap > 0.3:  # pause threshold
+            # before clue word (first meaningful word)
+            if i == 1:
+                pauses_before_clue += 1
+            else:
+                pauses_mid += 1
+
+    return pauses_before_clue, pauses_mid
+
+
 def extract_speech_rate(transcript, duration):
     words = transcript.split()
 
@@ -85,26 +169,12 @@ def extract_speech_rate(transcript, duration):
 
 
 def count_fillers(transcript):
-    fillers = [
-        "uh", "um", "hmm", "ah", "uhmmmmmm", "uhm", "uhmm", "uhmmmm", "uhmmmmm", "hm", "hmmm", "hmmmm", "...",
-        # original
-        "okay", "alright", "oh", "mm", "mhmmm", "mm-hmm",  # basic hesitations
-        "you know", "actually", "let's see", "so", "then", "right", "all right", "oh my god", "yeah", "okay, okay",
-        "let me see", "i'll say", "i'm going to say", "i think", "i'm just going to", "i'm not at all", "shoot",
-        "great", "focus",
-        "huh", "er", "eh", "wow", "gee", "yikes", "oops", "fuck", "shit"  # additional interjections
-                                                                  "well", "like", "kind of", "sort of", "I guess",
-        "maybe", "possibly", "probably", "I mean",  # thinking fillers
-        "let's do", "let's go", "alright then", "okay then", "oh no", "oh yeah", "oh okay",  # discourse markers
-        "hmmm", "mmkay", "mmhmm", "mmm", "aha", "woah",  # sound-based fillers
-        "you might", "so yeah", "you see", "so uh", "and then", "then uh"  # mixed hesitation phrases
-    ]
     count = 0
 
     words = transcript.lower().split()
 
     for w in words:
-        if w in fillers:
+        if w in FILLERS:
             count += 1
 
     return count
@@ -121,13 +191,7 @@ def repetition_count(transcript):
     return count
 
 
-import parselmouth
-import numpy as np
-from scipy.stats import linregress
-
-
 def extract_pitch_features(audio_path, end_window=0.5):
-    # Load audio with parselmouth
     snd = parselmouth.Sound(audio_path)
     pitch = snd.to_pitch()
 
@@ -135,27 +199,53 @@ def extract_pitch_features(audio_path, end_window=0.5):
     frequencies = pitch.selected_array['frequency']
     voiced_mask = frequencies > 0
 
-    # Handle unvoiced audio
     if np.sum(voiced_mask) == 0:
-        return {'mean_pitch': 0.0, 'std_pitch': 0.0, 'pitch_slope': 0.0, 'pitch_rise_end': 0.0}
+        return {
+            'pitch_mean': 0.0,
+            'pitch_std': 0.0,
+            'pitch_slope': 0.0,
+            'pitch_rise_end': 0.0,
+            'pitch_range': 0.0,
+            'pitch_p25': 0.0,
+            'pitch_p75': 0.0
+        }
 
     voiced_times = times[voiced_mask]
     voiced_freqs = frequencies[voiced_mask]
 
-    # Mean and std
+    # clean
+    mask = (voiced_freqs > 50) & (voiced_freqs < 400)
+    voiced_freqs = voiced_freqs[mask]
+    voiced_times = voiced_times[mask]
+
     mean_pitch = np.mean(voiced_freqs)
     std_pitch = np.std(voiced_freqs)
+    pitch_range = np.max(voiced_freqs) - np.min(voiced_freqs)
 
-    # Pitch slope (linear regression)
-    slope, _, _, _, _ = linregress(voiced_times, voiced_freqs)
-    pitch_slope = slope
+    p25 = np.percentile(voiced_freqs, 25)
+    p75 = np.percentile(voiced_freqs, 75)
 
-    # Pitch rise at end
+    slope, _, _, _, _ = linregress(voiced_times[:len(voiced_freqs)], voiced_freqs)
+
     end_mask = voiced_times > voiced_times[-1] - end_window
     pitch_end = np.mean(voiced_freqs[end_mask])
     pitch_rise_end = pitch_end - mean_pitch
 
-    return mean_pitch, std_pitch, pitch_slope, pitch_rise_end
+    return mean_pitch, std_pitch, slope, pitch_rise_end, pitch_range, p25, p75
+
+
+def extract_mfcc_features(y, sr, n_mfcc=13):
+    mfccs = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=n_mfcc)
+
+    mfcc_mean = np.mean(mfccs, axis=1)
+    mfcc_std = np.std(mfccs, axis=1)
+
+    features = {}
+    for i in range(n_mfcc):
+        features[f"mfcc_{i + 1}_mean"] = mfcc_mean[i]
+        features[f"mfcc_{i + 1}_std"] = mfcc_std[i]
+
+    return features
 
 
 def extract_voice_quality(audio_path):
@@ -174,8 +264,7 @@ def extract_voice_quality(audio_path):
 
 def energy_features(y):
     rms = librosa.feature.rms(y=y)[0]
-
-    return np.mean(rms), np.std(rms)
+    return np.mean(rms), np.std(rms), np.max(rms) - np.min(rms), np.percentile(rms, 25), np.percentile(rms, 75)
 
 
 def clue_word_frequency(clue):
@@ -252,8 +341,8 @@ def get_clue_latencies(asr_words=None, y=None, sr=None):
                         break
                 break
         if clue_start is None:
-            # fallback: first word in ASR
-            clue_start = asr_words[0]["start"]
+            # fallback: last word in ASR
+            clue_start = asr_words[-1]["start"]
 
     # fallback to energy-based detection if ASR not provided
     elif y is not None and sr is not None:
@@ -319,21 +408,6 @@ def get_speech_ratio_and_articulation(y, sr, transcript):
     return speech_ratio, articulation_rate
 
 
-def count_repair_restarts(asr_words):
-    repair_markers = {"no", "wait", "sorry", "i mean"}
-    count = 0
-    for i, w in enumerate(asr_words):
-        token = w["word"].lower()
-        if token in repair_markers:
-            # Check if previous word exists (abandoned start)
-            if i > 0:
-                prev_token = asr_words[i - 1]["word"].lower()
-                # ignore filler words
-                if prev_token not in {"uh", "um", "hmm", "ah"}:
-                    count += 1
-    return count
-
-
 def process_clue(row):
     clue_id = row["clue_id"]
     clue = row["Clue"]
@@ -342,26 +416,31 @@ def process_clue(row):
     audio_file = convert_to_wav(m4a_file)
 
     y, sr = load_audio(audio_file)
+    y = trim_silence(y)
+    y = normalize_audio(y)
+    y = reduce_noise(y, sr)
 
     # whisper transcription
     transcript, asr_words = whisper.transcribe_audio(audio_file)
 
     # features
     duration = librosa.get_duration(y=y, sr=sr)
-    pause_count, pause_mean, pause_max = extract_pause_features(y, sr)
+    pause_count, pause_mean, pause_max = extract_pause_features_vad(y, sr)
+    pause_before, pause_mid = pause_position_features(asr_words)
     speech_rate = extract_speech_rate(transcript, duration)
     filler_count = count_fillers(transcript)
     repetition = repetition_count(transcript)
-    pitch_mean, pitch_std, pitch_slope, pitch_rise_end = extract_pitch_features(audio_file)
+    pitch_mean, pitch_std, pitch_slope, pitch_rise_end, pitch_range, pitch_p25, pitch_p75 = extract_pitch_features(
+        audio_file)
+    mfcc_features = extract_mfcc_features(y, sr)
     jitter, shimmer, hnr = extract_voice_quality(audio_file)
-    energy_mean, energy_std = energy_features(y)
+    energy_mean, energy_std, energy_range, energy_p25, energy_p75 = energy_features(y)
     word_freq = clue_word_frequency(clue)
     meta_score = meta_comment_score(transcript)
     clue_latency, clue_number_latency = get_clue_latencies(asr_words, y, sr)
     disfluency = disfluency_detector.get_disfluency(transcript)
-    verbal_hesitation_score = get_verbal_hesitation_score(transcript)
+    verbal_hesitation_count = count_hesitation_words(transcript)
     speech_ratio, articulation_rate = get_speech_ratio_and_articulation(y, sr, transcript)
-    repair_restarts = count_repair_restarts(asr_words)
 
     return {
         # === Metadata / identifiers ===
@@ -383,11 +462,12 @@ def process_clue(row):
         "pause_count": pause_count,
         "pause_mean": pause_mean,
         "pause_max": pause_max,
+        "pause_before_clue": pause_before,
+        "pause_mid_speech": pause_mid,
         "filler_count": filler_count,
         "repetition_count": repetition,
-        "count_repair_restarts": repair_restarts,
         "disfluency": disfluency,
-        "verbal_hesitation_score": verbal_hesitation_score,
+        "verbal_hesitation_count": verbal_hesitation_count,
         "meta_comment_presence": meta_score,
 
         # === Prosody / pitch ===
@@ -395,10 +475,17 @@ def process_clue(row):
         "pitch_std": pitch_std,
         "pitch_slope": pitch_slope,
         "pitch_rise_end": pitch_rise_end,
+        "pitch_range": pitch_range,
+        "pitch_p25": pitch_p25,
+        "pitch_p75": pitch_p75,
+        **mfcc_features,
 
         # === Energy / voice quality ===
         "energy_mean": energy_mean,
         "energy_std": energy_std,
+        "energy_range": energy_range,
+        "energy_p25": energy_p25,
+        "energy_p75": energy_p75,
         "jitter": jitter,
         "shimmer": shimmer,
         "hnr": hnr
