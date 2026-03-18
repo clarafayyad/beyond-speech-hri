@@ -22,5 +22,4 @@ config/
 # Bulky data
 multimodal_perception/audio/test_audio
 assets/audio
-multimodal_perception/data/
 src/tts_cache
