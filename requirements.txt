@@ -15,3 +15,6 @@ seaborn
 matplotlib
 social-interaction-cloud
 RealtimeSTT
+praat-parselmouth
+wordfreq
+soundfile
