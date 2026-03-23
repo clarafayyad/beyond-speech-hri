@@ -15,9 +15,9 @@ from multimodal_perception.audio.disfluency import DisfluencyDetector
 from multimodal_perception.audio.transcribe_audio import WhisperTranscriber
 from multimodal_perception.audio.verbal_hesitation import count_hesitation_words, FILLERS
 
-AUDIO_FOLDER = "../../assets/audio/pilot_v2"
-INPUT_CSV = "../data/pilot_v2.csv"
-OUTPUT_CSV = "../data/audio_features_output_v3.csv"
+AUDIO_FOLDER = "../../assets/audio/pilot"
+INPUT_CSV = "../data/pilot.csv"
+OUTPUT_CSV = "../data/audio_features.csv"
 
 STOPWORDS = {"this", "that", "is", "but", "and", "so", "well", "already"}
 NUMBER_TOKENS = {"1", "2", "3", "4", "5", "6", "7", "8",

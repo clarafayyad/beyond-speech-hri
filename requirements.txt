@@ -1,6 +1,6 @@
 deepface~=0.0.98
 opencv-python~=4.13.0.90
-numpy~=2.3.5
+numpy
 tensorflow
 retina-face
 tf-keras
@@ -18,3 +18,5 @@ RealtimeSTT
 praat-parselmouth
 wordfreq
 soundfile
+fer~=22.4.0
+tqdm
