@@ -36,49 +36,14 @@ class ImportantFeaturesExtractor:
         self.participant_stats = {}
 
     def _load_calibration_for_participant(self) -> pd.DataFrame | None:
-        """Locate and load a single CSV for this participant using a simple naming convention."""
-        # priority 1: explicit file via env var
-        env = os.environ.get('CALIBRATION_DIR')
-        if env:
-            env = os.path.expanduser(env)
-            if os.path.isfile(env) and env.lower().endswith('.csv'):
-                try:
-                    return pd.read_csv(env)
-                except Exception:
-                    return None
-            # if env is a directory, fallthrough to look for participant file inside it
-            if os.path.isdir(env):
-                for name in (f"participant_{self.participant_id}.csv", f"{self.participant_id}.csv", f"calibration_{self.participant_id}.csv"):
-                    path = os.path.join(env, name)
-                    if os.path.isfile(path):
-                        try:
-                            return pd.read_csv(path)
-                        except Exception:
-                            return None
-        # priority 2: dedicated folder with strict filenames
-        for name in (f"participant_{self.participant_id}.csv", f"{self.participant_id}.csv", f"calibration_{self.participant_id}.csv"):
-            path = os.path.join(_CALIB_FOLDER, name)
-            if os.path.isfile(path):
-                try:
-                    return pd.read_csv(path)
-                except Exception:
-                    return None
+        file_name = f"participant_{self.participant_id}.csv"
+        path = os.path.join(_CALIB_FOLDER, file_name)
+        if os.path.isfile(path):
+            try:
+                return pd.read_csv(path)
+            except Exception:
+                return None
         return None
-
-    def load_calibration_file(self, file_path: str) -> pd.DataFrame:
-        """Load a single calibration CSV (no side effects).
-        Use `update_participant_dataframe()` to set it as active calibration data.
-        """
-        if not os.path.isfile(file_path):
-            raise FileNotFoundError(file_path)
-        return pd.read_csv(file_path)
-
-    def update_participant_dataframe(self, df: pd.DataFrame):
-        """Set or replace the calibration dataframe for this participant (no precomputation).
-        Stats are always computed at extraction time by combining calibration + live + current sample.
-        """
-        self._cal_df = df
-        self.participant_stats = {}
 
     def _safe_zscore(self, value, mean, std):
         if std == 0 or np.isnan(std):
