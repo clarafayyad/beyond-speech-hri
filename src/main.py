@@ -26,8 +26,14 @@ if __name__ == "__main__":
 
     input("Press Enter to start the game")
 
+    # Participant and audio configuration
+    participant_id = "P01"
+    # Set audio_device_index to the index of the external microphone.
+    # Run `python -m sounddevice` to list available devices and their indices.
+    audio_device_index = 3  # index of the external audio input device
+
     # Start the interaction
-    loop = GameLoop(guesser, game_state)
+    loop = GameLoop(guesser, game_state, participant_id=participant_id, audio_device_index=audio_device_index)
     loop.play()
 
     # Shutdown
