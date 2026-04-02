@@ -5,6 +5,7 @@ from datetime import datetime
 from multimodal_perception.model.confidence_classifier import ConfidenceClassifier
 from multimodal_perception.audio.important_feature_extractor import ImportantFeaturesExtractor
 from multimodal_perception.audio.recorder import AudioRecorder
+from multimodal_perception.audio.transcribe_audio import WhisperTranscriber
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 LOG_DIR = os.path.join(_HERE, "..", "logs")
@@ -30,8 +31,11 @@ class AudioPipeline:
     def __init__(self, participant_id, audio_device_index=None, log_dir=LOG_DIR):
         self.participant_id = participant_id
         self.recorder = AudioRecorder(device_index=audio_device_index)
-        self.extractor = ImportantFeaturesExtractor()
-        self.classifier = ConfidenceClassifier()
+        # create a Whisper transcriber and pass it to the extractor
+        whisper = WhisperTranscriber()
+        self.extractor = ImportantFeaturesExtractor(whisper)
+        # construct classifier with participant so it can auto-load calibration
+        self.classifier = ConfidenceClassifier(participant_id=self.participant_id)
 
         os.makedirs(log_dir, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

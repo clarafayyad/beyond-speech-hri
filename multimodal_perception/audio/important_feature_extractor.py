@@ -11,50 +11,14 @@ _CALIB_FOLDER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__
 
 
 class ImportantFeaturesExtractor:
-    """Extracts audio features and normalizes them per-participant using calibration data.
+    """Extracts audio features."""
 
-    Behavior:
-    - The constructor accepts a transcriber and a participant_id only.
-    - Calibration data is discovered automatically using a fixed convention:
-        1) if env var CALIBRATION_DIR points to a CSV file -> use it
-        2) else look for a file named one of: f"participant_{id}.csv", f"{id}.csv", f"calibration_{id}.csv" inside `_CALIB_FOLDER`
-    - At extraction time the extractor computes per-feature mean/std from: calibration rows for the participant (if present) + accumulated live rows + current sample.
-    - The current sample is normalized using those stats and appended to the in-session live buffer.
-    """
-
-    def __init__(self, whisper, participant_id: str):
+    def __init__(self, whisper):
         self.whisper = whisper
-        self.participant_id = str(participant_id)
-
-        # calibration raw dataframe (if available). Do not precompute stats here.
-        self._cal_df = self._load_calibration_for_participant()
-
-        # live in-session numeric rows for this participant (pandas DataFrame)
-        self._live_df = pd.DataFrame()
-
-        # current participant stats cached after last extract
-        self.participant_stats = {}
-
-    def _load_calibration_for_participant(self) -> pd.DataFrame | None:
-        file_name = f"participant_{self.participant_id}.csv"
-        path = os.path.join(_CALIB_FOLDER, file_name)
-        if os.path.isfile(path):
-            try:
-                return pd.read_csv(path)
-            except Exception:
-                return None
-        return None
-
-    def _safe_zscore(self, value, mean, std):
-        if std == 0 or np.isnan(std):
-            return value - mean
-        return (value - mean) / std
 
     def extract(self, audio_path: str) -> dict:
-        """Extract features from `audio_path`, normalize them per-participant using calibration + live data.
+        """Extract features from `audio_path` and return raw base features only."""
 
-        Returns a dict with raw_<feature>, <feature> (normalized), and <feature>_dev keys.
-        """
         # load + preprocess
         y, sr = feature_extractor.load_audio(audio_path)
         y = feature_extractor.trim_silence(y)
@@ -75,7 +39,7 @@ class ImportantFeaturesExtractor:
         _, energy_std, energy_range, _, _ = feature_extractor.energy_features(y)
         _, _, hnr = feature_extractor.extract_voice_quality(audio_path)
 
-        raw = {
+        return {
             'duration': duration,
             'pause_max': pause_max,
             'speech_rate': speech_rate,
@@ -86,82 +50,3 @@ class ImportantFeaturesExtractor:
             'pause_mid_speech': pause_mid,
             'pause_count': pause_count,
         }
-
-        # current numeric row
-        current_df = pd.DataFrame([raw]).apply(pd.to_numeric, errors='coerce')
-
-        # build combined data: calibration (participant filtered if applicable) + live + current
-        frames = []
-        if self._cal_df is not None:
-            cal = self._cal_df
-            cal_p = cal[cal['participant_id'] == self.participant_id] if 'participant_id' in cal.columns else cal
-            cols = [c for c in raw.keys() if c in cal_p.columns]
-            if cols:
-                cal_sel = cal_p[cols].copy()
-                cal_sel = cal_sel.apply(pd.to_numeric, errors='coerce')
-                frames.append(cal_sel)
-        if not self._live_df.empty:
-            frames.append(self._live_df)
-        frames.append(current_df)
-
-        combined = pd.concat(frames, ignore_index=True, sort=False)
-
-        # compute stats per feature present in combined
-        for f in raw.keys():
-            if f in combined.columns:
-                x = combined[f].dropna()
-                if x.size:
-                    mean = float(x.mean())
-                    std = float(x.std())
-                    if np.isnan(mean):
-                        mean = 0.0
-                    if np.isnan(std):
-                        std = 0.0
-                else:
-                    mean, std = 0.0, 0.0
-            else:
-                mean, std = 0.0, 0.0
-            self.participant_stats[f] = (mean, std)
-
-        # compute normalized outputs
-        result = {}
-        for fname, raw_val in raw.items():
-            mean, std = self.participant_stats.get(fname, (0.0, 0.0))
-            dev = raw_val - mean
-            z = self._safe_zscore(raw_val, mean, std)
-            result[f'raw_{fname}'] = raw_val
-            result[f'{fname}'] = z
-            result[f'{fname}_dev'] = dev
-
-        # append current numeric row to live buffer
-        row = current_df.copy()
-        if self._live_df.empty:
-            self._live_df = row.reset_index(drop=True)
-        else:
-            for c in row.columns:
-                if c not in self._live_df.columns:
-                    self._live_df[c] = np.nan
-            self._live_df = pd.concat([self._live_df, row], ignore_index=True, sort=False)
-
-        # build legacy-friendly final dict
-        final = {
-            'duration': result['duration'],
-            'pause_max': result['pause_max'],
-            'verbal_hesitation_count_dev': result.get('verbal_hesitation_count_dev', 0),
-            'duration_dev': result.get('duration_dev', 0),
-            'speech_rate': result['speech_rate'],
-            'mfcc_2_mean': result['mfcc_2_mean'],
-            'speech_rate_dev': result.get('speech_rate_dev', 0),
-            'verbal_hesitation_count': result['verbal_hesitation_count'],
-            'pause_count_dev': result.get('pause_count_dev', 0),
-            'hnr_dev': result.get('hnr_dev', 0),
-            'energy_range_dev': 0,
-            'hnr': result['hnr'],
-            'energy_std': result['energy_std'],
-            'energy_std_dev': result.get('energy_std_dev', 0),
-            'pause_mid_speech': result['pause_mid_speech'],
-            'raw_features': {k: v for k, v in result.items() if k.startswith('raw_')}
-        }
-
-        return final
-
