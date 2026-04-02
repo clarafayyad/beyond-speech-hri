@@ -1,0 +1,31 @@
+Spymaster ID ,Clue,Confidence,Difficulty,Clue start video,Clue end video,Clue start audio,Clue end audio
+4,Seashell 2,High,Low,0:42,1:13,0:45,1:16
+4,Zuid 2,Medium,Medium,2:20,2:55,2:21,2:56
+4,Home 2,Low,High,3:37,4:44,3:38,4:45
+4,Modern 2,High,Medium,5:52,6:10,5:53,6:11
+4,Triangle 2,High,Medium,6:26,7:03,6:27,7:04
+9,Blocks 2 ,High,Low,1:24,1:50,1:26,1:52
+9,Mall,High,Medium,2:15,3:04,2:17,3:06
+9,Two 2,Low,High,3:42,5:56,3:44,5:58
+9,Urban,High,Low,7:25,7:37,7:27,7:39
+9,Color gradient,Medium,High,8:01,9:54,8:03,9:56
+1,Blocks ,High,Low,1:05,1:26,0:46,1:07
+1,Large,Medium,Medium,1:41,2:12,1:21,1:52
+1,Housing,High,Medium,2:56,3:10,2:37,2:51
+1,Architecture,High,High,3:40,4:18,3:21,3:59
+1,Gigantic,High,High,4:30,5:01,4:11,4:42
+2,Construction 2,High,Low,0:28,1:15,0:26,1:13
+2,Mall 2,Medium,Low,1:32,1:46,1:30,1:44
+2,Shelling 2,Low,High,2:00,4:24,1:58,4:22
+2,Modern 2,High,Medium,5:30,5:49,5:28,5:47
+2,Treasure 2,High,High,6:13,6:44,6:11,6:42
+5,Shell ,High,Low,1:10,1:24,1:07,1:21
+5,Shopping 2,Medium,Medium,2:44,3:17,2:41,3:14
+5,Enclosement,Low,High,3:30,4:26,3:27,4:23
+5,- ,Low,High,6:08,7:43,6:05,7:40
+5,Triangle 2 ,High,Medium,8:44,9:23,8:42,9:20
+7,Shell 2 ,High,Low,0:37,0:57,0:35,0:55
+7,Manhattan,Low,High,1:15,1:54,1:12,1:51
+7,Symmetry,Low,High,2:14,3:13,2:12,3:11
+7,Sydney,Medium,Low,3:45,3:55,3:42,3:52
+7,Triangles,Medium,Medium,4:35,4:49,4:32,4:46
