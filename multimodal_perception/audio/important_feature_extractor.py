@@ -81,6 +81,7 @@ class ImportantFeaturesExtractor:
         y = feature_extractor.normalize_audio(y)
         y = feature_extractor.reduce_noise(y, sr)
 
+        # TODO: transcribing is being done in real time during game play, we should ideally reuse that result here
         transcript, asr_words = self.whisper.transcribe_audio(audio_path)
 
         duration = librosa.get_duration(y=y, sr=sr)
