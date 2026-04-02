@@ -18,6 +18,12 @@ if __name__ == "__main__":
     tts_conf = ElevenLabsTTSConf(voice_id='EXAVITQu4vr4xnSDxMaL', stability=0.2)
     int_conf = InteractionConf(real_time_stt=False)
 
+    # Participant and audio configuration
+    participant_id = "P01"
+    # Set audio_device_index to the index of the external microphone.
+    # Run `python -m sounddevice` to list available devices and their indices.
+    audio_device_index = 3  # index of the external audio input device
+
     guesser = Guesser(device_manager, tts_conf, int_conf)
 
     # Build Game
@@ -25,12 +31,6 @@ if __name__ == "__main__":
     game_state = GameState(board=game.board)
 
     input("Press Enter to start the game")
-
-    # Participant and audio configuration
-    participant_id = "P01"
-    # Set audio_device_index to the index of the external microphone.
-    # Run `python -m sounddevice` to list available devices and their indices.
-    audio_device_index = 3  # index of the external audio input device
 
     # Start the interaction
     loop = GameLoop(guesser, game_state, participant_id=participant_id, audio_device_index=audio_device_index)
