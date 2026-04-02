@@ -2,8 +2,8 @@ import json
 import os
 from datetime import datetime
 
-from multimodal_perception.audio.dummy_classifier import DummyConfidenceClassifier
-from multimodal_perception.audio.dummy_extractor import DummyFeatureExtractor
+from multimodal_perception.model.confidence_classifier import ConfidenceClassifier
+from multimodal_perception.audio.important_feature_extractor import ImportantFeaturesExtractor
 from multimodal_perception.audio.recorder import AudioRecorder
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -30,8 +30,8 @@ class AudioPipeline:
     def __init__(self, participant_id, audio_device_index=None, log_dir=LOG_DIR):
         self.participant_id = participant_id
         self.recorder = AudioRecorder(device_index=audio_device_index)
-        self.extractor = DummyFeatureExtractor()
-        self.classifier = DummyConfidenceClassifier()
+        self.extractor = ImportantFeaturesExtractor()
+        self.classifier = ConfidenceClassifier()
 
         os.makedirs(log_dir, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
