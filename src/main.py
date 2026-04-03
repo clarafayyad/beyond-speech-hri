@@ -21,7 +21,9 @@ if __name__ == "__main__":
     # device_manager = Pepper(ip='10.0.0.148')
     device_manager = Desktop(speakers_conf=SpeakersConf(sample_rate=22050), mic_conf=MicrophoneConf(device_index=2))
     tts_conf = ElevenLabsTTSConf(voice_id='EXAVITQu4vr4xnSDxMaL', stability=0.2)
-    int_conf = InteractionConf(real_time_stt=False, external_audio_device_id=external_audio_device_index, participant_id=participant_id)
+    int_conf = InteractionConf(real_time_stt=False, external_audio_device_id=external_audio_device_index,
+                               participant_id=participant_id,
+                               adaptive=True)  # Set adaptive=False for non-adaptive (baseline) condition
 
     guesser = Guesser(device_manager, tts_conf, int_conf)
 

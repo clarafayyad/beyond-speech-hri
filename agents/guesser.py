@@ -76,6 +76,9 @@ class Guesser:
         if self.audio_pipeline:
             self.audio_pipeline.stop_recording_if_active()
 
+    def is_adaptive(self):
+        return self.dialog_manager.interaction_conf.adaptive
+
     def say_confidence_level_reaction(self, confidence_level):
         reactions = []
 
