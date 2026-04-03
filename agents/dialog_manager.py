@@ -26,7 +26,8 @@ from agents.tts_manager import NaoqiTTSConf, TTSConf, TTSCacher, ElevenLabsTTSCo
 class InteractionConf:
 
     def __init__(self, speaking_rate=None, sleep_time=0, animated=True, max_attempts=2, amplified=False,
-                 always_regenerate=False, real_time_stt=True, external_audio_device_id=None, participant_id=None):
+                 always_regenerate=False, real_time_stt=True, external_audio_device_id=None, participant_id=None,
+                 adaptive=True):
         self.speaking_rate = speaking_rate
         self.sleep_time = sleep_time
         self.animated = animated
@@ -36,6 +37,7 @@ class InteractionConf:
         self.real_time_stt = real_time_stt
         self.participant_id = participant_id
         self.external_audio_device_id = external_audio_device_id
+        self.adaptive = adaptive
 
     @staticmethod
     def apply_config_defaults(config_attr, param_names):
