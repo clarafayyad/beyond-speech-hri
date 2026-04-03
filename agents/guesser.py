@@ -1,10 +1,12 @@
 import os.path
 import random
 import sys
+import time
 from json import load
 from PIL import Image
 
 from sic_framework.devices import Pepper
+from sic_framework.devices.desktop import Desktop
 from sic_framework.devices.naoqi_shared import Naoqi
 from sic_framework.services.dialogflow import DialogflowConf
 
@@ -12,6 +14,9 @@ from agents.dialog_manager import DialogManager
 from agents.llm_agent import LLMAgent
 from agents.pepper_tablet.display_service import PepperTabletDisplayService
 from agents.stt_manager import RealTimeSTTService
+from interaction.audio_pipeline import AudioPipeline
+
+from multimodal_perception.model.confidence_classifier import CONFIDENCE_LOW, CONFIDENCE_HIGH, CONFIDENCE_MEDIUM
 
 
 class Guesser:
@@ -22,6 +27,12 @@ class Guesser:
 
         if isinstance(self.device_manager, Pepper):
             self.display_service = PepperTabletDisplayService(pepper=device_manager)
+
+        self.audio_pipeline = (
+            AudioPipeline(interaction_conf.participant_id, interaction_conf.external_audio_device_id)
+            if interaction_conf.participant_id is not None
+            else None
+        )
 
     @staticmethod
     def build_dialog_manager(device_manager, tts_conf, interaction_conf):
@@ -46,9 +57,55 @@ class Guesser:
 
     def say(self, text, sleep_time=0):
         self.dialog_manager.say(text, always_regenerate=True, sleep_time=sleep_time)
+        if isinstance(self.dialog_manager.device_manager, Desktop):
+            time.sleep(2)  # To avoid hearing its own speech as feedback
 
     def listen(self) -> str:
         return self.dialog_manager.listen()
+
+    def start_recording(self):
+        if self.audio_pipeline:
+            self.audio_pipeline.start_recording()
+
+    def stop_and_process_audio(self, clue_word, turn_number):
+        if self.audio_pipeline:
+            return self.audio_pipeline.stop_and_process(clue_word, turn_number)
+        return None
+
+    def stop_recording_if_active(self):
+        if self.audio_pipeline:
+            self.audio_pipeline.stop_recording_if_active()
+
+    def say_confidence_level_reaction(self, confidence_level):
+        reactions = []
+
+        if confidence_level == CONFIDENCE_LOW:
+            reactions = [
+                "Hmm… you don’t sound very sure.",
+                "Okay… I’ll be careful with this one.",
+                "That sounded a bit uncertain… let’s think.",
+                "Alright… not super confident, I hear you.",
+                "Hmm… I might need to play this safe."
+            ]
+        elif confidence_level == CONFIDENCE_MEDIUM:
+            reactions = [
+                "Okay, I think I get what you mean.",
+                "Alright, that sounds reasonable.",
+                "Hmm, I’ve got a rough idea.",
+                "Okay… let’s try this.",
+                "Got it. I’ll go with that."
+            ]
+        elif confidence_level == CONFIDENCE_HIGH:
+            reactions = [
+                "Oh, you sound confident. I like that.",
+                "Alright! That was clear.",
+                "Nice, that sounded very certain.",
+                "Okay, I’m feeling good about this.",
+                "Got it — strong signal."
+            ]
+
+        if reactions:
+            self.say(random.choice(reactions))
 
     def say_random_red_reaction(self):
         reactions = [
@@ -184,14 +241,21 @@ class Guesser:
 
     def say_random_thinking(self):
         reactions = [
-            "Hmm… let me think.",
-            "Processing… please wait.",
-            "Thinking very hard right now.",
-            "Analyzing the board…",
-            "My brain is working at maximum capacity.",
-            "Give me a moment to calculate.",
-            "Beep boop… thinking.",
-            "This requires deep thought."
+            "Hmm… okay, give me a second.",
+            "Alright… thinking… thinking…",
+            "Let me just… pretend I know what I’m doing.",
+            "Hmm. This is harder than it looks.",
+            "Okay… big brain moment incoming.",
+            "Wait, wait… I almost have it.",
+            "Let me think this through before I embarrass myself.",
+            "Okay… analyzing… but like, casually.",
+            "Hmm… don’t rush me, I’m being smart.",
+            "I’m thinking. It’s subtle, but it’s happening.",
+            "Alright… calculating my chances of being wrong.",
+            "Hmm… this could go very well or very badly.",
+            "Thinking… with style.",
+            "Okay… activating strategic mode.",
+            "Hmm… I feel like I should know this.",
         ]
         self.say(random.choice(reactions))
 

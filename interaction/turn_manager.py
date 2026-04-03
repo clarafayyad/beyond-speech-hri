@@ -28,7 +28,9 @@ class TurnManager:
 
         return self.game_state.revealed[guess_idx]
 
-    def play_turn(self, clue_word, max_guesses):
+    def play_turn(self, clue_word, max_guesses, confidence_level=None):
+        self.guesser.say_confidence_level_reaction(confidence_level)
+
         guesses = 0
 
         while guesses < max_guesses and not self.game_state.game_over:

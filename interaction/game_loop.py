@@ -1,4 +1,9 @@
+import time
+
+from sic_framework.devices.desktop import Desktop
+
 from agents.guesser import Guesser
+from interaction.audio_pipeline import AudioPipeline
 from interaction.game_state import GameState
 from interaction.turn_manager import TurnManager
 from interaction.utils import parse_clue
@@ -24,16 +29,25 @@ class GameLoop:
             response = self.guesser.listen()
             red_cards_placed = self.game_state.are_initial_red_cards_placed()
 
+        # Start recording for the first turn after initial red cards are placed
+        self.guesser.start_recording()
+
         while not self.game_state.game_over and self.game_state.turn < self.max_turns:
             print(f"Playing Turn {self.game_state.turn}")
             self.guesser.say_random_human_turn()
 
             clue_word, num = self.receive_clue()
-            self.turn_manager.play_turn(clue_word, num)
+
+            # Stop recording immediately after the clue is received and classify
+            confidence_level = self.guesser.stop_and_process_audio(clue_word, self.game_state.turn)
+
+            self.turn_manager.play_turn(clue_word, num, confidence_level)
 
             if not self.game_state.game_over:
                 self.guesser.say("Go ahead, place a red card.")
                 input("Press enter after red card is placed.")
+                # Start recording for the next turn after the red card is placed
+                self.guesser.start_recording()
 
         if not self.game_state.game_over:
             self.guesser.say_random_game_over()
@@ -42,6 +56,8 @@ class GameLoop:
             self.guesser.say_random_win_reaction()
         elif self.game_state.win is False:
             self.guesser.say_random_loss_reaction()
+
+        self.guesser.stop_recording_if_active()
 
     def receive_clue(self) -> tuple[str, int]:
         while True:
