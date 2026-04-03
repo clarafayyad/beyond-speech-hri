@@ -56,9 +56,13 @@ class Guesser:
         return self.llm_agent.prompt_llm(system_prompt, user_prompt)
 
     def say(self, text, sleep_time=0):
-        self.dialog_manager.say(text, always_regenerate=True, sleep_time=sleep_time)
-        if isinstance(self.dialog_manager.device_manager, Desktop):
-            time.sleep(2)  # To avoid hearing its own speech as feedback
+        try:
+            self.pause_recording()
+            self.dialog_manager.say(text, always_regenerate=True, sleep_time=sleep_time)
+            if isinstance(self.dialog_manager.device_manager, Desktop):
+                time.sleep(2)  # To avoid hearing its own speech as feedback
+        finally:
+            self.resume_recording()
 
     def listen(self) -> str:
         return self.dialog_manager.listen()
@@ -66,6 +70,16 @@ class Guesser:
     def start_recording(self):
         if self.audio_pipeline:
             self.audio_pipeline.start_recording()
+
+    def pause_recording(self):
+        """Pause the audio recording (e.g., while the robot is speaking)."""
+        if self.audio_pipeline:
+            self.audio_pipeline.pause_recording()
+
+    def resume_recording(self):
+        """Resume audio recording after the robot has finished speaking."""
+        if self.audio_pipeline:
+            self.audio_pipeline.resume_recording()
 
     def stop_and_process_audio(self, clue_word, turn_number):
         if self.audio_pipeline:
