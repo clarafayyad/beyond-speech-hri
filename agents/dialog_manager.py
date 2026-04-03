@@ -26,7 +26,7 @@ from agents.tts_manager import NaoqiTTSConf, TTSConf, TTSCacher, ElevenLabsTTSCo
 class InteractionConf:
 
     def __init__(self, speaking_rate=None, sleep_time=0, animated=True, max_attempts=2, amplified=False,
-                 always_regenerate=False, real_time_stt=True):
+                 always_regenerate=False, real_time_stt=True, audio_device_id=None, participant_id=None):
         self.speaking_rate = speaking_rate
         self.sleep_time = sleep_time
         self.animated = animated
@@ -34,6 +34,8 @@ class InteractionConf:
         self.amplified = amplified
         self.always_regenerate = always_regenerate
         self.real_time_stt = real_time_stt
+        self.audio_device_id = audio_device_id
+        self.participant_id = participant_id
 
     @staticmethod
     def apply_config_defaults(config_attr, param_names):
@@ -136,9 +138,9 @@ class DialogManager:
         print("\n SETTING UP STT")
         if self.interaction_conf.real_time_stt:
             # TODO: pass mic index as a param to this func
-            self.stt_service = RealTimeSTTService(mic_index=3)
+            self.stt_service = RealTimeSTTService(mic_index=interaction_conf.audio_device_id)
         else:
-            self.stt_service = DialogFlowSTTService(mic_index=self.mic, dialogflow_conf=dialogflow_conf)
+            self.stt_service = DialogFlowSTTService(mic_index=self.device_manager.mic, dialogflow_conf=dialogflow_conf)
         print("Complete and ready for interaction!")
 
     def log_writer(self, log_path):

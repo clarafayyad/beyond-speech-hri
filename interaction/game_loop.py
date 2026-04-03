@@ -6,17 +6,11 @@ from interaction.utils import parse_clue
 
 
 class GameLoop:
-    def __init__(self, guesser: Guesser, game_state: GameState, max_turns=5,
-                 participant_id=None, audio_device_index=None):
+    def __init__(self, guesser: Guesser, game_state: GameState, max_turns=5):
         self.guesser = guesser
         self.game_state = game_state
         self.max_turns = max_turns
         self.turn_manager = TurnManager(guesser, game_state)
-        self.audio_pipeline = (
-            AudioPipeline(participant_id, audio_device_index)
-            if participant_id is not None
-            else None
-        )
 
     def play(self):
         # TODO: introduce robot
@@ -32,8 +26,7 @@ class GameLoop:
             red_cards_placed = self.game_state.are_initial_red_cards_placed()
 
         # Start recording for the first turn after initial red cards are placed
-        if self.audio_pipeline:
-            self.audio_pipeline.start_recording()
+        self.guesser.start_recording()
 
         while not self.game_state.game_over and self.game_state.turn < self.max_turns:
             print(f"Playing Turn {self.game_state.turn}")
@@ -42,9 +35,7 @@ class GameLoop:
             clue_word, num = self.receive_clue()
 
             # Stop recording immediately after the clue is received and classify
-            confidence_level = None
-            if self.audio_pipeline:
-                confidence_level = self.audio_pipeline.stop_and_process(clue_word, self.game_state.turn)
+            confidence_level = self.guesser.stop_and_process_audio(clue_word, self.game_state.turn)
 
             self.turn_manager.play_turn(clue_word, num, confidence_level)
 
@@ -52,8 +43,7 @@ class GameLoop:
                 self.guesser.say("Go ahead, place a red card.")
                 input("Press enter after red card is placed.")
                 # Start recording for the next turn after the red card is placed
-                if self.audio_pipeline:
-                    self.audio_pipeline.start_recording()
+                self.guesser.start_recording()
 
         if not self.game_state.game_over:
             self.guesser.say_random_game_over()
@@ -62,6 +52,9 @@ class GameLoop:
             self.guesser.say_random_win_reaction()
         elif self.game_state.win is False:
             self.guesser.say_random_loss_reaction()
+
+        # TODO: stop recording if still recording, and do any cleanup if necessary
+        self.guesser.stop_recording_if_active()
 
     def receive_clue(self) -> tuple[str, int]:
         while True:

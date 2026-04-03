@@ -12,6 +12,7 @@ from agents.dialog_manager import DialogManager
 from agents.llm_agent import LLMAgent
 from agents.pepper_tablet.display_service import PepperTabletDisplayService
 from agents.stt_manager import RealTimeSTTService
+from interaction.audio_pipeline import AudioPipeline
 
 from multimodal_perception.model.confidence_classifier import CONFIDENCE_LOW, CONFIDENCE_HIGH, CONFIDENCE_MEDIUM
 
@@ -24,6 +25,12 @@ class Guesser:
 
         if isinstance(self.device_manager, Pepper):
             self.display_service = PepperTabletDisplayService(pepper=device_manager)
+
+        self.audio_pipeline = (
+            AudioPipeline(interaction_conf.participant_id, interaction_conf.audio_device_id)
+            if interaction_conf.participant_id is not None
+            else None
+        )
 
     @staticmethod
     def build_dialog_manager(device_manager, tts_conf, interaction_conf):
@@ -51,6 +58,19 @@ class Guesser:
 
     def listen(self) -> str:
         return self.dialog_manager.listen()
+
+    def start_recording(self):
+        if self.audio_pipeline:
+            self.audio_pipeline.start_recording()
+
+    def stop_and_process_audio(self, clue_word, turn_number):
+        if self.audio_pipeline:
+            return self.audio_pipeline.stop_and_process(clue_word, turn_number)
+        return None
+
+    def stop_recording_if_active(self):
+        if self.audio_pipeline:
+            self.audio_pipeline.stop_recording_if_active()
 
     def say_confidence_level_reaction(self, confidence_level):
         reactions = []

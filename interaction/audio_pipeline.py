@@ -170,3 +170,46 @@ class AudioPipeline:
     def _save_log(self):
         with open(self.log_path, "w", encoding="utf-8") as f:
             json.dump(self._log_entries, f, indent=2)
+
+    def stop_recording_if_active(self):
+        """Stop the recorder if it's currently active and remove the temporary
+        audio file that was created.
+
+        Returns
+        -------
+        Optional[str]
+            Path to the temporary audio file that was removed, or ``None`` if no
+            active recording was found or removal failed.
+        """
+        # Attempt to stop the recorder; AudioRecorder.stop() returns the path to
+        # the saved file or None if nothing was recorded. It is safe to call
+        # even if recording was not started.
+        try:
+            audio_path = self.recorder.stop()
+        except Exception:
+            # If stop() raises for some reason, try to defensively close the
+            # underlying stream if present and then give up.
+            stream = getattr(self.recorder, "_stream", None)
+            if stream is not None:
+                try:
+                    stream.stop()
+                    stream.close()
+                except Exception:
+                    pass
+                try:
+                    self.recorder._stream = None
+                except Exception:
+                    pass
+            return None
+
+        if not audio_path:
+            return None
+
+        # Remove the temporary file produced by stop()
+        try:
+            os.unlink(audio_path)
+            return audio_path
+        except Exception:
+            # If we couldn't remove the file, return None to indicate cleanup
+            # didn't complete.
+            return None

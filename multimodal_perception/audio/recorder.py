@@ -8,7 +8,7 @@ import soundfile as sf
 class AudioRecorder:
     """Records audio from the specified input device into a WAV file."""
 
-    def __init__(self, device_index=None, sample_rate=16000, channels=1):
+    def __init__(self, device_index=None, sample_rate=16000, channels=2):
         self.device_index = device_index
         self.sample_rate = sample_rate
         self.channels = channels
