@@ -38,7 +38,7 @@ def append_row_to_csv(participant_id, row):
 
 def run_for_participant(participant_id, config_ids):
     print(f"\n=== Calibration (paper mode) for participant {participant_id} ===")
-    recorder = AudioRecorder()
+    recorder = AudioRecorder(device_index=3, channels=2)
     whisper = WhisperTranscriber()
     extractor = ImportantFeaturesExtractor(whisper)
 
@@ -95,19 +95,7 @@ def run_for_participant(participant_id, config_ids):
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--participants', '-p', required=True, help='Comma-separated list of participant ids (e.g. 01,02)')
-    parser.add_argument('--configs', help='Comma-separated config ids to use (e.g. 1,2,3). Defaults to 1..5')
-    args = parser.parse_args()
-
-    participants = [p.strip() for p in args.participants.split(',') if p.strip()]
-    if args.configs:
-        config_ids = [c.strip() for c in args.configs.split(',') if c.strip()]
-    else:
-        config_ids = [str(i) for i in range(1, 6)]
-
-    for pid in participants:
-        run_for_participant(pid, config_ids)
+    run_for_participant(participant_id=1, config_ids=['1', '2', '3', '4', '5'])
 
 
 if __name__ == '__main__':

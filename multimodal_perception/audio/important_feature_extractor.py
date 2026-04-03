@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import os
 
-import feature_extractor
+from multimodal_perception.audio import feature_extractor
 
 
 # Fixed calibration folder (relative to this module)
