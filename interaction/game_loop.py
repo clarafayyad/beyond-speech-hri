@@ -44,9 +44,7 @@ class GameLoop:
             # Stop recording immediately after the clue is received and classify
             confidence_level = None
             if self.audio_pipeline:
-                confidence_level = self.audio_pipeline.stop_and_process(
-                    clue_word, self.game_state.turn
-                )
+                confidence_level = self.audio_pipeline.stop_and_process(clue_word, self.game_state.turn)
 
             self.turn_manager.play_turn(clue_word, num, confidence_level)
 
