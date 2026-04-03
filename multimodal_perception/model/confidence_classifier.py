@@ -14,15 +14,6 @@ SELECTED_FEATURES = [
     'energy_std_dev', 'pause_mid_speech',
 ]
 
-DEFAULT_WEIGHTS = {
-    'duration': -0.724751, 'pause_max': -0.363689,
-    'verbal_hesitation_count_dev': -0.224249, 'duration_dev': 0.011265,
-    'speech_rate': 0.203491, 'mfcc_2_mean': 0.128271, 'speech_rate_dev': 0.263720,
-    'verbal_hesitation_count': 0.480902, 'pause_count_dev': -0.016484,
-    'hnr_dev': -0.182924, 'energy_range_dev': 0.154083, 'hnr': 0.712520,
-    'energy_std': 0.138211, 'energy_std_dev': 0.001496, 'pause_mid_speech': 0.238308,
-}
-
 PARTICIPANT_COL = 'participant_id'
 BASE_FEATURES = sorted({f[:-4] if f.endswith('_dev') else f for f in SELECTED_FEATURES})
 _CALIB_FOLDER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'calibration-phase'))
@@ -30,18 +21,32 @@ _CALIB_FOLDER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__
 
 class ConfidenceClassifier:
     def __init__(self, participant_id: str | None = None):
-        self.weights = DEFAULT_WEIGHTS.copy()
-        self.intercept = 0.0
-        for f in SELECTED_FEATURES:
-            self.weights.setdefault(f, 0.0)
-        self._weight_vector = np.array([self.weights[f] for f in SELECTED_FEATURES], dtype=float)
+        self.W = np.array([
+            [-0.724750756, -0.363689272, -0.224248714, 0.011265274, 0.203491125,
+             0.128271115, 0.263719552, 0.480902402, -0.0164840947, -0.182924018,
+             0.154083429, 0.712520228, 0.138211138, 0.00149581084, 0.238307982],
+
+            [0.0943432199, 0.330132382, -0.403525833, 0.0636794746, -0.0457295757,
+             -0.338656068, -0.00710226521, -0.367435712, -0.000203146175,
+             -0.0532499204, 0.0703433529, -0.441640927, -0.164922016,
+             0.000166715718, -0.140789667],
+
+            [0.630407536, 0.0335568905, 0.627774547, -0.0749447486, -0.157761549,
+             0.210384953, -0.256617287, -0.113466691, 0.0166872409,
+             0.236173938, -0.224426782, -0.270879301, 0.0267108778,
+             -0.00166252656, -0.0975183146]
+        ])
+
+        self.b = np.array([0.23688999, -0.31508903, 0.07819905])
+
         self.calibration = None
         self.fallback_to_global = True
         self._calib_folder = _CALIB_FOLDER
         if participant_id is not None:
             self._load_calibration_for_participant(participant_id)
 
-    def _candidate_filenames_for_participant(self, pid: str) -> list:
+    @staticmethod
+    def _candidate_filenames_for_participant(pid: str) -> list:
         return [f"participant_{pid}.csv", f"{pid}.csv", f"calibration_{pid}.csv"]
 
     def _load_calibration_for_participant(self, participant_id: str):
@@ -153,25 +158,17 @@ class ConfidenceClassifier:
         return vec
 
     @staticmethod
-    def _sigmoid(x: float) -> float:
-        if x >= 0:
-            z = math.exp(-x)
-            return 1 / (1 + z)
-        z = math.exp(x)
-        return z / (1 + z)
+    def _softmax(z):
+        z = z - np.max(z)  # stability
+        exp_z = np.exp(z)
+        return exp_z / np.sum(exp_z)
 
-    def score(self, features: dict) -> float:
+    def probs(self, features: dict) -> np.ndarray:
         x = self._features_to_vector(features)
-        return float(self._sigmoid(float(np.dot(self._weight_vector, x) + self.intercept)))
+        logits = np.dot(self.W, x) + self.b  # shape (3,)
+        return self._softmax(logits)
 
     def classify(self, features: dict) -> (float, str):
-        score = self.score(features)
-        return score, self.get_label_from_score(score)
-
-    @staticmethod
-    def get_label_from_score(score, thresholds=(0.33, 0.66)) -> str:
-        if score < thresholds[0]:
-            return CONFIDENCE_LOW
-        if score >= thresholds[1]:
-            return CONFIDENCE_HIGH
-        return CONFIDENCE_MEDIUM
+        probs = self.probs(features)
+        label = [CONFIDENCE_HIGH, CONFIDENCE_LOW, CONFIDENCE_MEDIUM][np.argmax(probs)]
+        return probs, label
