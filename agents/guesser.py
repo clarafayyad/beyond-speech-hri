@@ -13,6 +13,8 @@ from agents.llm_agent import LLMAgent
 from agents.pepper_tablet.display_service import PepperTabletDisplayService
 from agents.stt_manager import RealTimeSTTService
 
+from multimodal_perception.model.confidence_classifier import CONFIDENCE_LOW, CONFIDENCE_HIGH, CONFIDENCE_MEDIUM
+
 
 class Guesser:
     def __init__(self, device_manager, tts_conf, interaction_conf=None):
@@ -49,6 +51,37 @@ class Guesser:
 
     def listen(self) -> str:
         return self.dialog_manager.listen()
+
+    def say_confidence_level_reaction(self, confidence_level):
+        reactions = []
+
+        if confidence_level == CONFIDENCE_LOW:
+            reactions = [
+                "Hmm… you don’t sound very sure.",
+                "Okay… I’ll be careful with this one.",
+                "That sounded a bit uncertain… let’s think.",
+                "Alright… not super confident, I hear you.",
+                "Hmm… I might need to play this safe."
+            ]
+        elif confidence_level == CONFIDENCE_MEDIUM:
+            reactions = [
+                "Okay, I think I get what you mean.",
+                "Alright, that sounds reasonable.",
+                "Hmm, I’ve got a rough idea.",
+                "Okay… let’s try this.",
+                "Got it. I’ll go with that."
+            ]
+        elif confidence_level == CONFIDENCE_HIGH:
+            reactions = [
+                "Oh, you sound confident. I like that.",
+                "Alright! That was clear.",
+                "Nice, that sounded very certain.",
+                "Okay, I’m feeling good about this.",
+                "Got it — strong signal."
+            ]
+
+        if reactions:
+            self.say(random.choice(reactions))
 
     def say_random_red_reaction(self):
         reactions = [
@@ -184,14 +217,21 @@ class Guesser:
 
     def say_random_thinking(self):
         reactions = [
-            "Hmm… let me think.",
-            "Processing… please wait.",
-            "Thinking very hard right now.",
-            "Analyzing the board…",
-            "My brain is working at maximum capacity.",
-            "Give me a moment to calculate.",
-            "Beep boop… thinking.",
-            "This requires deep thought."
+            "Hmm… okay, give me a second.",
+            "Alright… thinking… thinking…",
+            "Let me just… pretend I know what I’m doing.",
+            "Hmm. This is harder than it looks.",
+            "Okay… big brain moment incoming.",
+            "Wait, wait… I almost have it.",
+            "Let me think this through before I embarrass myself.",
+            "Okay… analyzing… but like, casually.",
+            "Hmm… don’t rush me, I’m being smart.",
+            "I’m thinking. It’s subtle, but it’s happening.",
+            "Alright… calculating my chances of being wrong.",
+            "Hmm… this could go very well or very badly.",
+            "Thinking… with style.",
+            "Okay… activating strategic mode.",
+            "Hmm… I feel like I should know this.",
         ]
         self.say(random.choice(reactions))
 

@@ -3,7 +3,9 @@ import os
 import numpy as np
 import pandas as pd
 
-CONFIDENCE_LEVELS = ["low", "medium", "high"]
+CONFIDENCE_LOW = "low"
+CONFIDENCE_MEDIUM = "medium"
+CONFIDENCE_HIGH = "high"
 
 SELECTED_FEATURES = [
     'duration', 'pause_max', 'verbal_hesitation_count_dev', 'duration_dev',
@@ -168,7 +170,7 @@ class ConfidenceClassifier:
     def classify_label(self, features: dict, thresholds=(0.33, 0.66)) -> str:
         s = self.score(features)
         if s < thresholds[0]:
-            return CONFIDENCE_LEVELS[0]
+            return CONFIDENCE_LOW
         if s >= thresholds[1]:
-            return CONFIDENCE_LEVELS[2]
-        return CONFIDENCE_LEVELS[1]
+            return CONFIDENCE_HIGH
+        return CONFIDENCE_MEDIUM
