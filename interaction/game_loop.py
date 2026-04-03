@@ -1,3 +1,7 @@
+import time
+
+from sic_framework.devices.desktop import Desktop
+
 from agents.guesser import Guesser
 from interaction.audio_pipeline import AudioPipeline
 from interaction.game_state import GameState

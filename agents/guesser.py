@@ -1,10 +1,12 @@
 import os.path
 import random
 import sys
+import time
 from json import load
 from PIL import Image
 
 from sic_framework.devices import Pepper
+from sic_framework.devices.desktop import Desktop
 from sic_framework.devices.naoqi_shared import Naoqi
 from sic_framework.services.dialogflow import DialogflowConf
 
@@ -27,7 +29,7 @@ class Guesser:
             self.display_service = PepperTabletDisplayService(pepper=device_manager)
 
         self.audio_pipeline = (
-            AudioPipeline(interaction_conf.participant_id, interaction_conf.audio_device_id)
+            AudioPipeline(interaction_conf.participant_id, interaction_conf.external_audio_device_id)
             if interaction_conf.participant_id is not None
             else None
         )
@@ -55,6 +57,8 @@ class Guesser:
 
     def say(self, text, sleep_time=0):
         self.dialog_manager.say(text, always_regenerate=True, sleep_time=sleep_time)
+        if isinstance(self.dialog_manager.device_manager, Desktop):
+            time.sleep(2)  # To avoid hearing its own speech as feedback
 
     def listen(self) -> str:
         return self.dialog_manager.listen()

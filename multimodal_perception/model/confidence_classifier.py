@@ -164,13 +164,14 @@ class ConfidenceClassifier:
         x = self._features_to_vector(features)
         return float(self._sigmoid(float(np.dot(self._weight_vector, x) + self.intercept)))
 
-    def classify(self, features: dict) -> float:
-        return self.score(features)
+    def classify(self, features: dict) -> (float, str):
+        score = self.score(features)
+        return score, self.get_label_from_score(score)
 
-    def classify_label(self, features: dict, thresholds=(0.33, 0.66)) -> str:
-        s = self.score(features)
-        if s < thresholds[0]:
+    @staticmethod
+    def get_label_from_score(score, thresholds=(0.33, 0.66)) -> str:
+        if score < thresholds[0]:
             return CONFIDENCE_LOW
-        if s >= thresholds[1]:
+        if score >= thresholds[1]:
             return CONFIDENCE_HIGH
         return CONFIDENCE_MEDIUM
