@@ -10,10 +10,10 @@ class TurnManager:
         self.guesser = guesser
         self.game_state = game_state
 
-    def make_guess(self, clue_word):
+    def make_guess(self, clue_word, confidence_level=None):
         response = self.guesser.prompt_llm(
             system_prompt=SYSTEM_PROMPT,
-            user_prompt=build_user_prompt(clue_word, self.game_state)
+            user_prompt=build_user_prompt(clue_word, self.game_state, confidence_level)
         )
 
         guess_idx = response["guess_index"]
@@ -37,7 +37,7 @@ class TurnManager:
             self.guesser.dialog_manager.animate_thinking()
             self.guesser.say_random_thinking()
 
-            guess_idx = self.make_guess(clue_word)
+            guess_idx = self.make_guess(clue_word, confidence_level)
             result = self.get_feedback(guess_idx)
 
             self.game_state.revealed[guess_idx] = result
@@ -46,6 +46,7 @@ class TurnManager:
                 "clue": clue_word,
                 "guess_number": guesses + 1,
                 "guess": guess_idx,
+                "card": self.game_state.board[guess_idx],
                 "result": result
             })
 
