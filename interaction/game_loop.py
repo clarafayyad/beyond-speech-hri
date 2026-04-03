@@ -57,7 +57,6 @@ class GameLoop:
         elif self.game_state.win is False:
             self.guesser.say_random_loss_reaction()
 
-        # TODO: stop recording if still recording, and do any cleanup if necessary
         self.guesser.stop_recording_if_active()
 
     def receive_clue(self) -> tuple[str, int]:
