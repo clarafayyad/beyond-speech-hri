@@ -59,6 +59,7 @@ def build_user_prompt(clue_word, game_state, confidence_level=None):
     confidence_str = confidence_level or "unknown"
 
     return f"""
+Turn: {game_state.turn}
 Clue: "{clue_word}"
 Spymaster confidence level: {confidence_str}
 
