@@ -34,7 +34,9 @@ class GameLoop:
 
         while not self.game_state.game_over and self.game_state.turn < self.max_turns:
             print(f"Playing Turn {self.game_state.turn}")
+            self.guesser.pause_recording()
             self.guesser.say_random_human_turn()
+            self.guesser.resume_recording()
 
             clue_word, num = self.receive_clue()
 
