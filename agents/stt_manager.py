@@ -25,8 +25,8 @@ class RealTimeSTTService(STTService):
             input_device_index=mic_index,
             model="small.en",
             language="en",
-            realtime_processing_pause=0.1,
-            post_speech_silence_duration=2,
+            realtime_processing_pause=0.2,
+            post_speech_silence_duration=3,
             use_microphone=True,
             enable_realtime_transcription=False,  # final result only
             beam_size=5,
