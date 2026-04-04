@@ -51,6 +51,14 @@ class AudioPipeline:
         """Start capturing audio from the configured input device."""
         self.recorder.start()
 
+    def pause_recording(self):
+        """Pause capturing audio (e.g., while the robot is speaking)."""
+        self.recorder.pause()
+
+    def resume_recording(self):
+        """Resume capturing audio after a pause."""
+        self.recorder.resume()
+
     def _clip_last_seconds(self, audio_path: str, seconds: int = 60) -> Optional[str]:
         """Return a path to a WAV file that contains only the last `seconds` seconds
         of `audio_path`.

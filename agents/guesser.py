@@ -67,6 +67,16 @@ class Guesser:
         if self.audio_pipeline:
             self.audio_pipeline.start_recording()
 
+    def pause_recording(self):
+        """Pause the audio recording (e.g., while the robot is speaking)."""
+        if self.audio_pipeline:
+            self.audio_pipeline.pause_recording()
+
+    def resume_recording(self):
+        """Resume audio recording after the robot has finished speaking."""
+        if self.audio_pipeline:
+            self.audio_pipeline.resume_recording()
+
     def stop_and_process_audio(self, clue_word, turn_number):
         if self.audio_pipeline:
             return self.audio_pipeline.stop_and_process(clue_word, turn_number)

@@ -34,7 +34,9 @@ class GameLoop:
 
         while not self.game_state.game_over and self.game_state.turn < self.max_turns:
             print(f"Playing Turn {self.game_state.turn}")
+            self.guesser.pause_recording()
             self.guesser.say_random_human_turn()
+            self.guesser.resume_recording()
 
             clue_word, num = self.receive_clue()
 
@@ -74,19 +76,29 @@ class GameLoop:
             try:
                 clue_word, num = parse_clue(raw_clue)
             except Exception:
+                # Pause recording while the robot responds, then resume so the
+                # next clue attempt is captured.
+                self.guesser.pause_recording()
                 self.guesser.say_random_clue_not_understood()
+                self.guesser.resume_recording()
                 continue  # restart from listening
 
-            # --- Confirm understanding ---
+            # --- Pause recording before confirmation: the verification exchange
+            #     (robot repeating the clue, user saying yes/no, robot asking to
+            #     repeat) should not be included in the confidence analysis. ---
+            self.guesser.pause_recording()
             self.guesser.say_random_repeat_clue(clue_word, num)
             self.guesser.say_verify_received_clue()
 
             feedback = self.guesser.listen()
             if self.is_clue_well_received(feedback):
+                # Recording stays paused; the caller will stop and process it.
                 return clue_word, num
 
-            # --- Not confirmed → ask to repeat and loop ---
+            # --- Not confirmed → ask to repeat and resume recording for the
+            #     next clue attempt. ---
             self.guesser.say("Oh, could you repeat the clue?")
+            self.guesser.resume_recording()
 
     @staticmethod
     def is_clue_well_received(feedback: str) -> bool:

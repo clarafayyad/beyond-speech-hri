@@ -1,4 +1,5 @@
 import tempfile
+import threading
 
 import numpy as np
 import sounddevice as sd
@@ -15,10 +16,14 @@ class AudioRecorder:
 
         self._frames = []
         self._stream = None
+        # _paused_event is set when recording is paused; the audio callback
+        # checks this flag in a thread-safe manner using threading.Event.
+        self._paused_event = threading.Event()
 
     def start(self):
         """Begin recording audio in the background."""
         self._frames = []
+        self._paused_event.clear()
         self._stream = sd.InputStream(
             samplerate=self.sample_rate,
             channels=self.channels,
@@ -27,8 +32,17 @@ class AudioRecorder:
         )
         self._stream.start()
 
+    def pause(self):
+        """Pause recording; incoming audio frames are discarded until resumed."""
+        self._paused_event.set()
+
+    def resume(self):
+        """Resume recording after a pause."""
+        self._paused_event.clear()
+
     def _callback(self, indata, frames, time, status):
-        self._frames.append(indata.copy())
+        if not self._paused_event.is_set():
+            self._frames.append(indata.copy())
 
     def stop(self):
         """
