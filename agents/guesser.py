@@ -56,9 +56,11 @@ class Guesser:
         return self.llm_agent.prompt_llm(system_prompt, user_prompt)
 
     def say(self, text, sleep_time=0):
+        self.pause_recording()  # Pause recording to avoid capturing the robot's own speech as input
         self.dialog_manager.say(text, always_regenerate=True, sleep_time=sleep_time)
         if isinstance(self.dialog_manager.device_manager, Desktop):
             time.sleep(2)  # To avoid hearing its own speech as feedback
+        self.resume_recording()
 
     def listen(self) -> str:
         return self.dialog_manager.listen()
