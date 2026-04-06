@@ -36,6 +36,7 @@ def parse_clue(clue_text: str):
 
     # Normalize
     text = clue_text.lower()
+    text = re.sub(r"['\u2018\u2019\u201a\u201b]", "", text)  # strip apostrophes so contractions stay as one token
     text = re.sub(r"[^\w\s]", " ", text)
     tokens = [t for t in text.split() if t]
 
