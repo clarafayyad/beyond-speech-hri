@@ -7,6 +7,12 @@ from interaction.audio_pipeline import AudioPipeline
 from interaction.game_state import GameState
 from interaction.turn_manager import TurnManager
 from interaction.utils import parse_clue
+from multimodal_perception.audio.verbal_hesitation import FILLERS
+
+# Number of silent retries before asking the user to repeat
+GRACE_PERIOD_RETRIES = 2
+# Seconds to wait between silent grace-period retries
+GRACE_PERIOD_WAIT_SECONDS = 1.0
 
 
 class GameLoop:
@@ -65,23 +71,42 @@ class GameLoop:
         self.guesser.stop_recording_if_active()
 
     def receive_clue(self) -> tuple[str, int]:
+        failed_attempts = 0
         while True:
-            # --- Listen until we get some input ---
+            # --- Listen until we get some non-empty input ---
             raw_clue = self.guesser.listen()
             while not raw_clue:
                 print("No input detected from listener; listening again")
                 raw_clue = self.guesser.listen()
 
+            # --- Ignore utterances that are only filler/hesitation words ---
+            if self._is_filler_only(raw_clue):
+                print(f"Filler-only input detected ('{raw_clue}'); listening again silently")
+                continue
+
             # --- Try to parse the clue ---
             try:
                 clue_word, num = parse_clue(raw_clue)
             except Exception:
-                # Pause recording while the robot responds, then resume so the
-                # next clue attempt is captured.
+                failed_attempts += 1
+                if failed_attempts <= GRACE_PERIOD_RETRIES:
+                    # Grace period: the user may still be formulating their
+                    # clue.  Wait briefly and try again without interrupting.
+                    print(
+                        f"Could not parse clue (attempt {failed_attempts}/{GRACE_PERIOD_RETRIES}); "
+                        "waiting silently before retrying"
+                    )
+                    time.sleep(GRACE_PERIOD_WAIT_SECONDS)
+                    continue
+
+                # Grace period exhausted → ask the user to repeat
+                failed_attempts = 0
                 self.guesser.pause_recording()
                 self.guesser.say_random_clue_not_understood()
                 self.guesser.resume_recording()
                 continue  # restart from listening
+
+            failed_attempts = 0  # reset on successful parse
 
             # --- Pause recording before confirmation: the verification exchange
             #     (robot repeating the clue, user saying yes/no, robot asking to
@@ -99,6 +124,19 @@ class GameLoop:
             #     next clue attempt. ---
             self.guesser.say("Oh, could you repeat the clue?")
             self.guesser.resume_recording()
+
+    @staticmethod
+    def _is_filler_only(text: str) -> bool:
+        """
+        Returns True if the transcribed text contains only filler / hesitation
+        words (e.g. "uh", "hmm", "um") and no meaningful content.  Used to
+        avoid interrupting users who are still thinking out loud.
+        """
+        # Strip punctuation from each token before checking so that
+        # transcriptions like "um," or "uh." are still detected as fillers.
+        tokens = [t.strip(".,!?;:'\"") for t in text.lower().split()]
+        tokens = [t for t in tokens if t]
+        return len(tokens) > 0 and all(t in FILLERS for t in tokens)
 
     @staticmethod
     def is_clue_well_received(feedback: str) -> bool:
