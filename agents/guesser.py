@@ -273,6 +273,17 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
+    def say_inner_discussion_intro(self):
+        reactions = [
+            "Hmm, let me consult with Clara on this one.",
+            "I'm not sure… let me think this through with Clara.",
+            "This is tricky. Let me get Clara's input first.",
+        ]
+        self.say(random.choice(reactions))
+
+    def say_as_clara(self, text):
+        self.say(f"Clara: {text}")
+
     def say_random_thinking(self):
         reactions = [
             "Hmm… okay, give me a second.",
