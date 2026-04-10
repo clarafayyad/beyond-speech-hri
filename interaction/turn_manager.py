@@ -17,14 +17,14 @@ class TurnManager:
         )
 
         guess_idx = response["guess_index"]
+        self.guesser.display_guess(self.game_state.board[guess_idx])
+        
         reason = response.get("reason", "")
-
         if reason:
             self.guesser.say(reason)
         else:
             self.guesser.say_random_guess()
 
-        self.guesser.display_guess(self.game_state.board[guess_idx])
         return guess_idx
 
     def get_feedback(self, guess_idx):
