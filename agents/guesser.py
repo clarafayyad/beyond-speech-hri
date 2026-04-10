@@ -120,6 +120,27 @@ class Guesser:
         if reactions:
             self.say(random.choice(reactions))
 
+    def say_memory_reference(self, last_turn_memory):
+        """Say a natural sentence referencing the previous round when relevant."""
+        if not last_turn_memory:
+            return
+
+        if last_turn_memory.get("had_correct_guess"):
+            phrases = [
+                "That last one was tricky too—we handled it well.",
+                "The previous round was uncertain as well, but we got through it.",
+                "Hmm, same uncertainty as before. We managed then—let's stay careful.",
+                "We navigated that last tough clue together. Let's do it again.",
+            ]
+        else:
+            phrases = [
+                "Last round was tough too. Let's try to do better this time.",
+                "Hmm, uncertain again. The last one was difficult too—let's think carefully.",
+                "That previous clue gave us trouble as well. Staying cautious.",
+                "Same tricky situation as before. Let's be extra careful.",
+            ]
+        self.say(random.choice(phrases))
+
     def say_random_red_reaction(self):
         reactions = [
             "Oh— uh… no. That’s red. Yeah… turn’s over.",
