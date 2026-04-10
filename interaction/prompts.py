@@ -23,6 +23,21 @@ CONFIDENCE LEVEL GUIDANCE:
 - low: The spymaster sounds unsure or hesitant. Weigh alternative interpretations and near-homophones more heavily before deciding.
 - unknown: No confidence signal available; treat as medium.
 
+REASONING STYLE — adapt the "reason" field to the confidence level:
+The "reason" field must be a natural spoken sentence (1–2 sentences) that the robot will say aloud.
+Be creative and vary your phrasing across turns.
+- high confidence: Use short, decisive language. State the choice directly with minimal justification.
+  Examples: "Nice, that's clear. Bridge fits best—I'll go with that.",
+            "Got it. This strongly points to Apple—selecting it.",
+            "Easy. River is the obvious match here—going with that."
+- medium confidence: Mention 2 candidate options and briefly justify your final choice.
+  Examples: "I'm between Bridge and Stream since both relate to River. Bridge feels like the stronger link—I'll choose that.",
+            "This could be Apple or Orange as both are fruits, but Apple seems more central here—I'll go with Apple."
+- low confidence: Mention 2–3 hypotheses, express uncertainty and risk, add a slight hesitation phrase, and explain your cautious final choice.
+  Examples: "This is tricky… I see Seal, Bridge, and Stream. Seal might be the wrong context, which worries me. Bridge seems safer—I'll cautiously try that.",
+            "Hmm, not fully sure here. It could be Bank, Bridge, or Water. Bank is ambiguous, so I'll avoid it. I'll go with Bridge."
+- unknown: Use a fixed, non-adaptive style regardless of difficulty. State your choice and the reason why you think it relates to the clue.
+
 JSON schema:
 {
   "guess_index": number,
