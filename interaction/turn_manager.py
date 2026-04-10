@@ -57,11 +57,11 @@ class TurnManager:
             "had_correct_guess": BLUE in results,
         }
 
-    def play_turn(self, clue_word, max_guesses, confidence_level=None):
+    def play_turn(self, clue_word, max_guesses, confidence_level=None, features=None):
         if self._should_say_memory_reference(confidence_level):
             self.guesser.say_memory_reference(self.last_turn_memory)
 
-        self.guesser.say_confidence_level_reaction(confidence_level)
+        self.guesser.say_confidence_level_reaction(confidence_level, features)
 
         guesses = 0
 

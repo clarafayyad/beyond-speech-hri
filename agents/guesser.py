@@ -80,7 +80,7 @@ class Guesser:
     def stop_and_process_audio(self, clue_word, turn_number):
         if self.audio_pipeline:
             return self.audio_pipeline.stop_and_process(clue_word, turn_number)
-        return None
+        return None, None
 
     def stop_recording_if_active(self):
         if self.audio_pipeline:
@@ -89,7 +89,74 @@ class Guesser:
     def is_adaptive(self):
         return self.dialog_manager.interaction_conf.adaptive
 
-    def say_confidence_level_reaction(self, confidence_level):
+    @staticmethod
+    def _feature_comment(features: dict, confidence_level: str) -> str:
+        """Return a short phrase referencing the audio feature that most likely
+        drove the confidence inference, or an empty string when no single
+        feature stands out.
+
+        Only the features that are intuitively explainable in natural language
+        are used: duration, verbal hesitation count, maximum pause length, and
+        speech rate.  The most salient signal is reported first (in priority
+        order) to keep the utterance concise.
+        """
+        if not features:
+            return ""
+
+        duration = features.get('duration') or 0
+        pause_max = features.get('pause_max') or 0
+        hesitation_count = features.get('verbal_hesitation_count') or 0
+        speech_rate = features.get('speech_rate') or 0
+
+        if confidence_level == CONFIDENCE_LOW:
+            if duration > 12:
+                return random.choice([
+                    "Ow no, that took too long.",
+                    "Hmm, you spent a while on that one.",
+                    "That took quite some time.",
+                ])
+            if hesitation_count >= 2:
+                return random.choice([
+                    "I noticed a few hesitations there.",
+                    "There were some 'um's and 'uh's in there.",
+                    "You hesitated quite a bit.",
+                ])
+            if pause_max > 2.5:
+                return random.choice([
+                    "That long pause caught my attention.",
+                    "I noticed a long pause in there.",
+                    "There was quite a silence in between.",
+                ])
+            if 0 < speech_rate < 1.5:
+                return random.choice([
+                    "You were speaking quite slowly.",
+                    "That was a slow delivery.",
+                    "Hmm, you took it slow.",
+                ])
+
+        elif confidence_level == CONFIDENCE_HIGH:
+            if duration > 0 and hesitation_count == 0:
+                return random.choice([
+                    "Not a single hesitation — I like it.",
+                    "Clean delivery, no fillers!",
+                    "You knew exactly what to say.",
+                ])
+            if 0 < duration < 4:
+                return random.choice([
+                    "That was quick and decisive!",
+                    "Straight to the point!",
+                    "Quick and clear!",
+                ])
+            if speech_rate > 3.5:
+                return random.choice([
+                    "You rattled that right off.",
+                    "Fast and sure!",
+                ])
+
+        return ""
+
+    def say_confidence_level_reaction(self, confidence_level, features=None):
+        comment = Guesser._feature_comment(features, confidence_level) if features else ""
         reactions = []
 
         if confidence_level == CONFIDENCE_LOW:
@@ -118,7 +185,8 @@ class Guesser:
             ]
 
         if reactions:
-            self.say(random.choice(reactions))
+            phrase = random.choice(reactions)
+            self.say(f"{comment} {phrase}".strip() if comment else phrase)
 
     def say_memory_reference(self, last_turn_memory):
         """Say a natural sentence referencing the previous round when relevant."""

@@ -136,8 +136,10 @@ class AudioPipeline:
 
         Returns
         -------
-        str
-            Predicted confidence level: ``"low"``, ``"medium"``, or ``"high"``.
+        tuple[dict, str]
+            A ``(features, confidence_level)`` pair where *features* is the
+            raw feature dict and *confidence_level* is ``"low"``,
+            ``"medium"``, or ``"high"``.
         """
         audio_path = self.recorder.stop()
 
@@ -173,7 +175,7 @@ class AudioPipeline:
         self._save_log()
 
         print(f"[AudioPipeline] Turn {turn} | clue='{clue}' | confidence={confidence_level}")
-        return confidence_level
+        return features, confidence_level
 
     def _save_log(self):
         with open(self.log_path, "w", encoding="utf-8") as f:
