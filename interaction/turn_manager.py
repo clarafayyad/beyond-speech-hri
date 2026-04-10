@@ -41,7 +41,7 @@ class TurnManager:
 
         while guesses < max_guesses and not self.game_state.game_over:
             self.guesser.dialog_manager.animate_thinking()
-            self.guesser.say_random_thinking()
+            self.guesser.say_random_thinking(confidence_level)
 
             guess_idx = self.make_guess(clue_word, confidence_level)
             result = self.get_feedback(guess_idx)

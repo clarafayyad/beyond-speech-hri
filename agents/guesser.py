@@ -252,24 +252,49 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
-    def say_random_thinking(self):
-        reactions = [
-            "Hmm… okay, give me a second.",
-            "Alright… thinking… thinking…",
-            "Let me just… pretend I know what I’m doing.",
-            "Hmm. This is harder than it looks.",
-            "Okay… big brain moment incoming.",
-            "Wait, wait… I almost have it.",
-            "Let me think this through before I embarrass myself.",
-            "Okay… analyzing… but like, casually.",
-            "Hmm… don’t rush me, I’m being smart.",
-            "I’m thinking. It’s subtle, but it’s happening.",
-            "Alright… calculating my chances of being wrong.",
-            "Hmm… this could go very well or very badly.",
-            "Thinking… with style.",
-            "Okay… activating strategic mode.",
-            "Hmm… I feel like I should know this.",
-        ]
+    def say_random_thinking(self, confidence_level=None):
+        if confidence_level == CONFIDENCE_HIGH:
+            reactions = [
+                "On it.",
+                "Clear enough. Deciding now.",
+                "Got it — picking right away.",
+                "Easy. I know this one.",
+                "No hesitation needed here.",
+            ]
+        elif confidence_level == CONFIDENCE_MEDIUM:
+            reactions = [
+                "Hmm… okay, a couple of options. Let me pick.",
+                "There are a few candidates — narrowing it down.",
+                "Almost certain… just weighing two possibilities.",
+                "I have a good idea. Choosing now.",
+                "Hmm, a moment to compare — almost there.",
+            ]
+        elif confidence_level == CONFIDENCE_LOW:
+            reactions = [
+                "Hmm… this is tricky. Not sure which way to go.",
+                "Okay… I need to be careful here.",
+                "Several possibilities… thinking through the risk.",
+                "I’m not fully sure — proceeding cautiously.",
+                "This one’s hard. Let me reason through it slowly.",
+            ]
+        else:
+            reactions = [
+                "Hmm… okay, give me a second.",
+                "Alright… thinking… thinking…",
+                "Let me just… pretend I know what I’m doing.",
+                "Hmm. This is harder than it looks.",
+                "Okay… big brain moment incoming.",
+                "Wait, wait… I almost have it.",
+                "Let me think this through before I embarrass myself.",
+                "Okay… analyzing… but like, casually.",
+                "Hmm… don’t rush me, I’m being smart.",
+                "I’m thinking. It’s subtle, but it’s happening.",
+                "Alright… calculating my chances of being wrong.",
+                "Hmm… this could go very well or very badly.",
+                "Thinking… with style.",
+                "Okay… activating strategic mode.",
+                "Hmm… I feel like I should know this.",
+            ]
         self.say(random.choice(reactions))
 
     def say_random_guess(self):
