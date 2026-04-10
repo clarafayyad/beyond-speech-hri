@@ -1,5 +1,55 @@
 import json
 
+INNER_DISCUSSION_SYSTEM_PROMPT = """
+You are simulating a short two-player inner consultation in a Codenames Pictures game.
+
+Players:
+- Player 1 (Robot): asks a tentative question about a candidate card.
+- Player 2 (Clara, consultant): raises a safety concern (e.g. assassin or wrong-team risk) and recommends a safer alternative.
+- Final decision: Robot commits to the card Clara recommended.
+
+STRICT RULES:
+- Output MUST be valid JSON.
+- Do NOT include markdown or extra text.
+- player1_line: Robot asks about one candidate card (e.g. "Could it be 'Seal'?").
+- player2_line: Clara expresses a concern about that card and names a safer alternative (e.g. "Maybe, but that risks the assassin. 'Bridge' is safer.").
+- final_decision: Robot commits to the alternative card Clara suggested (e.g. "I'll go with 'Bridge'.").
+- guess_index: The index of the card chosen in the final decision (the alternative Clara recommended). Must be an unrevealed card index.
+
+JSON schema:
+{
+  "player1_line": string,
+  "player2_line": string,
+  "final_decision": string,
+  "guess_index": number
+}
+"""
+
+
+def build_inner_discussion_prompt(clue_word, game_state):
+    unrevealed = []
+
+    for idx, card in enumerate(game_state.board):
+        if idx in game_state.revealed:
+            continue
+
+        unrevealed.append({
+            "index": idx,
+            "card": card,
+            "description": game_state.card_descriptions[card]
+        })
+
+    return f"""
+Clue: "{clue_word}"
+
+Unrevealed cards:
+{json.dumps(unrevealed, indent=2)}
+
+Generate a short inner consultation exchange: Player 1 proposes one candidate, Clara warns about its risk and recommends a safer card, then Robot commits to Clara's recommendation.
+Respond ONLY in JSON.
+"""
+
+
 SYSTEM_PROMPT = """
 You are a robot playing Codenames Pictures as the field operative.
 
