@@ -20,12 +20,25 @@ class TestSystemPromptReasoningStyle:
         assert "medium confidence" in SYSTEM_PROMPT
         # Medium confidence should mention 2 candidate options
         assert "2 candidate" in SYSTEM_PROMPT or "two candidate" in SYSTEM_PROMPT
+        # Medium confidence should include an interpretation statement (implicit verification)
+        assert "I think you meant" in SYSTEM_PROMPT or "interpretation" in SYSTEM_PROMPT
 
     def test_system_prompt_low_confidence_style(self):
         assert "low confidence" in SYSTEM_PROMPT
         # Low confidence should mention multiple hypotheses and uncertainty
         assert "hypothes" in SYSTEM_PROMPT or "2–3" in SYSTEM_PROMPT
         assert "uncertainty" in SYSTEM_PROMPT or "uncertain" in SYSTEM_PROMPT or "hesitation" in SYSTEM_PROMPT
+        # Low confidence should include an interpretation statement (implicit verification)
+        assert "I think you might be pointing" in SYSTEM_PROMPT
+
+    def test_system_prompt_high_confidence_no_interpretation(self):
+        assert "high confidence" in SYSTEM_PROMPT
+        # High confidence should explicitly skip the interpretation statement
+        assert "Do NOT include an interpretation statement" in SYSTEM_PROMPT
+
+    def test_system_prompt_no_questions_in_medium_low(self):
+        # The implicit verification must not ask questions
+        assert "No questions" in SYSTEM_PROMPT or "no questions" in SYSTEM_PROMPT
 
     def test_system_prompt_unknown_non_adaptive_style(self):
         assert "unknown" in SYSTEM_PROMPT
