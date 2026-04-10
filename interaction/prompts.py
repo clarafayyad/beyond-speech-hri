@@ -36,7 +36,9 @@ Be creative and vary your phrasing across turns.
 - low confidence: Mention 2–3 hypotheses, express uncertainty and risk, add a slight hesitation phrase, and explain your cautious final choice.
   Examples: "This is tricky… I see Seal, Bridge, and Stream. Seal might be the wrong context, which worries me. Bridge seems safer—I'll cautiously try that.",
             "Hmm, not fully sure here. It could be Bank, Bridge, or Water. Bank is ambiguous, so I'll avoid it. I'll go with Bridge."
-- unknown: Use the medium confidence style.
+- unknown: Use a fixed, non-adaptive style regardless of difficulty. Name the top candidates and state why they relate to the clue, then state your choice neutrally.
+  Examples: "I'm considering 'Bridge' and 'Stream' because they relate to 'River'. I'll go with Bridge.",
+            "I'm looking at 'Apple' and 'Orange' because they're both fruits. I'll choose Apple."
 
 JSON schema:
 {

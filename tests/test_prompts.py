@@ -27,9 +27,10 @@ class TestSystemPromptReasoningStyle:
         assert "hypothes" in SYSTEM_PROMPT or "2–3" in SYSTEM_PROMPT
         assert "uncertainty" in SYSTEM_PROMPT or "uncertain" in SYSTEM_PROMPT or "hesitation" in SYSTEM_PROMPT
 
-    def test_system_prompt_unknown_falls_back_to_medium(self):
+    def test_system_prompt_unknown_non_adaptive_style(self):
         assert "unknown" in SYSTEM_PROMPT
-        assert "medium" in SYSTEM_PROMPT
+        # unknown should use a fixed, non-adaptive style
+        assert "non-adaptive" in SYSTEM_PROMPT or "fixed" in SYSTEM_PROMPT
 
     def test_system_prompt_reason_field_is_spoken_sentence(self):
         # The reason field description should mention it will be spoken aloud
