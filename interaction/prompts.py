@@ -24,7 +24,7 @@ CONFIDENCE LEVEL GUIDANCE:
 - unknown: No confidence signal available; treat as medium.
 
 REASONING STYLE — adapt the "reason" field to the confidence level:
-The "reason" field must be a natural spoken sentence (1–3 sentences) that the robot will say aloud.
+The "reason" field must be a natural spoken sentence (1–2 sentences) that the robot will say aloud.
 Be creative and vary your phrasing across turns.
 - high confidence: Use short, decisive language. State the choice directly with minimal justification.
   Examples: "Nice, that's clear. Bridge fits best—I'll go with that.",
@@ -36,9 +36,7 @@ Be creative and vary your phrasing across turns.
 - low confidence: Mention 2–3 hypotheses, express uncertainty and risk, add a slight hesitation phrase, and explain your cautious final choice.
   Examples: "This is tricky… I see Seal, Bridge, and Stream. Seal might be the wrong context, which worries me. Bridge seems safer—I'll cautiously try that.",
             "Hmm, not fully sure here. It could be Bank, Bridge, or Water. Bank is ambiguous, so I'll avoid it. I'll go with Bridge."
-- unknown: Use a fixed, non-adaptive style regardless of difficulty. Name the top candidates and state why they relate to the clue, then state your choice neutrally.
-  Examples: "I'm considering 'Bridge' and 'Stream' because they relate to 'River'. I'll go with Bridge.",
-            "I'm looking at 'Apple' and 'Orange' because they're both fruits. I'll choose Apple."
+- unknown: Use a fixed, non-adaptive style regardless of difficulty. State your choice and the reason why you think it relates to the clue.
 
 JSON schema:
 {
