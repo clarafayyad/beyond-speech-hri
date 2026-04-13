@@ -346,9 +346,32 @@ class DialogManager:
             return
         thinking_animations = [
             "animations/Stand/Gestures/Thinking_1",
+            "animations/Stand/Gestures/Thinking_2",
             "animations/Stand/Gestures/Thinking_3",
             "animations/Stand/Gestures/Thinking_4",
             "animations/Stand/Gestures/Thinking_6",
             "animations/Stand/Gestures/Thinking_8"
         ]
         self.device_manager.motion.request(NaoqiAnimationRequest(random.choice(thinking_animations)), block=False)
+
+    def animate_hello(self):
+        if not isinstance(self.device_manager, Pepper):
+            return
+        self.device_manager.motion.request(NaoqiAnimationRequest("animations/Stand/Gestures/Hey_1"), block=False)
+
+    def animate_bye(self):
+        if not isinstance(self.device_manager, Pepper):
+            return
+        self.device_manager.motion.request(NaoqiAnimationRequest("animations/Stand/Gestures/Goodbye_1"), block=False)
+
+    def animate_random(self):
+        if not isinstance(self.device_manager, Pepper):
+            return
+        random_animations = [
+            "animations/Stand/Gestures/Explain_1",
+            "animations/Stand/Gestures/Explain_10",
+            "animations/Stand/Gestures/Explain_2",
+            "animations/Stand/Gestures/Explain_4",
+            "animations/Stand/Gestures/Explain_5",
+        ]
+        self.device_manager.motion.request(NaoqiAnimationRequest(random.choice(random_animations)), block=False)

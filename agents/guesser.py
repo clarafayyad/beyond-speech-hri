@@ -55,8 +55,8 @@ class Guesser:
     def prompt_llm(self, system_prompt: str, user_prompt: str) -> dict:
         return self.llm_agent.prompt_llm(system_prompt, user_prompt)
 
-    def say(self, text, sleep_time=0):
-        self.dialog_manager.say(text, always_regenerate=True, sleep_time=sleep_time)
+    def say(self, text, sleep_time=0, always_regenerate=False):
+        self.dialog_manager.say(text, always_regenerate=always_regenerate, sleep_time=sleep_time)
         if isinstance(self.dialog_manager.device_manager, Desktop):
             time.sleep(2)  # To avoid hearing its own speech as feedback
 
