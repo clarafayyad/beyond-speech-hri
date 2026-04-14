@@ -3,14 +3,12 @@ import time
 from agents.guesser import Guesser
 from interaction.prompts import SYSTEM_PROMPT, build_user_prompt
 from interaction.game_state import RED, BLUE, NEUTRAL, ASSASSIN, TOTAL_BLUE, TOTAL_RED
-from multimodal_perception.model.confidence_classifier import CONFIDENCE_LOW
 
 
 class TurnManager:
     def __init__(self, guesser: Guesser, game_state):
         self.guesser = guesser
         self.game_state = game_state
-        self.last_turn_memory = None  # minimal 1-turn memory: stores previous turn metadata
 
     def make_guess(self, clue_word, confidence_level=None):
         response = self.guesser.prompt_llm(
@@ -36,31 +34,7 @@ class TurnManager:
 
         return self.game_state.revealed[guess_idx]
 
-    def _should_say_memory_reference(self, confidence_level):
-        """Return True when a memory callback is contextually relevant.
-
-        Currently triggers when both the previous turn and the current turn
-        carry low confidence, signalling a repeated uncertain situation that
-        the robot can acknowledge naturally.
-        """
-        if self.last_turn_memory is None:
-            return False
-        return (
-            confidence_level == CONFIDENCE_LOW
-            and self.last_turn_memory["confidence"] == CONFIDENCE_LOW
-        )
-
-    def _build_turn_memory(self, confidence_level, results):
-        """Return a minimal metadata dict for the turn that just finished."""
-        return {
-            "confidence": confidence_level,
-            "had_correct_guess": BLUE in results,
-        }
-
     def play_turn(self, clue_word, max_guesses, confidence_level=None, features=None):
-        if self._should_say_memory_reference(confidence_level):
-            self.guesser.say_memory_reference(self.last_turn_memory)
-
         self.guesser.say_confidence_level_reaction(confidence_level, features)
 
         guesses = 0
@@ -108,14 +82,6 @@ class TurnManager:
         elif self.placed_all_red_cards():
             self.game_state.game_over = True
             self.game_state.win = False
-
-        # Save this turn's metadata for optional use at the start of the next turn
-        turn_results = [
-            entry["result"]
-            for entry in self.game_state.history
-            if entry["turn"] == self.game_state.turn
-        ]
-        self.last_turn_memory = self._build_turn_memory(confidence_level, turn_results)
 
         self.game_state.turn += 1
         self.guesser.clear_display()
