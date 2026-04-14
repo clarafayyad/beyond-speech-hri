@@ -25,9 +25,8 @@ CONFIDENCE LEVEL GUIDANCE:
 
 GAME HISTORY:
 - You will receive a list of previous clues and their outcomes (cards guessed and results).
-- Use this history to avoid repeating incorrect guesses.
-- If a previous guess for a clue was wrong (neutral or red), do NOT pick that same card again for a related clue.
-- Use successful guesses (blue) to understand the spymaster's clue style and improve your reasoning.
+- Use this history to avoid incorrect guesses.
+- Use this history to understand the spymaster's clue style and improve your reasoning.
 
 REASONING STYLE — adapt the "reason" field to the confidence level:
 The "reason" should sound like a natural spoken thought (1–2 sentences).
