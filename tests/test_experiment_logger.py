@@ -19,7 +19,7 @@ def logger(log_dir):
     """Return an ExperimentLogger that writes to a temp directory."""
     return ExperimentLogger(
         participant_id="p01",
-        condition="adaptive",
+        condition=True,
         board=["river", "mountain", "apple", "castle", "forest"],
         key_map={"river": "blue", "mountain": "red"},
         log_dir=log_dir,
@@ -121,7 +121,7 @@ class TestLogTurn:
     def test_no_key_map_produces_empty_string(self, log_dir):
         logger = ExperimentLogger(
             participant_id="p02",
-            condition="baseline",
+            condition=False,
             board=["a", "b"],
             key_map=None,
             log_dir=log_dir,

@@ -34,10 +34,9 @@ if __name__ == "__main__":
     input("Press Enter to start the game")
 
     # Start the interaction
-    condition = "adaptive" if int_conf.adaptive else "baseline"
     loop = GameLoop(guesser, game_state,
                     participant_id=participant_id,
-                    condition=condition,
+                    condition=int_conf.adaptive,
                     key_map=game.map)
     loop.play()
 

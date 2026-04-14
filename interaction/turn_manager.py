@@ -5,6 +5,11 @@ from interaction.prompts import SYSTEM_PROMPT, build_user_prompt
 from interaction.game_state import RED, BLUE, NEUTRAL, ASSASSIN, TOTAL_BLUE, TOTAL_RED
 
 
+def _count_blue(outcomes):
+    """Return the number of blue (correct) outcomes in a list."""
+    return sum(1 for o in outcomes if o == BLUE)
+
+
 class TurnManager:
     def __init__(self, guesser: Guesser, game_state):
         self.guesser = guesser
@@ -77,7 +82,7 @@ class TurnManager:
                 self.guesser.say_random_assassin_reaction()
                 self.game_state.game_over = True
                 self.game_state.win = False
-                score = sum(1 for o in turn_outcomes if o == BLUE)
+                score = _count_blue(turn_outcomes)
                 return {"guesses": turn_guesses, "outcomes": turn_outcomes, "score": score}
 
             if result == RED:
@@ -102,7 +107,7 @@ class TurnManager:
         self.game_state.turn += 1
         self.guesser.clear_display()
 
-        score = sum(1 for o in turn_outcomes if o == BLUE)
+        score = _count_blue(turn_outcomes)
         return {"guesses": turn_guesses, "outcomes": turn_outcomes, "score": score}
 
     def guessed_all_blue_cards(self):

@@ -33,8 +33,9 @@ class ExperimentLogger:
     ----------
     participant_id : str
         Identifier for the current participant.
-    condition : str
-        Experiment condition, e.g. ``"baseline"`` or ``"adaptive"``.
+    condition : bool
+        Whether the experiment uses the adaptive condition (``True``) or
+        baseline (``False``).  Stored as ``"adaptive"`` / ``"baseline"``.
     board : list[str]
         The game board (list of card filenames).
     key_map : dict | list | None
@@ -46,7 +47,7 @@ class ExperimentLogger:
     def __init__(self, participant_id, condition, board, key_map=None,
                  log_dir=DEFAULT_LOG_DIR):
         self.participant_id = participant_id
-        self.condition = condition
+        self.condition = "adaptive" if condition else "baseline"
         self.board = board
         self.key_map = key_map
 
