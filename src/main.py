@@ -36,7 +36,7 @@ if __name__ == "__main__":
     # Start the interaction
     loop = GameLoop(guesser, game_state,
                     participant_id=participant_id,
-                    condition=int_conf.adaptive,
+                    is_adaptive=int_conf.adaptive,
                     key_map=game.map)
     loop.play()
 
