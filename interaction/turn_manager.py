@@ -34,10 +34,10 @@ class TurnManager:
 
         return self.game_state.revealed[guess_idx]
 
-    def play_turn(self, clue_word, max_guesses, confidence_level=None):
+    def play_turn(self, clue_word, max_guesses, confidence_level=None, features=None):
         self.guesser.say_continuity_remark(self.game_state, confidence_level)
         self.game_state.confidence_history.append(confidence_level)
-        self.guesser.say_confidence_level_reaction(confidence_level)
+        self.guesser.say_confidence_level_reaction(confidence_level, features)
 
         guesses = 0
 

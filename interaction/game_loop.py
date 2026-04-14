@@ -41,12 +41,13 @@ class GameLoop:
             clue_word, num = self.receive_clue()
 
             # Stop recording immediately after the clue is received and classify
-            confidence_level = self.guesser.stop_and_process_audio(clue_word, self.game_state.turn)
+            features, confidence_level = self.guesser.stop_and_process_audio(clue_word, self.game_state.turn)
 
             # In non-adaptive mode the confidence is still logged but not used
             # to adjust the robot's verbal behavior.
             adaptive_confidence = confidence_level if self.guesser.is_adaptive() else None
-            self.turn_manager.play_turn(clue_word, num, adaptive_confidence)
+            adaptive_features = features if self.guesser.is_adaptive() else None
+            self.turn_manager.play_turn(clue_word, num, adaptive_confidence, adaptive_features)
 
             if not self.game_state.game_over:
                 self.guesser.say("Go ahead, place a red card.")

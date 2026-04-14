@@ -81,7 +81,7 @@ class Guesser:
     def stop_and_process_audio(self, clue_word, turn_number):
         if self.audio_pipeline:
             return self.audio_pipeline.stop_and_process(clue_word, turn_number)
-        return None
+        return None, None
 
     def stop_recording_if_active(self):
         if self.audio_pipeline:
@@ -105,14 +105,88 @@ class Guesser:
         if utterance:
             self.say(utterance)
 
-    def say_confidence_level_reaction(self, confidence_level):
+    @staticmethod
+    def _feature_comment(features: dict, confidence_level: str) -> str:
+        """Return a short, light-hearted phrase referencing the audio feature
+        that most likely drove the confidence inference, or an empty string
+        when no single feature stands out.
+
+        Only the features that are intuitively explainable in natural language
+        are used: duration, verbal hesitation count, maximum pause length, and
+        speech rate.  The most salient signal is reported first (in priority
+        order) to keep the utterance concise.
+        """
+        if not features:
+            return ""
+
+        duration = features.get('duration') or 0
+        pause_max = features.get('pause_max') or 0
+        hesitation_count = features.get('verbal_hesitation_count') or 0
+        speech_rate = features.get('speech_rate') or 0
+
+        if confidence_level == CONFIDENCE_LOW:
+            if duration > 12:
+                return random.choice([
+                    "Whoa, that clue took a while to arrive!",
+                    "Looks like that one needed some thought!",
+                    "That was quite the thinking session!",
+                ])
+            if hesitation_count >= 2:
+                return random.choice([
+                    "I caught a few 'um's and 'uh's in there!",
+                    "Sounds like the clue was still brewing!",
+                    "A couple of hesitations — no worries, I'm on it!",
+                ])
+            if pause_max > 2.5:
+                return random.choice([
+                    "I noticed a little pause in there!",
+                    "There was a moment of mystery in that silence!",
+                    "A dramatic pause — love it, but let's be careful!",
+                ])
+            if 0 < speech_rate < 1.5:
+                return random.choice([
+                    "You took it nice and slow!",
+                    "Careful and measured — I respect that!",
+                    "Slow and steady clue incoming!",
+                ])
+
+        elif confidence_level == CONFIDENCE_HIGH:
+            if duration > 0 and hesitation_count == 0:
+                return random.choice([
+                    "Not a single hesitation — I like it!",
+                    "Clean delivery, no fillers!",
+                    "You knew exactly what to say!",
+                ])
+            if 0 < duration < 4:
+                return random.choice([
+                    "That was quick and decisive!",
+                    "Straight to the point!",
+                    "Quick and clear!",
+                ])
+            if speech_rate > 3.5:
+                return random.choice([
+                    "You rattled that right off!",
+                    "Fast and sure — I love it!",
+                ])
+
+        return ""
+
+    def say_confidence_level_reaction(self, confidence_level, features=None):
+        comment = Guesser._feature_comment(features, confidence_level) if features else ""
+
+        # When a feature-grounded comment is available, use it as the full
+        # reaction so the utterance stays natural and non-redundant.
+        if comment:
+            self.say(comment)
+            return
+
         reactions = []
 
         if confidence_level == CONFIDENCE_LOW:
             reactions = [
-                "Hmm… you don’t sound very sure.",
-                "Okay… I’ll be careful with this one.",
-                "That sounded a bit uncertain… let’s think.",
+                "Hmm… you don't sound very sure.",
+                "Okay… I'll be careful with this one.",
+                "That sounded a bit uncertain… let's think.",
                 "Alright… not super confident, I hear you.",
                 "Hmm… I might need to play this safe."
             ]
@@ -120,16 +194,16 @@ class Guesser:
             reactions = [
                 "Okay, I think I get what you mean.",
                 "Alright, that sounds reasonable.",
-                "Hmm, I’ve got a rough idea.",
-                "Okay… let’s try this.",
-                "Got it. I’ll go with that."
+                "Hmm, I've got a rough idea.",
+                "Okay… let's try this.",
+                "Got it. I'll go with that."
             ]
         elif confidence_level == CONFIDENCE_HIGH:
             reactions = [
                 "Oh, you sound confident. I like that.",
                 "Alright! That was clear.",
                 "Nice, that sounded very certain.",
-                "Okay, I’m feeling good about this.",
+                "Okay, I'm feeling good about this.",
                 "Got it — strong signal."
             ]
 
