@@ -4,17 +4,28 @@ from sic_framework.devices.desktop import Desktop
 
 from agents.guesser import Guesser
 from interaction.audio_pipeline import AudioPipeline
+from interaction.experiment_logger import ExperimentLogger
 from interaction.game_state import GameState
 from interaction.turn_manager import TurnManager
 from interaction.utils import parse_clue
 
 
 class GameLoop:
-    def __init__(self, guesser: Guesser, game_state: GameState, max_turns=5):
+    def __init__(self, guesser: Guesser, game_state: GameState, max_turns=5,
+                 participant_id=None, is_adaptive=False, key_map=None):
         self.guesser = guesser
         self.game_state = game_state
         self.max_turns = max_turns
         self.turn_manager = TurnManager(guesser, game_state)
+
+        pid = participant_id or ""
+ 
+        self.experiment_logger = ExperimentLogger(
+            participant_id=pid,
+            is_adaptive=is_adaptive,
+            board=game_state.board,
+            key_map=key_map,
+        )
 
     def play(self):
         # TODO: introduce robot
@@ -34,6 +45,7 @@ class GameLoop:
 
         while not self.game_state.game_over and self.game_state.turn < self.max_turns:
             print(f"Playing Turn {self.game_state.turn}")
+            turn_start = time.time()
             self.guesser.pause_recording()
             self.guesser.say_random_human_turn()
             self.guesser.resume_recording()
@@ -47,7 +59,22 @@ class GameLoop:
             # to adjust the robot's verbal behavior.
             adaptive_confidence = confidence_level if self.guesser.is_adaptive() else None
             adaptive_features = features if self.guesser.is_adaptive() else None
-            self.turn_manager.play_turn(clue_word, num, adaptive_confidence, adaptive_features)
+
+            current_turn = self.game_state.turn
+            turn_result = self.turn_manager.play_turn(clue_word, num, adaptive_confidence, adaptive_features)
+            turn_duration = time.time() - turn_start
+
+            self.experiment_logger.log_turn(
+                turn=current_turn,
+                clue_word=clue_word,
+                clue_number=num,
+                features=features,
+                confidence_level=confidence_level,
+                guesses=turn_result["guesses"],
+                outcomes=turn_result["outcomes"],
+                score=turn_result["score"],
+                turn_duration_s=turn_duration,
+            )
 
             if not self.game_state.game_over:
                 self.guesser.say("Go ahead, place a red card.")

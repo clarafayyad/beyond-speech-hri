@@ -34,7 +34,10 @@ if __name__ == "__main__":
     input("Press Enter to start the game")
 
     # Start the interaction
-    loop = GameLoop(guesser, game_state)
+    loop = GameLoop(guesser, game_state,
+                    participant_id=participant_id,
+                    is_adaptive=int_conf.adaptive,
+                    key_map=game.map)
     loop.play()
 
     # Shutdown

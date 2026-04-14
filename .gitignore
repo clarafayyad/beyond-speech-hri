@@ -19,6 +19,7 @@ config/
 # Logs
 *.log
 logs/*.json
+logs/*.csv
 
 # Bulky data
 multimodal_perception/audio/test_audio
