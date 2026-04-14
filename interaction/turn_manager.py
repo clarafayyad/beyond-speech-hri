@@ -36,20 +36,29 @@ class TurnManager:
         return self.game_state.revealed[guess_idx]
 
     def play_turn(self, clue_word, max_guesses, confidence_level=None, features=None):
-        # Collect candidate pre-guess utterances with priorities.
-        # Lower number = higher relevance.
-        #   0 – confidence reaction (most personalised / adaptive)
-        #   1 – continuity remark  (references game history)
-        #   2 – thinking filler    (generic)
+        # Collect candidate pre-guess utterances with context-dependent
+        # priorities.  Lower number = higher relevance.
+        #
+        # Turn 0 (no history): prefer the confidence reaction — it is the
+        #   only personalised signal available.
+        # Later turns: prefer the continuity remark — it references how the
+        #   previous round went, making the interaction more cohesive.
+        # The thinking filler is always the lowest-priority fallback.
         confidence_text = self.guesser.get_confidence_level_reaction(confidence_level, features)
         continuity_text = self.guesser.get_continuity_remark(self.game_state, confidence_level)
         thinking_text = self.guesser.get_random_thinking()
 
-        candidates = [
-            (0, confidence_text),
-            (1, continuity_text),
-            (2, thinking_text),
-        ]
+        if self.game_state.turn == 0:
+            candidates = [
+                (0, confidence_text),
+                (1, thinking_text),
+            ]
+        else:
+            candidates = [
+                (0, continuity_text),
+                (1, confidence_text),
+                (2, thinking_text),
+            ]
         selected = select_utterances(candidates)
 
         self.game_state.confidence_history.append(confidence_level)
