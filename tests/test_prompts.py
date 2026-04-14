@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from interaction.prompts import SYSTEM_PROMPT, build_user_prompt
@@ -108,3 +110,142 @@ class TestBuildUserPromptConfidence:
         # mountain and apple should still be present; river (index 0) should not
         assert "mountain" in prompt
         assert "apple" in prompt
+
+
+# ---------------------------------------------------------------------------
+# SYSTEM_PROMPT game history instructions
+# ---------------------------------------------------------------------------
+
+class TestSystemPromptGameHistory:
+    def test_system_prompt_contains_game_history_section(self):
+        assert "GAME HISTORY" in SYSTEM_PROMPT
+
+    def test_system_prompt_instructs_to_avoid_wrong_guesses(self):
+        assert "avoid" in SYSTEM_PROMPT.lower() and "incorrect" in SYSTEM_PROMPT.lower() or \
+               "avoid" in SYSTEM_PROMPT.lower() and "wrong" in SYSTEM_PROMPT.lower()
+
+    def test_system_prompt_mentions_previous_clues(self):
+        assert "previous clues" in SYSTEM_PROMPT.lower() or \
+               "previous" in SYSTEM_PROMPT.lower() and "outcomes" in SYSTEM_PROMPT.lower()
+
+
+# ---------------------------------------------------------------------------
+# build_user_prompt includes game history
+# ---------------------------------------------------------------------------
+
+class TestBuildUserPromptHistory:
+    def test_empty_history_shows_empty_list(self):
+        state = _FakeGameState()
+        prompt = build_user_prompt("river", state)
+        assert "Previous clues and outcomes" in prompt
+        assert "[]" in prompt
+
+    def test_single_turn_history_appears_in_prompt(self):
+        state = _FakeGameState()
+        state.revealed[0] = "blue"
+        state.history = [
+            {"turn": 1, "clue": "water", "guess_number": 1,
+             "guess": 0, "card": "river", "result": "blue"}
+        ]
+        state.turn = 2
+        prompt = build_user_prompt("peak", state)
+        parsed = _extract_previous_clues(prompt)
+        assert len(parsed) == 1
+        assert parsed[0]["turn"] == 1
+        assert parsed[0]["clue"] == "water"
+        assert parsed[0]["guesses"][0]["card"] == "river"
+        assert parsed[0]["guesses"][0]["result"] == "blue"
+
+    def test_multiple_guesses_grouped_by_turn_and_clue(self):
+        state = _FakeGameState()
+        state.revealed = {0: "blue", 1: "neutral"}
+        state.history = [
+            {"turn": 1, "clue": "nature", "guess_number": 1,
+             "guess": 0, "card": "river", "result": "blue"},
+            {"turn": 1, "clue": "nature", "guess_number": 2,
+             "guess": 1, "card": "mountain", "result": "neutral"},
+        ]
+        state.turn = 2
+        prompt = build_user_prompt("food", state)
+        parsed = _extract_previous_clues(prompt)
+        assert len(parsed) == 1  # one turn/clue group
+        assert len(parsed[0]["guesses"]) == 2
+
+    def test_multiple_turns_in_history(self):
+        state = _FakeGameState()
+        state.board = ["river", "mountain", "apple", "sword"]
+        state.card_descriptions["sword"] = "A sharp weapon"
+        state.revealed = {0: "blue", 2: "neutral"}
+        state.history = [
+            {"turn": 1, "clue": "water", "guess_number": 1,
+             "guess": 0, "card": "river", "result": "blue"},
+            {"turn": 2, "clue": "food", "guess_number": 1,
+             "guess": 2, "card": "apple", "result": "neutral"},
+        ]
+        state.turn = 3
+        prompt = build_user_prompt("battle", state)
+        parsed = _extract_previous_clues(prompt)
+        assert len(parsed) == 2
+        clues = {entry["clue"] for entry in parsed}
+        assert clues == {"water", "food"}
+
+    def test_history_includes_card_name_from_entry(self):
+        """When 'card' key exists in history entry, use it directly."""
+        state = _FakeGameState()
+        state.revealed[1] = "red"
+        state.history = [
+            {"turn": 1, "clue": "peak", "guess_number": 1,
+             "guess": 1, "card": "mountain", "result": "red"}
+        ]
+        state.turn = 2
+        prompt = build_user_prompt("fruit", state)
+        parsed = _extract_previous_clues(prompt)
+        assert parsed[0]["guesses"][0]["card"] == "mountain"
+
+    def test_history_falls_back_to_board_when_no_card_key(self):
+        """When 'card' key is missing, fall back to board[guess]."""
+        state = _FakeGameState()
+        state.revealed[1] = "red"
+        state.history = [
+            {"turn": 1, "clue": "peak", "guess_number": 1,
+             "guess": 1, "result": "red"}
+        ]
+        state.turn = 2
+        prompt = build_user_prompt("fruit", state)
+        parsed = _extract_previous_clues(prompt)
+        assert parsed[0]["guesses"][0]["card"] == "mountain"
+
+    def test_history_applies_without_confidence_baseline(self):
+        """History is included even when confidence_level is None (baseline)."""
+        state = _FakeGameState()
+        state.revealed[0] = "blue"
+        state.history = [
+            {"turn": 1, "clue": "water", "guess_number": 1,
+             "guess": 0, "card": "river", "result": "blue"}
+        ]
+        state.turn = 2
+        prompt = build_user_prompt("peak", state, confidence_level=None)
+        parsed = _extract_previous_clues(prompt)
+        assert len(parsed) == 1
+
+    def test_history_applies_with_confidence_adaptive(self):
+        """History is included when confidence_level is set (adaptive)."""
+        state = _FakeGameState()
+        state.revealed[0] = "blue"
+        state.history = [
+            {"turn": 1, "clue": "water", "guess_number": 1,
+             "guess": 0, "card": "river", "result": "blue"}
+        ]
+        state.turn = 2
+        prompt = build_user_prompt("peak", state, confidence_level="high")
+        parsed = _extract_previous_clues(prompt)
+        assert len(parsed) == 1
+
+
+def _extract_previous_clues(prompt):
+    """Extract the JSON list from the 'Previous clues and outcomes' section."""
+    marker = "Previous clues and outcomes:"
+    start = prompt.index(marker) + len(marker)
+    # The JSON list ends before the next prompt section ("Respond ONLY")
+    end = prompt.index("Respond ONLY")
+    return json.loads(prompt[start:end].strip())
