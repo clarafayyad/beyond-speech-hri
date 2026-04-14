@@ -12,7 +12,7 @@ from interaction.utils import parse_clue
 
 class GameLoop:
     def __init__(self, guesser: Guesser, game_state: GameState, max_turns=5,
-                 participant_id=None, condition=None, key_map=None):
+                 participant_id=None, is_adaptive=False, key_map=None):
         self.guesser = guesser
         self.game_state = game_state
         self.max_turns = max_turns
