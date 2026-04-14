@@ -3,7 +3,6 @@ import time
 from agents.guesser import Guesser
 from interaction.prompts import SYSTEM_PROMPT, build_user_prompt
 from interaction.game_state import RED, BLUE, NEUTRAL, ASSASSIN, TOTAL_BLUE, TOTAL_RED
-from interaction.utterance_selection import select_utterances
 
 
 class TurnManager:
@@ -36,35 +35,20 @@ class TurnManager:
         return self.game_state.revealed[guess_idx]
 
     def play_turn(self, clue_word, max_guesses, confidence_level=None, features=None):
-        # Collect candidate pre-guess utterances with context-dependent
-        # priorities.  Lower number = higher relevance.
-        #
-        # Turn 0 (no history): prefer the confidence reaction — it is the
-        #   only personalised signal available.
-        # Later turns: prefer the continuity remark — it references how the
-        #   previous round went, making the interaction more cohesive.
-        # The thinking filler is always the lowest-priority fallback.
+        # Say exactly one pre-guess utterance, chosen by a simple fallback:
+        #   Turn 0 (no history): confidence reaction → thinking filler
+        #   Later turns: continuity remark → confidence reaction → thinking filler
         confidence_text = self.guesser.get_confidence_level_reaction(confidence_level, features)
         continuity_text = self.guesser.get_continuity_remark(self.game_state, confidence_level)
-        thinking_text = self.guesser.get_random_thinking()
 
         if self.game_state.turn == 0:
-            candidates = [
-                (0, confidence_text),
-                (1, thinking_text),
-            ]
+            utterance = confidence_text or self.guesser.get_random_thinking()
         else:
-            candidates = [
-                (0, continuity_text),
-                (1, confidence_text),
-                (2, thinking_text),
-            ]
-        selected = select_utterances(candidates)
+            utterance = continuity_text or confidence_text or self.guesser.get_random_thinking()
 
         self.game_state.confidence_history.append(confidence_level)
 
-        for text in selected:
-            self.guesser.say(text)
+        self.guesser.say(utterance)
 
         guesses = 0
 
