@@ -90,6 +90,23 @@ class Guesser:
     def is_adaptive(self):
         return self.dialog_manager.interaction_conf.adaptive
 
+    def get_continuity_remark(self, game_state, confidence_level=None):
+        """Return a context-aware remark referencing previous turn performance,
+        or ``None`` when nothing should be said (e.g. first turn).
+
+        Parameters
+        ----------
+        game_state : GameState
+            Current game state; must expose ``turn``, ``history``, and
+            ``confidence_history`` attributes.
+        confidence_level : str | None
+            When not ``None`` an adaptive remark is generated; otherwise
+            a baseline remark is used.
+        """
+        if confidence_level is not None:
+            return get_adaptive_continuity_utterance(game_state, confidence_level)
+        return get_baseline_continuity_utterance(game_state)
+
     def say_continuity_remark(self, game_state, confidence_level=None):
         """Utter a context-aware remark referencing previous turn performance.
 
@@ -97,11 +114,7 @@ class Guesser:
         considers recent confidence trends.  In baseline mode it references
         prior performance in a general way.  Does nothing on the first turn.
         """
-        if confidence_level is not None:
-            utterance = get_adaptive_continuity_utterance(game_state, confidence_level)
-        else:
-            utterance = get_baseline_continuity_utterance(game_state)
-
+        utterance = self.get_continuity_remark(game_state, confidence_level)
         if utterance:
             self.say(utterance)
 
@@ -171,14 +184,23 @@ class Guesser:
 
         return ""
 
-    def say_confidence_level_reaction(self, confidence_level, features=None):
+    def get_confidence_level_reaction(self, confidence_level, features=None):
+        """Return the text of a confidence-level reaction, or ``None``.
+
+        Parameters
+        ----------
+        confidence_level : str | None
+            One of ``CONFIDENCE_LOW``, ``CONFIDENCE_MEDIUM``,
+            ``CONFIDENCE_HIGH``, or ``None``.  Returns ``None`` when the
+            level is ``None`` or unrecognised.
+        features : dict | None
+            Optional audio-feature dict.  When a notable feature is found,
+            a feature-grounded comment replaces the generic reaction.
+        """
         comment = Guesser._feature_comment(features, confidence_level) if features else ""
 
-        # When a feature-grounded comment is available, use it as the full
-        # reaction so the utterance stays natural and non-redundant.
         if comment:
-            self.say(comment)
-            return
+            return comment
 
         reactions = []
 
@@ -207,8 +229,12 @@ class Guesser:
                 "Got it — strong signal."
             ]
 
-        if reactions:
-            self.say(random.choice(reactions))
+        return random.choice(reactions) if reactions else None
+
+    def say_confidence_level_reaction(self, confidence_level, features=None):
+        text = self.get_confidence_level_reaction(confidence_level, features)
+        if text:
+            self.say(text)
 
     def say_random_red_reaction(self):
         reactions = [
@@ -342,7 +368,12 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
-    def say_random_thinking(self):
+    def get_random_thinking(self):
+        """Return the text of a random thinking utterance.
+
+        Always returns a non-empty str selected from a fixed pool of
+        filler phrases.
+        """
         reactions = [
             "Hmm… okay, give me a second.",
             "Alright… thinking… thinking…",
@@ -360,7 +391,10 @@ class Guesser:
             "Okay… activating strategic mode.",
             "Hmm… I feel like I should know this.",
         ]
-        self.say(random.choice(reactions))
+        return random.choice(reactions)
+
+    def say_random_thinking(self):
+        self.say(self.get_random_thinking())
 
     def say_random_guess(self):
         reactions = [

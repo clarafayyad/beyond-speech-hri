@@ -40,18 +40,20 @@ class TurnManager:
         return self.game_state.revealed[guess_idx]
 
     def play_turn(self, clue_word, max_guesses, confidence_level=None, features=None):
-        """Play a single turn and return a summary of the guesses made.
+        # Say exactly one pre-guess utterance, chosen by a simple fallback:
+        #   Turn 0 (no history): confidence reaction → thinking filler
+        #   Later turns: continuity remark → confidence reaction → thinking filler
+        confidence_text = self.guesser.get_confidence_level_reaction(confidence_level, features)
+        continuity_text = self.guesser.get_continuity_remark(self.game_state, confidence_level)
 
-        Returns
-        -------
-        dict
-            ``{"guesses": [card_name, ...], "outcomes": [colour, ...],
-            "score": int}`` where *score* is the number of blue (correct)
-            guesses this turn.
-        """
-        self.guesser.say_continuity_remark(self.game_state, confidence_level)
+        if self.game_state.turn == 0:
+            utterance = confidence_text or self.guesser.get_random_thinking()
+        else:
+            utterance = continuity_text or confidence_text or self.guesser.get_random_thinking()
+
         self.game_state.confidence_history.append(confidence_level)
-        self.guesser.say_confidence_level_reaction(confidence_level, features)
+
+        self.guesser.say(utterance)
 
         guesses = 0
         turn_guesses = []
@@ -59,7 +61,11 @@ class TurnManager:
 
         while guesses < max_guesses and not self.game_state.game_over:
             self.guesser.dialog_manager.animate_thinking()
-            self.guesser.say_random_thinking()
+
+            # On subsequent guesses, say a thinking filler since the
+            # pre-turn utterance was only spoken before the first guess.
+            if guesses > 0:
+                self.guesser.say_random_thinking()
 
             guess_idx = self.make_guess(clue_word, confidence_level)
             result = self.get_feedback(guess_idx)

@@ -99,14 +99,12 @@ class TestBaselineContinuity:
         assert isinstance(utterance, str)
         assert len(utterance) > 0
 
-    def test_returns_string_after_mixed_turn(self):
+    def test_returns_none_after_mixed_turn(self):
         gs = _FakeGameState(turn=1, history=[
             {"turn": 0, "clue": "water", "guess_number": 1, "guess": 0, "card": "river", "result": BLUE},
             {"turn": 0, "clue": "water", "guess_number": 2, "guess": 1, "card": "mountain", "result": RED},
         ])
-        utterance = get_baseline_continuity_utterance(gs)
-        assert isinstance(utterance, str)
-        assert len(utterance) > 0
+        assert get_baseline_continuity_utterance(gs) is None
 
 
 # ---------------------------------------------------------------------------
@@ -157,7 +155,7 @@ class TestAdaptiveContinuity:
         assert isinstance(utterance, str)
         assert len(utterance) > 0
 
-    def test_mixed_results_no_trend(self):
+    def test_mixed_results_no_trend_returns_none(self):
         gs = _FakeGameState(
             turn=2,
             history=[
@@ -167,9 +165,7 @@ class TestAdaptiveContinuity:
             ],
             confidence_history=["high", "medium"],
         )
-        utterance = get_adaptive_continuity_utterance(gs, "medium")
-        assert isinstance(utterance, str)
-        assert len(utterance) > 0
+        assert get_adaptive_continuity_utterance(gs, "medium") is None
 
     def test_empty_confidence_history_still_returns_utterance(self):
         gs = _FakeGameState(
