@@ -94,9 +94,14 @@ class Guesser:
         """Return a context-aware remark referencing previous turn performance,
         or ``None`` when nothing should be said (e.g. first turn).
 
-        In adaptive mode (*confidence_level* is not ``None``) the remark also
-        considers recent confidence trends.  In baseline mode it references
-        prior performance in a general way.
+        Parameters
+        ----------
+        game_state : GameState
+            Current game state; must expose ``turn``, ``history``, and
+            ``confidence_history`` attributes.
+        confidence_level : str | None
+            When not ``None`` an adaptive remark is generated; otherwise
+            a baseline remark is used.
         """
         if confidence_level is not None:
             return get_adaptive_continuity_utterance(game_state, confidence_level)
@@ -180,7 +185,18 @@ class Guesser:
         return ""
 
     def get_confidence_level_reaction(self, confidence_level, features=None):
-        """Return the text of a confidence-level reaction, or ``None``."""
+        """Return the text of a confidence-level reaction, or ``None``.
+
+        Parameters
+        ----------
+        confidence_level : str | None
+            One of ``CONFIDENCE_LOW``, ``CONFIDENCE_MEDIUM``,
+            ``CONFIDENCE_HIGH``, or ``None``.  Returns ``None`` when the
+            level is ``None`` or unrecognised.
+        features : dict | None
+            Optional audio-feature dict.  When a notable feature is found,
+            a feature-grounded comment replaces the generic reaction.
+        """
         comment = Guesser._feature_comment(features, confidence_level) if features else ""
 
         if comment:
@@ -353,7 +369,11 @@ class Guesser:
         self.say(random.choice(reactions))
 
     def get_random_thinking(self):
-        """Return the text of a random thinking utterance."""
+        """Return the text of a random thinking utterance.
+
+        Always returns a non-empty str selected from a fixed pool of
+        filler phrases.
+        """
         reactions = [
             "Hmm… okay, give me a second.",
             "Alright… thinking… thinking…",
