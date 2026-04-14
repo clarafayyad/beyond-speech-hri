@@ -22,7 +22,7 @@ class GameLoop:
  
         self.experiment_logger = ExperimentLogger(
             participant_id=pid,
-            condition=cond,
+            is_adaptive=is_adaptive,
             board=game_state.board,
             key_map=key_map,
         )
