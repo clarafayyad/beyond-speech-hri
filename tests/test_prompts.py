@@ -121,12 +121,14 @@ class TestSystemPromptGameHistory:
         assert "GAME HISTORY" in SYSTEM_PROMPT
 
     def test_system_prompt_instructs_to_avoid_wrong_guesses(self):
-        assert "avoid" in SYSTEM_PROMPT.lower() and "incorrect" in SYSTEM_PROMPT.lower() or \
-               "avoid" in SYSTEM_PROMPT.lower() and "wrong" in SYSTEM_PROMPT.lower()
+        lower = SYSTEM_PROMPT.lower()
+        assert ("avoid" in lower and "incorrect" in lower) or \
+               ("avoid" in lower and "wrong" in lower)
 
     def test_system_prompt_mentions_previous_clues(self):
-        assert "previous clues" in SYSTEM_PROMPT.lower() or \
-               "previous" in SYSTEM_PROMPT.lower() and "outcomes" in SYSTEM_PROMPT.lower()
+        lower = SYSTEM_PROMPT.lower()
+        assert ("previous clues" in lower) or \
+               ("previous" in lower and "outcomes" in lower)
 
 
 # ---------------------------------------------------------------------------
