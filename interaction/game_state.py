@@ -20,6 +20,7 @@ class GameState:
         self.card_descriptions = json.load(open(CARD_DESCRIPTIONS_PATH))
         self.revealed = {}  # idx -> blue | red | neutral | assassin
         self.history = []  # structured guess history
+        self.confidence_history = []  # confidence level per turn
         self.turn = 0
         self.game_over = False
         self.win = None
