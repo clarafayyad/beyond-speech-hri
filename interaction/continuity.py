@@ -45,13 +45,9 @@ def get_baseline_continuity_utterance(game_state):
             "Great round before this one. Let's keep the momentum!",
         ]
     elif perf["any_correct"]:
-        reactions = [
-            "We got some right last round. Let's build on that!",
-            "Last round wasn't bad. We can do better this time!",
-            "Mixed results before, but we're still in the game!",
-            "Not perfect last time, but we're learning!",
-            "We had some good guesses. Let's aim higher!",
-        ]
+        # Mixed results aren't a clear pattern worth commenting on;
+        # let the fallback chain pick a different utterance type.
+        return None
     else:
         reactions = [
             "Last round was rough, but let's bounce back!",
@@ -94,13 +90,8 @@ def get_adaptive_continuity_utterance(game_state, confidence_level):
             "Clear signals and correct answers. Let's continue!",
         ]
     elif perf["any_correct"] and low_trend:
-        reactions = [
-            "It's been uncertain, but we're making progress.",
-            "Tough signals lately, but we're still moving forward.",
-            "Some tricky rounds, but we've got some right!",
-            "Not the clearest clues, but we're hanging in there.",
-            "A bit shaky, but we're not doing badly!",
-        ]
+        # Mixed results aren't a clear pattern worth commenting on.
+        return None
     elif not perf["any_correct"] and low_trend:
         reactions = [
             "Those were really tricky rounds. Let's regroup.",
@@ -118,13 +109,8 @@ def get_adaptive_continuity_utterance(game_state, confidence_level):
             "Great teamwork last round!",
         ]
     elif perf["any_correct"]:
-        reactions = [
-            "Some good guesses last round. Let's improve!",
-            "We got a few right. Let's aim for more!",
-            "Mixed results, but we can build on what worked.",
-            "Not bad last time. Let's do even better!",
-            "We had some hits. Let's try to hit more!",
-        ]
+        # Mixed results aren't a clear pattern worth commenting on.
+        return None
     else:
         reactions = [
             "Last round didn't go great, but here we go!",
