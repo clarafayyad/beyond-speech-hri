@@ -47,7 +47,7 @@ class ExperimentLogger:
     def __init__(self, participant_id, is_adaptive, board, key_map=None,
                  log_dir=DEFAULT_LOG_DIR):
         self.participant_id = participant_id
-        self.condition = "adaptive" if condition else "baseline"
+        self.condition = "adaptive" if is_adaptive else "baseline"
         self.board = board
         self.key_map = key_map
 
