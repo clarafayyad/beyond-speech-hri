@@ -19,7 +19,7 @@ class GameLoop:
         self.turn_manager = TurnManager(guesser, game_state)
 
         pid = participant_id or ""
-        cond = condition if condition is not None else guesser.is_adaptive()
+ 
         self.experiment_logger = ExperimentLogger(
             participant_id=pid,
             condition=cond,
