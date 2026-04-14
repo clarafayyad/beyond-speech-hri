@@ -38,11 +38,11 @@ def get_baseline_continuity_utterance(game_state):
 
     if perf["all_correct"]:
         reactions = [
-            "We did well in the previous rounds, we've got this!",
-            "Nice streak! Let's keep it going.",
-            "Things have been going well. Let's continue!",
-            "We're on a roll from last round!",
-            "Good results so far. Let's keep the momentum!",
+            "We nailed every guess last round, we've got this!",
+            "All correct last time! Let's keep it going.",
+            "Last round went perfectly. Let's do it again!",
+            "Every guess was right last round. Nice!",
+            "Great round before this one. Let's keep the momentum!",
         ]
     elif perf["any_correct"]:
         reactions = [
