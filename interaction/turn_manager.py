@@ -3,6 +3,7 @@ import time
 from agents.guesser import Guesser
 from interaction.prompts import SYSTEM_PROMPT, build_user_prompt
 from interaction.game_state import RED, BLUE, NEUTRAL, ASSASSIN, TOTAL_BLUE, TOTAL_RED
+from interaction.utterance_selection import select_utterances
 
 
 class TurnManager:
@@ -35,15 +36,36 @@ class TurnManager:
         return self.game_state.revealed[guess_idx]
 
     def play_turn(self, clue_word, max_guesses, confidence_level=None, features=None):
-        self.guesser.say_continuity_remark(self.game_state, confidence_level)
+        # Collect candidate pre-guess utterances with priorities.
+        # Lower number = higher relevance.
+        #   0 – confidence reaction (most personalised / adaptive)
+        #   1 – continuity remark  (references game history)
+        #   2 – thinking filler    (generic)
+        confidence_text = self.guesser.get_confidence_level_reaction(confidence_level, features)
+        continuity_text = self.guesser.get_continuity_remark(self.game_state, confidence_level)
+        thinking_text = self.guesser.get_random_thinking()
+
+        candidates = [
+            (0, confidence_text),
+            (1, continuity_text),
+            (2, thinking_text),
+        ]
+        selected = select_utterances(candidates)
+
         self.game_state.confidence_history.append(confidence_level)
-        self.guesser.say_confidence_level_reaction(confidence_level, features)
+
+        for text in selected:
+            self.guesser.say(text)
 
         guesses = 0
 
         while guesses < max_guesses and not self.game_state.game_over:
             self.guesser.dialog_manager.animate_thinking()
-            self.guesser.say_random_thinking()
+
+            # On subsequent guesses, say a thinking filler since the
+            # pre-turn utterance was only spoken before the first guess.
+            if guesses > 0:
+                self.guesser.say_random_thinking()
 
             guess_idx = self.make_guess(clue_word, confidence_level)
             result = self.get_feedback(guess_idx)
