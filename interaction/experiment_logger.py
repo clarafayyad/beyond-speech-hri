@@ -44,7 +44,7 @@ class ExperimentLogger:
         Directory where the CSV file is written.
     """
 
-    def __init__(self, participant_id, condition, board, key_map=None,
+    def __init__(self, participant_id, is_adaptive, board, key_map=None,
                  log_dir=DEFAULT_LOG_DIR):
         self.participant_id = participant_id
         self.condition = "adaptive" if condition else "baseline"
