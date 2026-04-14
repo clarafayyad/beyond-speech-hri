@@ -107,9 +107,9 @@ class TestFeatureComment:
         features = {'duration': 15, 'verbal_hesitation_count': 3, 'pause_max': 0, 'speech_rate': 2.0}
         comment = Guesser._feature_comment(features, CONFIDENCE_LOW)
         duration_phrases = [
-            "Ow no, that took too long.",
-            "Hmm, you spent a while on that one.",
-            "That took quite some time.",
+            "Whoa, that clue took a while to arrive!",
+            "Looks like that one needed some thought!",
+            "That was quite the thinking session!",
         ]
         assert comment in duration_phrases
 
@@ -153,28 +153,34 @@ class TestSayConfidenceLevelReactionWithFeatures:
         guesser.say_confidence_level_reaction(CONFIDENCE_HIGH, features)
         guesser.say.assert_called_once()
 
-    def test_feature_comment_prepended_to_reaction_for_low_confidence(self):
+    def test_feature_comment_replaces_generic_reaction_for_low_confidence(self):
         guesser = self._make_guesser()
-        # Long duration (>12) always produces a comment for low confidence.
+        # Long duration (>12) always produces a feature comment for low confidence.
         features = {'duration': 20, 'verbal_hesitation_count': 0, 'pause_max': 0, 'speech_rate': 2.0}
         guesser.say_confidence_level_reaction(CONFIDENCE_LOW, features)
         phrase = guesser.say.call_args[0][0]
-        # The combined phrase should be longer than any single reaction string.
-        assert len(phrase) > 30
+        # The spoken phrase should be the feature comment, not a generic reaction.
+        duration_phrases = [
+            "Whoa, that clue took a while to arrive!",
+            "Looks like that one needed some thought!",
+            "That was quite the thinking session!",
+        ]
+        assert phrase in duration_phrases
 
-    def test_no_feature_comment_gives_shorter_phrase(self):
+    def test_generic_reaction_used_when_no_notable_feature(self):
         guesser = self._make_guesser()
-        # No notable features → only the confidence reaction phrase is spoken.
+        # No notable features → falls back to the generic confidence reactions.
         features = {'duration': 5, 'verbal_hesitation_count': 0, 'pause_max': 1.0, 'speech_rate': 2.5}
         guesser.say_confidence_level_reaction(CONFIDENCE_LOW, features)
-        phrase_no_comment = guesser.say.call_args[0][0]
-
-        guesser2 = self._make_guesser()
-        features_notable = {'duration': 20, 'verbal_hesitation_count': 0, 'pause_max': 0, 'speech_rate': 2.0}
-        guesser2.say_confidence_level_reaction(CONFIDENCE_LOW, features_notable)
-        phrase_with_comment = guesser2.say.call_args[0][0]
-
-        assert len(phrase_with_comment) > len(phrase_no_comment)
+        phrase = guesser.say.call_args[0][0]
+        generic_reactions = [
+            "Hmm\u2026 you don't sound very sure.",
+            "Okay\u2026 I'll be careful with this one.",
+            "That sounded a bit uncertain\u2026 let's think.",
+            "Alright\u2026 not super confident, I hear you.",
+            "Hmm\u2026 I might need to play this safe.",
+        ]
+        assert phrase in generic_reactions
 
     def test_says_nothing_for_none_confidence_level(self):
         guesser = self._make_guesser()
