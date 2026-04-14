@@ -16,6 +16,7 @@ from agents.pepper_tablet.display_service import PepperTabletDisplayService
 from agents.stt_manager import RealTimeSTTService
 from interaction.audio_pipeline import AudioPipeline
 
+from interaction.continuity import get_baseline_continuity_utterance, get_adaptive_continuity_utterance
 from multimodal_perception.model.confidence_classifier import CONFIDENCE_LOW, CONFIDENCE_HIGH, CONFIDENCE_MEDIUM
 
 
@@ -88,6 +89,21 @@ class Guesser:
 
     def is_adaptive(self):
         return self.dialog_manager.interaction_conf.adaptive
+
+    def say_continuity_remark(self, game_state, confidence_level=None):
+        """Utter a context-aware remark referencing previous turn performance.
+
+        In adaptive mode (*confidence_level* is not ``None``) the remark also
+        considers recent confidence trends.  In baseline mode it references
+        prior performance in a general way.  Does nothing on the first turn.
+        """
+        if confidence_level is not None:
+            utterance = get_adaptive_continuity_utterance(game_state, confidence_level)
+        else:
+            utterance = get_baseline_continuity_utterance(game_state)
+
+        if utterance:
+            self.say(utterance)
 
     def say_confidence_level_reaction(self, confidence_level):
         reactions = []
