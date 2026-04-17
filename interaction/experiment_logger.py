@@ -5,6 +5,8 @@ import json
 import os
 from datetime import datetime
 
+import numpy as np
+
 _HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_LOG_DIR = os.path.join(_HERE, "..", "logs")
 
@@ -24,6 +26,35 @@ FIELDNAMES = [
     "score",
     "turn_duration_s",
 ]
+
+
+def _make_json_serializable(obj):
+    """Recursively convert numpy types/arrays to native Python types so
+    they can be serialized by json.dumps.
+    """
+    if obj is None:
+        return None
+    # Numpy arrays -> lists (tolist will also convert scalars inside)
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    # Numpy scalar -> native Python scalar
+    if isinstance(obj, np.generic):
+        try:
+            return obj.item()
+        except Exception:
+            # fallback: convert via float/int where sensible
+            try:
+                return float(obj)
+            except Exception:
+                return str(obj)
+    # Containers -> recurse
+    if isinstance(obj, dict):
+        return {k: _make_json_serializable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple, set)):
+        t = type(obj)
+        return t(_make_json_serializable(v) for v in obj)
+    # Fallback: return as-is
+    return obj
 
 
 class ExperimentLogger:
@@ -88,6 +119,9 @@ class ExperimentLogger:
         turn_duration_s : float
             Wall-clock duration of the turn in seconds.
         """
+        # Ensure features is JSON-serializable (convert numpy types etc.)
+        features_serializable = _make_json_serializable(features) if features else None
+
         row = {
             "participant_id": self.participant_id,
             "condition": self.condition,
@@ -96,7 +130,7 @@ class ExperimentLogger:
             "key_map": json.dumps(self.key_map) if self.key_map is not None else "",
             "clue_word": clue_word,
             "clue_number": clue_number,
-            "features": json.dumps(features) if features else "",
+            "features": json.dumps(features_serializable) if features_serializable else "",
             "confidence_level": confidence_level or "",
             "guesses": json.dumps(guesses),
             "outcomes": json.dumps(outcomes),

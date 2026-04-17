@@ -33,7 +33,7 @@ class AudioPipeline:
         Directory where the JSON log file is written.
     """
 
-    def __init__(self, participant_id, audio_device_index=None, log_dir=LOG_DIR):
+    def __init__(self, participant_id: str, audio_device_index=None, log_dir=LOG_DIR):
         self.participant_id = participant_id
         self.recorder = AudioRecorder(device_index=audio_device_index)
         # create a Whisper transcriber and pass it to the extractor

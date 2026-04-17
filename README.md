@@ -63,14 +63,21 @@ run-gpt
 ---
 
 ## B. Calibration 
-Run the [calibration script](interaction/run_calibration.py) before the actual experiments to collect participant-specific feature distribution and improve robustness.
+This is the calibration phase used to extract participant-specific feature distribution and improve robustness. 
+1.  Run `python -m sounddevice` to list devices and find the correct index for your microphone
+2. Run the [calibration script](interaction/run_calibration.py) by setting the appropriate `participant_id` and `device_index`
+
 This will save extracted features to a file per participant under `multimodal_perception/data/calibrartion_phase`.
 These features will then be used for normalization before confidence estimation during the actual experiment.
 
 ---
 ## C. Running the Experiment
-1. Configure the interaction settings (including robot IP, participant ID, and experiment condition) [in the main script](src/main.py).
-2. Run the system:
-```bash
-python main.py
-```
+1. Configure the interaction settings [in the main script](src/main.py):
+   - **participant_id**: unique identifier for the participant 
+   - **is_adaptive**: experiment condition 
+   - **stt_mic_device_index**: index of the microphone used for speech-to-text (STT) processing 
+   - **audio_features_mic_device_index**: index of the microphone used for audio feature extraction (worn by the participant)
+   - **board_config_number**: configuration number for the game (see `assets/configs` for details)
+   - **robot_ip**: IP address of the robot 
+2. Run the system: `python main.py`
+3. You can access the Game UI at `http://127.0.0.1:8765/ui`

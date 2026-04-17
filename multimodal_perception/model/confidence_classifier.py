@@ -1,4 +1,3 @@
-import math
 import os
 import numpy as np
 import pandas as pd
@@ -79,6 +78,15 @@ class ConfidenceClassifier:
             grp = df.groupby(PARTICIPANT_COL)[present]
             means = grp.mean()
             stds = grp.std(ddof=0)
+            # Normalize group index types to strings so later lookups using
+            # str(participant_id) won't raise KeyError when original index is int.
+            try:
+                means.index = means.index.map(str)
+                stds.index = stds.index.map(str)
+            except Exception:
+                # If mapping fails for any reason, continue without crashing;
+                # we'll handle missing keys safely below.
+                pass
             global_means = df[present].mean()
             global_stds = df[present].std(ddof=0)
             calib = {'participants': {}, 'global': {}}
@@ -87,7 +95,17 @@ class ConfidenceClassifier:
                 calib['participants'][pid] = {}
                 for feat in present:
                     m = float(row[feat]) if not pd.isna(row[feat]) else 0.0
-                    s = float(stds.loc[pid, feat]) if (feat in stds.columns and not pd.isna(stds.loc[pid, feat])) else 0.0
+                    s = 0.0
+                    # Access std safely; stds may not contain the participant key
+                    # (or the column), so guard against KeyError and NaN.
+                    if feat in stds.columns:
+                        try:
+                            s_val = stds.loc[pid, feat]
+                            if not pd.isna(s_val):
+                                s = float(s_val)
+                        except (KeyError, TypeError):
+                            # fallback to 0.0 when lookup fails
+                            s = 0.0
                     calib['participants'][pid][feat] = {'mean': m, 'std': s}
             for feat in present:
                 gm = float(global_means[feat]) if not pd.isna(global_means[feat]) else 0.0

@@ -36,9 +36,9 @@ def append_row_to_csv(participant_id, row):
     print(f"Appended features to {out_path}")
 
 
-def run_for_participant(participant_id, config_ids):
+def run_for_participant(participant_id, config_ids, device_index=3):
     print(f"\n=== Calibration (paper mode) for participant {participant_id} ===")
-    recorder = AudioRecorder(device_index=3, channels=2)
+    recorder = AudioRecorder(device_index=device_index, channels=2)
     whisper = WhisperTranscriber()
     extractor = ImportantFeaturesExtractor(whisper)
 
@@ -95,7 +95,11 @@ def run_for_participant(participant_id, config_ids):
 
 
 def main():
-    run_for_participant(participant_id=1, config_ids=['1', '2', '3', '4', '5'])
+    run_for_participant(
+        participant_id=0,
+        device_index=1,  # Run python -m sounddevice to list devices and find the correct index for your microphone
+        config_ids=['1', '2', '3', '4', '5']
+    )
 
 
 if __name__ == '__main__':

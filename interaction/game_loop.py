@@ -34,7 +34,6 @@ class GameLoop:
         )
 
     def play(self):
-        # TODO: introduce robot
         self.guesser.say_random_start_game()
         self.guesser.say("I'm waiting for you to place the red cards, let me know when you're ready.", sleep_time=0.5)
 
@@ -59,15 +58,13 @@ class GameLoop:
             clue_word, num = self.receive_clue()
 
             # Stop recording immediately after the clue is received and classify
-            features, confidence_level = self.guesser.stop_and_process_audio(clue_word, self.game_state.turn)
-
-            # In non-adaptive mode the confidence is still logged but not used
-            # to adjust the robot's verbal behavior.
-            adaptive_confidence = confidence_level if self.guesser.is_adaptive() else None
-            adaptive_features = features if self.guesser.is_adaptive() else None
+            features = None
+            confidence_level =  None
+            if self.guesser.is_adaptive():
+                features, confidence_level = self.guesser.stop_and_process_audio(clue_word, self.game_state.turn)
 
             current_turn = self.game_state.turn
-            turn_result = self.turn_manager.play_turn(clue_word, num, adaptive_confidence, adaptive_features)
+            turn_result = self.turn_manager.play_turn(clue_word, num, confidence_level, features)
             turn_duration = time.time() - turn_start
 
             self.experiment_logger.log_turn(
