@@ -187,10 +187,10 @@ class ConfidenceClassifier:
         return self._softmax(logits)
 
     @staticmethod
-    def confidence_score(probs) -> float:
-        return float(np.max(probs))
+    def confidence_score(probabilities) -> float:
+        return float(np.max(probabilities))
 
-    def classify(self, features: dict) -> (float, str):
+    def classify(self, features: dict) -> tuple[np.ndarray, str]:
         probs = self.probs(features)
         label = [CONFIDENCE_HIGH, CONFIDENCE_LOW, CONFIDENCE_MEDIUM][np.argmax(probs)]
         return probs, label

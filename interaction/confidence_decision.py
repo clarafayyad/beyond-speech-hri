@@ -2,7 +2,7 @@ def adjusted_guess_limit(requested_guesses, confidence_level=None, certainty=Non
     """Return certainty-adaptive guess budget for the current turn."""
     try:
         requested = int(requested_guesses)
-    except Exception:
+    except (TypeError, ValueError):
         requested = 0
     requested = max(0, requested)
 
@@ -18,12 +18,12 @@ def adjusted_guess_limit(requested_guesses, confidence_level=None, certainty=Non
 
     try:
         certainty = float(certainty)
-    except Exception:
+    except (TypeError, ValueError):
         return base
 
     certainty = min(1.0, max(0.0, certainty))
     if certainty >= 0.8:
-        return min(requested + 1, base + 1)
+        return min(requested, base + 1)
     if certainty < 0.5:
         return max(0, base - 1)
     return base
