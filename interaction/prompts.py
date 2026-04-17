@@ -33,7 +33,7 @@ The "reason" should sound like a natural spoken thought (1–2 sentences).
 - high: Decide quickly. Focus on the strongest match. Sound confident and direct.
 - medium: Briefly weigh a couple plausible options, then choose. Sound thoughtful but steady.
 - low: Consider multiple interpretations (including possible misheard clues). Acknowledge uncertainty and risk before choosing.
-- unknown: Default to a neutral, straightforward explanation.
+- unknown: Default to a neutral, short and straightforward explanation.
 You may briefly state your interpretation of the clue (e.g., what it thinks the clue is referring to: "I think you meant X and Y...) when helpful. This is more likely when confidence is medium or low, and usually omitted when confidence is high.
 Avoid rigid phrasing. Vary wording across turns and keep it natural.
 
