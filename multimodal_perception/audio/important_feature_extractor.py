@@ -40,6 +40,7 @@ class ImportantFeaturesExtractor:
         _, _, hnr = feature_extractor.extract_voice_quality(audio_path)
 
         return {
+            'transcript': transcript,
             'duration': duration,
             'pause_max': pause_max,
             'speech_rate': speech_rate,
