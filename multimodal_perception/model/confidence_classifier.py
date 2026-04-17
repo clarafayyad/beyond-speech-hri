@@ -16,6 +16,9 @@ SELECTED_FEATURES = [
 PARTICIPANT_COL = 'participant_id'
 BASE_FEATURES = sorted({f[:-4] if f.endswith('_dev') else f for f in SELECTED_FEATURES})
 _CALIB_FOLDER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'calibration_phase'))
+LONG_DURATION_THRESHOLD = 12
+LOW_HESITATION_THRESHOLD = 2
+LOW_PAUSE_MAX_THRESHOLD = 2.5
 
 
 class ConfidenceClassifier:
@@ -187,18 +190,36 @@ class ConfidenceClassifier:
         return self._softmax(logits)
 
     @staticmethod
+    def _none_to_zero(value):
+        return 0 if value is None else value
+
+    @staticmethod
     def _duration_only_low_confidence(features: dict, label: str) -> bool:
-        """Detect low-confidence predictions primarily explained by long duration."""
+        """Detect when long duration is the only strong low-confidence cue.
+
+        A low prediction is treated as duration-driven when duration is long
+        but hesitation and pause length are still in non-low ranges.
+        """
         if label != CONFIDENCE_LOW or not features:
             return False
 
-        duration = features.get('duration') or 0
-        hesitation_count = features.get('verbal_hesitation_count') or 0
-        pause_max = features.get('pause_max') or 0
+        duration = ConfidenceClassifier._none_to_zero(features.get('duration'))
+        hesitation_count = ConfidenceClassifier._none_to_zero(features.get('verbal_hesitation_count'))
+        pause_max = ConfidenceClassifier._none_to_zero(features.get('pause_max'))
 
-        return duration > 12 and hesitation_count < 2 and pause_max <= 2.5
+        return (
+            duration > LONG_DURATION_THRESHOLD
+            and hesitation_count < LOW_HESITATION_THRESHOLD
+            and pause_max <= LOW_PAUSE_MAX_THRESHOLD
+        )
 
-    def classify(self, features: dict) -> (float, str):
+    def classify(self, features: dict) -> tuple[np.ndarray, str]:
+        """Return model probabilities and final confidence label.
+
+        The returned label normally follows the max-probability class, but a
+        low label can be adjusted to high/medium when the low prediction appears
+        to be driven by duration alone.
+        """
         probs = self.probs(features)
         labels = [CONFIDENCE_HIGH, CONFIDENCE_LOW, CONFIDENCE_MEDIUM]
         label = labels[np.argmax(probs)]
