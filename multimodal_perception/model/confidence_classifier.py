@@ -186,7 +186,26 @@ class ConfidenceClassifier:
         logits = np.dot(self.W, x) + self.b  # shape (3,)
         return self._softmax(logits)
 
+    @staticmethod
+    def _duration_only_low_confidence(features: dict, label: str) -> bool:
+        """Detect low-confidence predictions primarily explained by long duration."""
+        if label != CONFIDENCE_LOW or not features:
+            return False
+
+        duration = features.get('duration') or 0
+        hesitation_count = features.get('verbal_hesitation_count') or 0
+        pause_max = features.get('pause_max') or 0
+
+        return duration > 12 and hesitation_count < 2 and pause_max <= 2.5
+
     def classify(self, features: dict) -> (float, str):
         probs = self.probs(features)
-        label = [CONFIDENCE_HIGH, CONFIDENCE_LOW, CONFIDENCE_MEDIUM][np.argmax(probs)]
+        labels = [CONFIDENCE_HIGH, CONFIDENCE_LOW, CONFIDENCE_MEDIUM]
+        label = labels[np.argmax(probs)]
+
+        if self._duration_only_low_confidence(features, label):
+            high_prob = probs[0]
+            medium_prob = probs[2]
+            label = CONFIDENCE_HIGH if high_prob >= medium_prob else CONFIDENCE_MEDIUM
+
         return probs, label
