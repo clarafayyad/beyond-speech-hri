@@ -1,7 +1,6 @@
 import csv
 import json
 import os
-import tempfile
 
 import pytest
 
@@ -19,9 +18,9 @@ def logger(log_dir):
     """Return an ExperimentLogger that writes to a temp directory."""
     return ExperimentLogger(
         participant_id="p01",
-        condition=True,
-        board=["river", "mountain", "apple", "castle", "forest"],
-        key_map={"river": "blue", "mountain": "red"},
+        is_adaptive=True,
+        board="01",
+        key_map="5",
         log_dir=log_dir,
     )
 
@@ -75,9 +74,9 @@ class TestLogTurn:
         assert json.loads(row["guesses"]) == ["river", "mountain"]
         assert json.loads(row["outcomes"]) == ["blue", "red"]
 
-        # Board and key_map are JSON-encoded
-        assert json.loads(row["board"]) == ["river", "mountain", "apple", "castle", "forest"]
-        assert json.loads(row["key_map"]) == {"river": "blue", "mountain": "red"}
+        # Board and key_map are logged as identifiers
+        assert row["board"] == "01"
+        assert row["key_map"] == "5"
 
         # Features are JSON-encoded
         features = json.loads(row["features"])
@@ -121,7 +120,7 @@ class TestLogTurn:
     def test_no_key_map_produces_empty_string(self, log_dir):
         logger = ExperimentLogger(
             participant_id="p02",
-            condition=False,
+            is_adaptive=False,
             board=["a", "b"],
             key_map=None,
             log_dir=log_dir,
@@ -141,3 +140,29 @@ class TestLogTurn:
         with open(logger.csv_path, newline="", encoding="utf-8") as f:
             rows = list(csv.DictReader(f))
         assert rows[0]["key_map"] == ""
+
+    def test_list_board_and_dict_key_map_are_json_encoded(self, log_dir):
+        logger = ExperimentLogger(
+            participant_id="p03",
+            is_adaptive=True,
+            board=["a", "b"],
+            key_map={"blue": [0], "red": [1]},
+            log_dir=log_dir,
+        )
+        logger.log_turn(
+            turn=0,
+            clue_word="x",
+            clue_number=1,
+            features=None,
+            confidence_level=None,
+            guesses=["a"],
+            outcomes=["blue"],
+            score=1,
+            turn_duration_s=1.0,
+        )
+
+        with open(logger.csv_path, newline="", encoding="utf-8") as f:
+            rows = list(csv.DictReader(f))
+
+        assert json.loads(rows[0]["board"]) == ["a", "b"]
+        assert json.loads(rows[0]["key_map"]) == {"blue": [0], "red": [1]}
