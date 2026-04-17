@@ -19,6 +19,12 @@ _CALIB_FOLDER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__
 
 
 class ConfidenceClassifier:
+    SELF_REPORT_VECTORS = {
+        CONFIDENCE_HIGH: np.array([1.0, 0.0, 0.0]),
+        CONFIDENCE_LOW: np.array([0.0, 1.0, 0.0]),
+        CONFIDENCE_MEDIUM: np.array([0.0, 0.0, 1.0]),
+    }
+
     def __init__(self, participant_id: str | None = None):
         self.W = np.array([
             [-0.724750756, -0.363689272, -0.224248714, 0.011265274, 0.203491125,
@@ -186,7 +192,36 @@ class ConfidenceClassifier:
         logits = np.dot(self.W, x) + self.b  # shape (3,)
         return self._softmax(logits)
 
+    def adjust_with_self_report(self, probs: np.ndarray, self_report, alpha: float = 0.3) -> np.ndarray:
+        adjusted = np.array(probs, dtype=float)
+        total = np.sum(adjusted)
+        if total > 0:
+            adjusted = adjusted / total
+
+        if self_report is None:
+            return adjusted
+
+        key = str(self_report).strip().lower()
+        target = self.SELF_REPORT_VECTORS.get(key)
+        if target is None:
+            return adjusted
+
+        try:
+            alpha = float(alpha)
+        except Exception:
+            alpha = 0.3
+        alpha = min(max(alpha, 0.0), 1.0)
+
+        adjusted = (1.0 - alpha) * adjusted + alpha * target
+        denom = np.sum(adjusted)
+        if denom > 0:
+            adjusted = adjusted / denom
+        return adjusted
+
     def classify(self, features: dict) -> (float, str):
         probs = self.probs(features)
+        self_report = features.get('self_report')
+        if self_report is not None:
+            probs = self.adjust_with_self_report(probs, self_report, features.get('self_report_alpha', 0.3))
         label = [CONFIDENCE_HIGH, CONFIDENCE_LOW, CONFIDENCE_MEDIUM][np.argmax(probs)]
         return probs, label

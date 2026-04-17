@@ -18,10 +18,6 @@ import os
 import pandas as pd
 from datetime import datetime, timezone
 
-from multimodal_perception.audio.transcribe_audio import WhisperTranscriber
-from multimodal_perception.audio.recorder import AudioRecorder
-from multimodal_perception.audio.important_feature_extractor import ImportantFeaturesExtractor
-
 CALIB_FOLDER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'multimodal_perception', 'data', 'calibration_phase'))
 os.makedirs(CALIB_FOLDER, exist_ok=True)
 
@@ -36,7 +32,34 @@ def append_row_to_csv(participant_id, row):
     print(f"Appended features to {out_path}")
 
 
+def normalize_self_report(value):
+    key = str(value).strip().lower()
+    aliases = {
+        'h': 'high',
+        'high': 'high',
+        'm': 'medium',
+        'med': 'medium',
+        'medium': 'medium',
+        'l': 'low',
+        'low': 'low',
+    }
+    return aliases.get(key)
+
+
+def prompt_self_report():
+    while True:
+        raw = input("Self-reported confidence [low/medium/high]: ")
+        normalized = normalize_self_report(raw)
+        if normalized is not None:
+            return normalized
+        print("Invalid confidence. Please enter low, medium, or high.")
+
+
 def run_for_participant(participant_id, config_ids, device_index=3):
+    from multimodal_perception.audio.transcribe_audio import WhisperTranscriber
+    from multimodal_perception.audio.recorder import AudioRecorder
+    from multimodal_perception.audio.important_feature_extractor import ImportantFeaturesExtractor
+
     print(f"\n=== Calibration (paper mode) for participant {participant_id} ===")
     recorder = AudioRecorder(device_index=device_index, channels=2)
     whisper = WhisperTranscriber()
@@ -76,11 +99,13 @@ def run_for_participant(participant_id, config_ids, device_index=3):
 
         print(f"Recorded to {audio_path}. Extracting features...")
         features = extractor.extract(audio_path)
+        self_report = prompt_self_report()
 
         row = {
             'participant_id': participant_id,
             'config_id': cfg,
             'timestamp': datetime.now(timezone.utc).isoformat(),
+            'self_report': self_report,
             **features
         }
 
