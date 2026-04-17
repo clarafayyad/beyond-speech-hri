@@ -348,23 +348,23 @@ class Guesser:
 
     def say_random_win_reaction(self):
         reactions = [
-            "We won! Great teamwork!",
-            "Victory! Excellent clues and guesses!",
-            "Nice job! We make a great team.",
-            "Yes! We did it!",
-            "Mission successful. Well played!",
-            "We won the game! High five! …Emotionally."
+            "We won! Great teamwork! See you next time!",
+            "Victory! Excellent clues and guesses! Catch you later!",
+            "Nice job! We make a great team. Until next time!",
+            "Yes! We did it! Talk soon!",
+            "Mission successful. Well played! Goodbye for now!",
+            "We won the game! High five! …Emotionally. See you later!"
         ]
         self.say(random.choice(reactions))
 
     def say_random_loss_reaction(self):
         reactions = [
-            "Ah… we lost this one. Still a good try!",
-            "That’s a loss, but we played well.",
-            "Oops! The other team got us this time.",
-            "Sorry, we lost. Let’s do better next round!",
-            "Defeat detected. But I had fun!",
-            "We didn’t win, but I enjoyed playing with you."
+            "Ah… we lost this one. Still a good try! See you next time!",
+            "That’s a loss, but we played well. Catch you later!",
+            "Oops! The other team got us this time. Until next time!",
+            "Sorry, we lost. Let’s do better next round! Talk soon!",
+            "Defeat detected. But I had fun! Goodbye for now!",
+            "We didn’t win, but I enjoyed playing with you. See you later!"
         ]
         self.say(random.choice(reactions))
 
