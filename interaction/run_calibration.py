@@ -24,10 +24,6 @@ from multimodal_perception.audio.important_feature_extractor import ImportantFea
 
 CALIB_FOLDER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'multimodal_perception', 'data', 'calibration_phase'))
 os.makedirs(CALIB_FOLDER, exist_ok=True)
-CALIBRATION_STT_PROMPT = (
-    "The speaker says a short single-word English clue for image associations. "
-    "Likely words include urban, triangle, puzzle, owl, road, window, fish, night, and shadow."
-)
 
 
 def append_row_to_csv(participant_id, row):
@@ -43,7 +39,7 @@ def append_row_to_csv(participant_id, row):
 def run_for_participant(participant_id, config_ids, device_index=3):
     print(f"\n=== Calibration (paper mode) for participant {participant_id} ===")
     recorder = AudioRecorder(device_index=device_index, channels=2)
-    whisper = WhisperTranscriber(initial_prompt=CALIBRATION_STT_PROMPT)
+    whisper = WhisperTranscriber()
     extractor = ImportantFeaturesExtractor(whisper)
 
     remaining = list(config_ids)

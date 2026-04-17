@@ -1,9 +1,15 @@
 import whisper
 import re
 
+DEFAULT_INITIAL_PROMPT = (
+    "This is a board game called Codenames. "
+    "The speaker gives short clue words and sometimes a number from one to five. "
+    "Prefer clear English transcriptions of clue words, including single-word clues."
+)
+
 
 class WhisperTranscriber:
-    def __init__(self, model_name="base", initial_prompt=None):
+    def __init__(self, model_name="base", initial_prompt=DEFAULT_INITIAL_PROMPT):
         self.model = whisper.load_model(model_name)
         self.initial_prompt = initial_prompt
 

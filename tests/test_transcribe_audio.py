@@ -55,12 +55,23 @@ def test_explicit_prompt_overrides_initial_prompt(monkeypatch):
     assert mock_model.transcribe.call_args.kwargs["initial_prompt"] == "override prompt"
 
 
-def test_does_not_send_initial_prompt_when_not_set(monkeypatch):
+def test_uses_default_prompt_when_not_set(monkeypatch):
     mock_model = Mock()
     mock_model.transcribe.return_value = _mock_transcribe_result()
     module, _ = _load_transcribe_module(monkeypatch, mock_model)
 
     transcriber = module.WhisperTranscriber()
+    transcriber.transcribe_audio("audio.wav")
+
+    assert mock_model.transcribe.call_args.kwargs["initial_prompt"] == module.DEFAULT_INITIAL_PROMPT
+
+
+def test_can_disable_prompt_with_empty_string(monkeypatch):
+    mock_model = Mock()
+    mock_model.transcribe.return_value = _mock_transcribe_result()
+    module, _ = _load_transcribe_module(monkeypatch, mock_model)
+
+    transcriber = module.WhisperTranscriber(initial_prompt="")
     transcriber.transcribe_audio("audio.wav")
 
     assert "initial_prompt" not in mock_model.transcribe.call_args.kwargs
