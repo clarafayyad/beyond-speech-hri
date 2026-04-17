@@ -70,6 +70,17 @@ class TestFeatureComment:
         comment = Guesser._feature_comment(features, CONFIDENCE_HIGH)
         assert comment != ""
 
+    def test_high_confidence_deviation_must_cross_threshold(self):
+        features = {
+            'duration': 5,
+            'verbal_hesitation_count': 0,
+            'pause_max': 0,
+            'speech_rate': 2.5,
+            'verbal_hesitation_count_dev': -0.5,
+        }
+        comment = Guesser._feature_comment(features, CONFIDENCE_HIGH)
+        assert comment == ""
+
     def test_short_duration_triggers_high_confidence_comment(self):
         # When hesitation_count > 0 the "no hesitation" branch is skipped;
         # a short duration should still produce a comment.
