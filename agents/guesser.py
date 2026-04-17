@@ -126,8 +126,10 @@ class Guesser:
 
         Only the features that are intuitively explainable in natural language
         are used: duration, verbal hesitation count, maximum pause length, and
-        speech rate.  The most salient signal is reported first (in priority
-        order) to keep the utterance concise.
+        speech rate.  When participant-relative deviation features (``*_dev``)
+        are available, they are preferred so comments only trigger for
+        participant-salient signals.  The most salient signal is reported first
+        (in priority order) to keep the utterance concise.
         """
         if not features:
             return ""
@@ -136,8 +138,43 @@ class Guesser:
         pause_max = features.get('pause_max') or 0
         hesitation_count = features.get('verbal_hesitation_count') or 0
         speech_rate = features.get('speech_rate') or 0
+        duration_dev = features.get('duration_dev')
+        pause_max_dev = features.get('pause_max_dev')
+        hesitation_count_dev = features.get('verbal_hesitation_count_dev')
+        speech_rate_dev = features.get('speech_rate_dev')
+        has_subject_thresholds = any(
+            value is not None
+            for value in (duration_dev, pause_max_dev, hesitation_count_dev, speech_rate_dev)
+        )
 
         if confidence_level == CONFIDENCE_LOW:
+            if has_subject_thresholds:
+                if (duration_dev or 0) > 1.0:
+                    return random.choice([
+                        "Whoa, that clue took a while to arrive!",
+                        "Looks like that one needed some thought!",
+                        "That was quite the thinking session!",
+                    ])
+                if (hesitation_count_dev or 0) > 0.5:
+                    return random.choice([
+                        "I caught a few 'um's and 'uh's in there!",
+                        "Sounds like the clue was still brewing!",
+                        "A couple of hesitations — no worries, I'm on it!",
+                    ])
+                if (pause_max_dev or 0) > 0.8:
+                    return random.choice([
+                        "I noticed a little pause in there!",
+                        "There was a moment of mystery in that silence!",
+                        "A dramatic pause — love it, but let's be careful!",
+                    ])
+                if (speech_rate_dev or 0) < -0.8:
+                    return random.choice([
+                        "You took it nice and slow!",
+                        "Careful and measured — I respect that!",
+                        "Slow and steady clue incoming!",
+                    ])
+                return ""
+
             if duration > 12:
                 return random.choice([
                     "Whoa, that clue took a while to arrive!",
@@ -164,11 +201,22 @@ class Guesser:
                 ])
 
         elif confidence_level == CONFIDENCE_HIGH:
-            if duration > 0 and hesitation_count == 0:
+            if has_subject_thresholds and (hesitation_count_dev or 0) < -0.8:
                 return random.choice([
                     "Not a single hesitation — I like it!",
                     "Clean delivery, no fillers!",
                     "You knew exactly what to say!",
+                ])
+            if has_subject_thresholds and (duration_dev or 0) < -0.8:
+                return random.choice([
+                    "That was quick and decisive!",
+                    "Straight to the point!",
+                    "Quick and clear!",
+                ])
+            if has_subject_thresholds and (speech_rate_dev or 0) > 0.8:
+                return random.choice([
+                    "You rattled that right off!",
+                    "Fast and sure — I love it!",
                 ])
             if 0 < duration < 4:
                 return random.choice([
