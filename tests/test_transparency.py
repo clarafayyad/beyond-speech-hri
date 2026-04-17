@@ -60,9 +60,26 @@ class TestFeatureComment:
     # --- high confidence triggers ---
 
     def test_no_hesitation_triggers_high_confidence_comment(self):
-        features = {'duration': 5, 'verbal_hesitation_count': 0, 'pause_max': 0, 'speech_rate': 2.5}
+        features = {
+            'duration': 5,
+            'verbal_hesitation_count': 0,
+            'pause_max': 0,
+            'speech_rate': 2.5,
+            'verbal_hesitation_count_dev': -1.2,
+        }
         comment = Guesser._feature_comment(features, CONFIDENCE_HIGH)
         assert comment != ""
+
+    def test_high_confidence_deviation_must_cross_threshold(self):
+        features = {
+            'duration': 5,
+            'verbal_hesitation_count': 0,
+            'pause_max': 0,
+            'speech_rate': 2.5,
+            'verbal_hesitation_count_dev': -0.5,
+        }
+        comment = Guesser._feature_comment(features, CONFIDENCE_HIGH)
+        assert comment == ""
 
     def test_short_duration_triggers_high_confidence_comment(self):
         # When hesitation_count > 0 the "no hesitation" branch is skipped;
@@ -90,6 +107,21 @@ class TestFeatureComment:
     def test_unremarkable_features_return_empty_for_low_confidence(self):
         # All features within normal ranges → no notable signal.
         features = {'duration': 5, 'verbal_hesitation_count': 0, 'pause_max': 1.0, 'speech_rate': 2.5}
+        comment = Guesser._feature_comment(features, CONFIDENCE_LOW)
+        assert comment == ""
+
+    def test_subject_thresholds_can_suppress_raw_low_confidence_comment(self):
+        # Raw duration is high, but participant-relative deviation is unremarkable.
+        features = {
+            'duration': 20,
+            'verbal_hesitation_count': 0,
+            'pause_max': 0,
+            'speech_rate': 2.0,
+            'duration_dev': 0.2,
+            'pause_max_dev': 0.0,
+            'verbal_hesitation_count_dev': 0.0,
+            'speech_rate_dev': 0.0,
+        }
         comment = Guesser._feature_comment(features, CONFIDENCE_LOW)
         assert comment == ""
 
@@ -179,6 +211,20 @@ class TestSayConfidenceLevelReactionWithFeatures:
             "That sounded a bit uncertain\u2026 let's think.",
             "Alright\u2026 not super confident, I hear you.",
             "Hmm\u2026 I might need to play this safe.",
+        ]
+        assert phrase in generic_reactions
+
+    def test_generic_reaction_used_for_high_confidence_without_notable_feature(self):
+        guesser = self._make_guesser()
+        features = {'duration': 5, 'verbal_hesitation_count': 0, 'pause_max': 0, 'speech_rate': 2.5}
+        guesser.say_confidence_level_reaction(CONFIDENCE_HIGH, features)
+        phrase = guesser.say.call_args[0][0]
+        generic_reactions = [
+            "Oh, you sound confident. I like that.",
+            "Alright! That was clear.",
+            "Nice, that sounded very certain.",
+            "Okay, I'm feeling good about this.",
+            "Got it — strong signal."
         ]
         assert phrase in generic_reactions
 
