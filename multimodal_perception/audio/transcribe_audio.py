@@ -1,6 +1,14 @@
 import whisper
 import re
 
+DEFAULT_INITIAL_PROMPT = (
+    "This is a Codenames spymaster speaking. "
+    "Transcribe everything exactly as spoken, including filler words like 'um' or 'uh', hesitations, and corrections. "
+    "The speaker may think out loud before giving the final clue. "
+    "The final clue is always at the end and consists of one single word followed by a number. "
+    "Return the full transcription."
+)
+
 
 class WhisperTranscriber:
     def __init__(self):
@@ -11,7 +19,8 @@ class WhisperTranscriber:
             audio_path,
             language="en",
             fp16=False,
-            word_timestamps=True
+            word_timestamps=True,
+            initial_prompt=DEFAULT_INITIAL_PROMPT
         )
         transcript = result["text"]
         print("Transcript: {}".format(transcript))
