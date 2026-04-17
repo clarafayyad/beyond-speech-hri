@@ -51,6 +51,11 @@ class TestSystemPromptReasoningStyle:
         # The reason field description should mention it will be spoken aloud
         assert "say aloud" in SYSTEM_PROMPT or "spoken" in SYSTEM_PROMPT
 
+    def test_system_prompt_avoids_explicit_confidence_labels_in_reason(self):
+        lower = SYSTEM_PROMPT.lower()
+        assert "do not explicitly mention confidence labels" in lower
+        assert "with medium confidence" in lower
+
 
 # ---------------------------------------------------------------------------
 # build_user_prompt includes confidence level
