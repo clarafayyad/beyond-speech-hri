@@ -24,6 +24,7 @@ class ConfidenceClassifier:
         CONFIDENCE_LOW: np.array([0.0, 1.0, 0.0]),
         CONFIDENCE_MEDIUM: np.array([0.0, 0.0, 1.0]),
     }
+    DEFAULT_SELF_REPORT_ALPHA = 0.3
 
     def __init__(self, participant_id: str | None = None):
         self.W = np.array([
@@ -95,7 +96,7 @@ class ConfidenceClassifier:
                 pass
             global_means = df[present].mean()
             global_stds = df[present].std(ddof=0)
-            calib = {'participants': {}, 'global': {}}
+            calib = {'participants': {}, 'global': {}, 'self_report_priors': {'participants': {}, 'global': None}}
             for pid, row in means.iterrows():
                 pid = str(pid)
                 calib['participants'][pid] = {}
@@ -113,10 +114,14 @@ class ConfidenceClassifier:
                             # fallback to 0.0 when lookup fails
                             s = 0.0
                     calib['participants'][pid][feat] = {'mean': m, 'std': s}
+                prior = self._self_report_prior_from_df(df[df[PARTICIPANT_COL].astype(str) == pid])
+                if prior is not None:
+                    calib['self_report_priors']['participants'][pid] = prior
             for feat in present:
                 gm = float(global_means[feat]) if not pd.isna(global_means[feat]) else 0.0
                 gs = float(global_stds[feat]) if not pd.isna(global_stds[feat]) else 0.0
                 calib['global'][feat] = {'mean': gm, 'std': gs}
+            calib['self_report_priors']['global'] = self._self_report_prior_from_df(df)
             self.calibration = calib
             return
         present = [f for f in BASE_FEATURES if f in df.columns]
@@ -125,14 +130,46 @@ class ConfidenceClassifier:
         means = df[present].mean()
         stds = df[present].std(ddof=0)
         pid = str(participant_id) if participant_id is not None else 'unknown'
-        calib = {'participants': {}, 'global': {}}
+        calib = {'participants': {}, 'global': {}, 'self_report_priors': {'participants': {}, 'global': None}}
         calib['participants'][pid] = {}
         for feat in present:
             m = float(means[feat]) if not pd.isna(means[feat]) else 0.0
             s = float(stds[feat]) if not pd.isna(stds[feat]) else 0.0
             calib['participants'][pid][feat] = {'mean': m, 'std': s}
             calib['global'][feat] = {'mean': m, 'std': s}
+        prior = self._self_report_prior_from_df(df)
+        if prior is not None:
+            calib['self_report_priors']['participants'][pid] = prior
+            calib['self_report_priors']['global'] = prior
         self.calibration = calib
+
+    @staticmethod
+    def _normalize_self_report_label(value):
+        key = str(value).strip().lower()
+        aliases = {
+            'h': CONFIDENCE_HIGH,
+            'high': CONFIDENCE_HIGH,
+            'm': CONFIDENCE_MEDIUM,
+            'med': CONFIDENCE_MEDIUM,
+            'medium': CONFIDENCE_MEDIUM,
+            'l': CONFIDENCE_LOW,
+            'low': CONFIDENCE_LOW,
+        }
+        return aliases.get(key)
+
+    def _self_report_prior_from_df(self, df: pd.DataFrame):
+        if 'self_report' not in df.columns:
+            return None
+        counts = np.zeros(3, dtype=float)
+        for val in df['self_report']:
+            label = self._normalize_self_report_label(val)
+            if label is None:
+                continue
+            counts += self.SELF_REPORT_VECTORS[label]
+        total = np.sum(counts)
+        if total <= 0:
+            return None
+        return counts / total
 
     def _get_stats_for_participant(self, participant_id):
         if self.calibration is None:
@@ -141,6 +178,18 @@ class ConfidenceClassifier:
         if pid in self.calibration['participants']:
             return self.calibration['participants'][pid]
         return self.calibration['global'] if self.fallback_to_global else None
+
+    def _get_self_report_prior_for_participant(self, participant_id):
+        if self.calibration is None:
+            return None
+        priors = self.calibration.get('self_report_priors') or {}
+        participant_priors = priors.get('participants') or {}
+        pid = str(participant_id) if participant_id is not None else None
+        if pid in participant_priors:
+            return participant_priors[pid]
+        if self.fallback_to_global:
+            return priors.get('global')
+        return None
 
     def _prepare_features_from_calibration(self, features: dict) -> dict:
         if self.calibration is None:
@@ -192,24 +241,27 @@ class ConfidenceClassifier:
         logits = np.dot(self.W, x) + self.b  # shape (3,)
         return self._softmax(logits)
 
-    def adjust_with_self_report(self, probs: np.ndarray, self_report, alpha: float = 0.3) -> np.ndarray:
+    def adjust_with_self_report(self, probs: np.ndarray, self_report_prior: np.ndarray, alpha: float = DEFAULT_SELF_REPORT_ALPHA) -> np.ndarray:
         adjusted = np.array(probs, dtype=float)
         total = np.sum(adjusted)
         if total > 0:
             adjusted = adjusted / total
 
-        if self_report is None:
+        if self_report_prior is None:
             return adjusted
 
-        key = str(self_report).strip().lower()
-        target = self.SELF_REPORT_VECTORS.get(key)
-        if target is None:
+        target = np.array(self_report_prior, dtype=float)
+        if target.shape != (3,):
             return adjusted
+        target_sum = np.sum(target)
+        if target_sum <= 0:
+            return adjusted
+        target = target / target_sum
 
         try:
             alpha = float(alpha)
         except Exception:
-            alpha = 0.3
+            alpha = self.DEFAULT_SELF_REPORT_ALPHA
         alpha = min(max(alpha, 0.0), 1.0)
 
         adjusted = (1.0 - alpha) * adjusted + alpha * target
@@ -220,8 +272,9 @@ class ConfidenceClassifier:
 
     def classify(self, features: dict) -> (float, str):
         probs = self.probs(features)
-        self_report = features.get('self_report')
-        if self_report is not None:
-            probs = self.adjust_with_self_report(probs, self_report, features.get('self_report_alpha', 0.3))
+        pid = features.get(PARTICIPANT_COL) or features.get('participant')
+        prior = self._get_self_report_prior_for_participant(pid)
+        if prior is not None:
+            probs = self.adjust_with_self_report(probs, prior, features.get('self_report_alpha', self.DEFAULT_SELF_REPORT_ALPHA))
         label = [CONFIDENCE_HIGH, CONFIDENCE_LOW, CONFIDENCE_MEDIUM][np.argmax(probs)]
         return probs, label
