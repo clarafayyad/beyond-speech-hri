@@ -422,6 +422,7 @@ class Guesser:
 
     def shutdown(self):
         print("🛑 Shutting down STT...")
+        self.dialog_manager.shutdown_logging()
         if not isinstance(self.dialog_manager.stt_service, RealTimeSTTService):
             return
         try:

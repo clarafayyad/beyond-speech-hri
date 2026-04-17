@@ -81,3 +81,4 @@ These features will then be used for normalization before confidence estimation 
    - **robot_ip**: IP address of the robot 
 2. Run the system: `python main.py`
 3. You can access the Game UI at `http://127.0.0.1:8765/ui`
+4. Spymaster and robot utterances are saved in `logs/utterances_<participant_id>_<YYYYMMDD>.txt`
