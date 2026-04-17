@@ -271,8 +271,14 @@ class ConfidenceClassifier:
         return adjusted
 
     # Backward-compatible alias
-    def adjust_with_self_report(self, probs: np.ndarray, self_report_prior: np.ndarray, alpha: float = DEFAULT_SELF_REPORT_ALPHA) -> np.ndarray:
-        return self.adjust_with_self_report_prior(probs, self_report_prior, alpha)
+    def adjust_with_self_report(self, probs: np.ndarray, self_report_label_or_prior, alpha: float = DEFAULT_SELF_REPORT_ALPHA) -> np.ndarray:
+        if isinstance(self_report_label_or_prior, str):
+            normalized = self._normalize_self_report_label(self_report_label_or_prior)
+            if normalized is None:
+                return self.adjust_with_self_report_prior(probs, None, alpha)
+            prior = self.SELF_REPORT_VECTORS[normalized]
+            return self.adjust_with_self_report_prior(probs, prior, alpha)
+        return self.adjust_with_self_report_prior(probs, self_report_label_or_prior, alpha)
 
     def classify(self, features: dict) -> (float, str):
         probs = self.probs(features)

@@ -15,6 +15,15 @@ def test_adjust_with_self_report_blends_probs_with_prior_vector():
     np.testing.assert_allclose(np.sum(adjusted), 1.0)
 
 
+def test_adjust_with_self_report_backwards_compatible_label_alias():
+    clf = ConfidenceClassifier()
+    probs = np.array([0.2, 0.5, 0.3])
+
+    adjusted = clf.adjust_with_self_report(probs, "high", alpha=0.3)
+
+    np.testing.assert_allclose(adjusted, np.array([0.44, 0.35, 0.21]))
+
+
 def test_classify_uses_participant_self_report_prior():
     clf = ConfidenceClassifier()
     clf.probs = lambda _: np.array([0.1, 0.2, 0.7])  # type: ignore[method-assign]
