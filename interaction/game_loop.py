@@ -145,10 +145,9 @@ class GameLoop:
                 # Recording stays paused; the caller will stop and process it.
                 return clue_word, num
 
-            # --- Not confirmed → ask to repeat and resume recording for the
-            #     next clue attempt. ---
+            # --- Not confirmed → ask to repeat, but keep recording paused so
+            #     clarification dialogue is excluded from confidence analysis. ---
             self.guesser.say("Oh, could you repeat the clue?")
-            self.guesser.resume_recording()
 
     @staticmethod
     def _is_filler_only(text: str) -> bool:
