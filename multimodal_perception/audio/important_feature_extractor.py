@@ -7,7 +7,7 @@ from multimodal_perception.audio import feature_extractor
 
 
 # Fixed calibration folder (relative to this module)
-_CALIB_FOLDER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'calibration-phase'))
+_CALIB_FOLDER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'calibration_phase'))
 
 
 class ImportantFeaturesExtractor:

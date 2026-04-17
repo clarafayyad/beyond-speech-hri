@@ -16,7 +16,7 @@ SELECTED_FEATURES = [
 
 PARTICIPANT_COL = 'participant_id'
 BASE_FEATURES = sorted({f[:-4] if f.endswith('_dev') else f for f in SELECTED_FEATURES})
-_CALIB_FOLDER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'calibration-phase'))
+_CALIB_FOLDER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'calibration_phase'))
 
 
 class ConfidenceClassifier:

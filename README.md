@@ -11,7 +11,7 @@ This project investigates how a social robot can move beyond spoken language by 
 The system integrates conversational AI, speech synthesis, and real-time interaction services to support adaptive, socially aware robot behavior.
 
 ---
-## Setup Guide
+## A. Setup Guide
 
 Follow the steps below in order to ensure a correct setup.
 
@@ -60,14 +60,17 @@ run-dialogflow
 ```bash
 run-gpt
 ```
+---
 
-### 5. Robot Configuration and Execution
+## B. Calibration 
+Run the [calibration script](interaction/run_calibration.py) before the actual experiments to collect participant-specific feature distribution and improve robustness.
+This will save extracted features to a file per participant under `multimodal_perception/data/calibrartion_phase`.
+These features will then be used for normalization before confidence estimation during the actual experiment.
 
-1. Open main.py and configure the robot IP address and any robot-specific parameters.
-
+---
+## C. Running the Experiment
+1. Configure the interaction settings (including robot IP, participant ID, and experiment condition) [in the main script](src/main.py).
 2. Run the system:
 ```bash
 python main.py
 ```
-
----

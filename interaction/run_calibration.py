@@ -10,7 +10,7 @@ operator to trigger recordings interactively:
  - type 'q' + Enter to finish the participant
 
 Each recorded audio is processed by ImportantFeaturesExtractor and appended to
-multimodal_perception/data/calibration-phase/participant_{id}.csv
+multimodal_perception/data/calibration_phase/participant_{id}.csv
 """
 
 import argparse
@@ -22,7 +22,7 @@ from multimodal_perception.audio.transcribe_audio import WhisperTranscriber
 from multimodal_perception.audio.recorder import AudioRecorder
 from multimodal_perception.audio.important_feature_extractor import ImportantFeaturesExtractor
 
-CALIB_FOLDER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'multimodal_perception', 'data', 'calibration-phase'))
+CALIB_FOLDER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'multimodal_perception', 'data', 'calibration_phase'))
 os.makedirs(CALIB_FOLDER, exist_ok=True)
 
 
