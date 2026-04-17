@@ -375,21 +375,16 @@ class Guesser:
         filler phrases.
         """
         reactions = [
-            "Hmm… okay, give me a second.",
-            "Alright… thinking… thinking…",
-            "Let me just… pretend I know what I’m doing.",
-            "Hmm. This is harder than it looks.",
-            "Okay… big brain moment incoming.",
-            "Wait, wait… I almost have it.",
-            "Let me think this through before I embarrass myself.",
-            "Okay… analyzing… but like, casually.",
-            "Hmm… don’t rush me, I’m being smart.",
-            "I’m thinking. It’s subtle, but it’s happening.",
-            "Alright… calculating my chances of being wrong.",
-            "Hmm… this could go very well or very badly.",
-            "Thinking… with style.",
-            "Okay… activating strategic mode.",
-            "Hmm… I feel like I should know this.",
+            "Hmm.",
+            "Hmm…",
+            "Hmm, let's see.",
+            "Let's see…",
+            "Okay…",
+            "Alright…",
+            "One moment…",
+            "Hmm, let me think.",
+            "Just thinking…",
+            "Thinking…",
         ]
         return random.choice(reactions)
 
@@ -434,4 +429,3 @@ class Guesser:
         except Exception:
             pass
         sys.exit(0)
-
