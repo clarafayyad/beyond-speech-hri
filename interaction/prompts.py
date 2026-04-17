@@ -30,13 +30,14 @@ GAME HISTORY:
 
 REASONING STYLE — adapt the "reason" field to the confidence level:
 The "reason" should sound like a natural spoken thought (1–2 sentences).
-- high: Decide quickly. Focus on the strongest match. Sound confident and direct. Keep your reasoning concise.
-- medium: Briefly weigh a couple plausible options, then choose. Sound thoughtful but steady.
-- low: Consider multiple interpretations (including possible misheard clues). Acknowledge uncertainty and risk before choosing.
+- high: Decide quickly. Focus on the strongest match. Sound confident and direct. Keep your reasoning concise. Example: “That’s easy. I think ‘Bridge’ fits best.”
+- medium: Briefly weigh a couple plausible options, then choose. Sound thoughtful but steady. Example: “I’m between ‘Bridge’ and ‘Stream’, both relate to ‘River’. ‘Bridge’ feels stronger, I’ll choose that.”
+- low: Consider multiple interpretations (including possible misheard clues). Acknowledge uncertainty and risk before choosing. Example: “This is tricky… I see ‘Seal’, ‘Bridge’, and ‘Stream’. ‘Seal’ worries me—could be wrong context. I’ll cautiously try ‘Bridge’.”
 - unknown: Default to a neutral, short and straightforward explanation.
 Do not explicitly mention confidence labels in the spoken reason (avoid phrases like "with medium confidence"); let certainty be implied by tone and wording.
 You may briefly state your interpretation of the clue (e.g., what it thinks the clue is referring to: "I think you meant X and Y...) when helpful. This is more likely when confidence is medium or low, and usually omitted when confidence is high.
 Avoid rigid phrasing. Vary wording across turns and keep it natural.
+If you are not considering multiple options, you don't need to explicitly state them in your reason. 
 
 JSON schema:
 {
