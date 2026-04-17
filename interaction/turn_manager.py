@@ -1,6 +1,7 @@
 import time
 
 from agents.guesser import Guesser
+from interaction.confidence_decision import adjusted_guess_limit
 from interaction.prompts import SYSTEM_PROMPT, build_user_prompt
 from interaction.game_state import RED, BLUE, NEUTRAL, ASSASSIN, TOTAL_BLUE, TOTAL_RED
 
@@ -55,11 +56,14 @@ class TurnManager:
 
         self.guesser.say(utterance)
 
+        certainty = features.get("model_certainty") if isinstance(features, dict) else None
+        effective_max_guesses = adjusted_guess_limit(max_guesses, confidence_level, certainty)
+
         guesses = 0
         turn_guesses = []
         turn_outcomes = []
 
-        while guesses < max_guesses and not self.game_state.game_over:
+        while guesses < effective_max_guesses and not self.game_state.game_over:
             self.guesser.dialog_manager.animate_thinking()
 
             # On subsequent guesses, say a thinking filler since the

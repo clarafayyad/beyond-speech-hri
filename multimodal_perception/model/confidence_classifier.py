@@ -186,6 +186,10 @@ class ConfidenceClassifier:
         logits = np.dot(self.W, x) + self.b  # shape (3,)
         return self._softmax(logits)
 
+    @staticmethod
+    def confidence_score(probs) -> float:
+        return float(np.max(probs))
+
     def classify(self, features: dict) -> (float, str):
         probs = self.probs(features)
         label = [CONFIDENCE_HIGH, CONFIDENCE_LOW, CONFIDENCE_MEDIUM][np.argmax(probs)]

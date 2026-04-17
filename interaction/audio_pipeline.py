@@ -147,7 +147,10 @@ class AudioPipeline:
         clipped_path = self._clip_last_seconds(audio_path, seconds=60)
 
         features = self.extractor.extract(clipped_path)
-        _, confidence_level = self.classifier.classify(features)
+        probs, confidence_level = self.classifier.classify(features)
+        model_certainty = self.classifier.confidence_score(probs)
+        features = dict(features)
+        features["model_certainty"] = model_certainty
 
         # Clean up the temporary audio files now that features have been extracted
         # Remove clipped file if it is a different temporary file
@@ -170,11 +173,15 @@ class AudioPipeline:
             "clue": clue,
             "features": _to_serializable(features),
             "confidence_level": confidence_level,
+            "model_certainty": model_certainty,
         }
         self._log_entries.append(entry)
         self._save_log()
 
-        print(f"[AudioPipeline] Turn {turn} | clue='{clue}' | confidence={confidence_level}")
+        print(
+            f"[AudioPipeline] Turn {turn} | clue='{clue}' | "
+            f"confidence={confidence_level} certainty={model_certainty:.3f}"
+        )
         return features, confidence_level
 
     def _save_log(self):
