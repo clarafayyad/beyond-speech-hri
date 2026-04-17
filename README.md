@@ -68,7 +68,7 @@ This is the calibration phase used to extract participant-specific feature distr
 2. Run the [calibration script](interaction/run_calibration.py) by setting the appropriate `participant_id` and `device_index`
 3. After each recording, enter the participant self-report confidence (`low`, `medium`, or `high`) when prompted. It is stored in the calibration CSV as `self_report` for post-hoc calibration during inference.
 
-This will save extracted features to a file per participant under `multimodal_perception/data/calibrartion_phase`.
+This will save extracted features to a file per participant under `multimodal_perception/data/calibration_phase`.
 These features will then be used for normalization before confidence estimation during the actual experiment.
 
 ---
