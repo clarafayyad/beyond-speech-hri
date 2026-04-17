@@ -30,7 +30,7 @@ GAME HISTORY:
 
 REASONING STYLE — adapt the "reason" field to the confidence level:
 The "reason" should sound like a natural spoken thought (1–2 sentences).
-- high: Decide quickly. Focus on the strongest match. Sound confident and direct.
+- high: Decide quickly. Focus on the strongest match. Sound confident and direct. Keep your reasoning concise.
 - medium: Briefly weigh a couple plausible options, then choose. Sound thoughtful but steady.
 - low: Consider multiple interpretations (including possible misheard clues). Acknowledge uncertainty and risk before choosing.
 - unknown: Default to a neutral, short and straightforward explanation.
