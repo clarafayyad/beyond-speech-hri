@@ -2,9 +2,10 @@ import random
 import re
 import asyncio
 import wave
+from queue import Queue
 from os import environ
 from threading import Thread
-from time import sleep, strftime
+from time import sleep
 
 import numpy as np
 from sic_framework.core import sic_logging
@@ -21,6 +22,7 @@ from dotenv import load_dotenv
 
 from agents.stt_manager import RealTimeSTTService, DialogFlowSTTService
 from agents.tts_manager import NaoqiTTSConf, TTSConf, TTSCacher, ElevenLabsTTSConf, ElevenLabsTTS
+from interaction.utterance_log import build_utterance_log_path, format_utterance_log_line
 
 
 class InteractionConf:
@@ -68,6 +70,7 @@ class DialogManager:
         # Data logging
         self._log_queue = None
         self._log_thread = None
+        self.utterance_log_path = None
 
         # Interaction configuration
         self.interaction_conf = interaction_conf
@@ -144,6 +147,16 @@ class DialogManager:
             self.stt_service = DialogFlowSTTService(mic_index=self.device_manager.mic, dialogflow_conf=dialogflow_conf)
         print("Complete and ready for interaction!")
 
+        self._setup_utterance_logging()
+
+    def _setup_utterance_logging(self):
+        self.utterance_log_path = build_utterance_log_path(self.interaction_conf.participant_id)
+        if not self.utterance_log_path:
+            return
+        self._log_queue = Queue()
+        self._log_thread = Thread(target=self.log_writer, args=(self.utterance_log_path,), daemon=True)
+        self._log_thread.start()
+
     def log_writer(self, log_path):
         with open(log_path, 'a', encoding='utf-8') as f:
             while True:
@@ -155,8 +168,16 @@ class DialogManager:
 
     def log_utterance(self, speaker, text):
         if self._log_queue:
-            timestamp = strftime("%Y-%m-%d %H:%M:%S")
-            self._log_queue.put(f"[{timestamp}] {speaker}: {text}")
+            self._log_queue.put(format_utterance_log_line(speaker=speaker, text=text))
+
+    def shutdown_logging(self):
+        if not self._log_queue:
+            return
+        self._log_queue.put(None)
+        if self._log_thread:
+            self._log_thread.join(timeout=2)
+        self._log_queue = None
+        self._log_thread = None
 
     def naoqi_say(self, text, sleep_time=None, animated=False):
         self.device_manager.tts.request(
@@ -170,6 +191,7 @@ class DialogManager:
                                                                 'always_regenerate'])
     def say(self, text, speaking_rate, sleep_time=None, animated=None, amplified=False, always_regenerate=False):
         print("Saying: ", text)
+        self.log_utterance(speaker='robot', text=text)
         if isinstance(self.tts_conf, NaoqiTTSConf):
             self.naoqi_say(text, sleep_time=sleep_time, animated=animated)
         elif isinstance(self.tts_conf, ElevenLabsTTSConf):
@@ -191,7 +213,6 @@ class DialogManager:
             if not always_regenerate:
                 audio_file = self.tts_cacher.load_audio_file(tts_key)
                 if audio_file:
-                    self.log_utterance(speaker='robot', text=f'{chunk} (cache)')
                     self.play_audio(audio_file, log=False)
                     continue
 
@@ -200,7 +221,6 @@ class DialogManager:
 
             # Play audio
             self.speaker.request(AudioRequest(audio_bytes, self.sample_rate))
-            self.log_utterance(speaker='robot', text=f'{chunk}')
 
             # Sleep if requested
             if sleep_time and sleep_time > 0:
@@ -299,6 +319,8 @@ class DialogManager:
         print("Listening...")
         transcript = self.stt_service.listen()
         print("Heard: ", transcript)
+        if transcript:
+            self.log_utterance(speaker='spymaster', text=transcript)
         return transcript
 
     def _start_loop(self):
