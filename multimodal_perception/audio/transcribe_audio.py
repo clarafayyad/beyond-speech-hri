@@ -3,16 +3,21 @@ import re
 
 
 class WhisperTranscriber:
-    def __init__(self):
-        self.model = whisper.load_model("base")
+    def __init__(self, model_name="base", initial_prompt=None):
+        self.model = whisper.load_model(model_name)
+        self.initial_prompt = initial_prompt
 
-    def transcribe_audio(self, audio_path):
-        result = self.model.transcribe(
-            audio_path,
-            language="en",
-            fp16=False,
-            word_timestamps=True
-        )
+    def transcribe_audio(self, audio_path, prompt=None):
+        effective_prompt = prompt if prompt is not None else self.initial_prompt
+        transcribe_kwargs = {
+            "language": "en",
+            "fp16": False,
+            "word_timestamps": True,
+        }
+        if effective_prompt:
+            transcribe_kwargs["initial_prompt"] = effective_prompt
+
+        result = self.model.transcribe(audio_path, **transcribe_kwargs)
         transcript = result["text"]
         print("Transcript: {}".format(transcript))
 
