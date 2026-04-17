@@ -67,10 +67,10 @@ class ExperimentLogger:
     condition : bool
         Whether the experiment uses the adaptive condition (``True``) or
         baseline (``False``).  Stored as ``"adaptive"`` / ``"baseline"``.
-    board : list[str]
-        The game board (list of card filenames).
-    key_map : dict | list | None
-        The colour-assignment map for the board.
+    board : str | list[str]
+        Board identifier (preferred) or board data.
+    key_map : str | dict | list | None
+        Key-map identifier (preferred) or map data.
     log_dir : str
         Directory where the CSV file is written.
     """
@@ -122,12 +122,26 @@ class ExperimentLogger:
         # Ensure features is JSON-serializable (convert numpy types etc.)
         features_serializable = _make_json_serializable(features) if features else None
 
+        board_value = (
+            json.dumps(self.board) if isinstance(self.board, (dict, list, tuple, set))
+            else str(self.board)
+        )
+        key_map_value = (
+            ""
+            if self.key_map is None
+            else (
+                json.dumps(self.key_map)
+                if isinstance(self.key_map, (dict, list, tuple, set))
+                else str(self.key_map)
+            )
+        )
+
         row = {
             "participant_id": self.participant_id,
             "condition": self.condition,
             "turn": turn,
-            "board": json.dumps(self.board),
-            "key_map": json.dumps(self.key_map) if self.key_map is not None else "",
+            "board": board_value,
+            "key_map": key_map_value,
             "clue_word": clue_word,
             "clue_number": clue_number,
             "features": json.dumps(features_serializable) if features_serializable else "",

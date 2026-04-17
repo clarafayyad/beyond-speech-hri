@@ -41,7 +41,14 @@ def run():
     input("Press Enter to start the game")
 
     # Start the interaction
-    loop = GameLoop(guesser, game_state, participant_id=participant_id, is_adaptive=is_adaptive, key_map=game.map)
+    loop = GameLoop(
+        guesser,
+        game_state,
+        participant_id=participant_id,
+        is_adaptive=is_adaptive,
+        board=game.board_id,
+        key_map=game.map_name,
+    )
     loop.play()
 
     # Shutdown

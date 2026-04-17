@@ -18,7 +18,7 @@ GRACE_PERIOD_WAIT_SECONDS = 1.0
 
 class GameLoop:
     def __init__(self, guesser: Guesser, game_state: GameState, max_turns=5,
-                 participant_id=None, is_adaptive=False, key_map=None):
+                 participant_id=None, is_adaptive=False, board=None, key_map=None):
         self.guesser = guesser
         self.game_state = game_state
         self.max_turns = max_turns
@@ -29,7 +29,7 @@ class GameLoop:
         self.experiment_logger = ExperimentLogger(
             participant_id=pid,
             is_adaptive=is_adaptive,
-            board=game_state.board,
+            board=board if board is not None else game_state.board,
             key_map=key_map,
         )
 
