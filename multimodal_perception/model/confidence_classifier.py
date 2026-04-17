@@ -48,6 +48,7 @@ class ConfidenceClassifier:
         self.calibration = None
         self.fallback_to_global = True
         self._calib_folder = _CALIB_FOLDER
+        self.participant_id = participant_id
         if participant_id is not None:
             self._load_calibration_for_participant(participant_id)
 
@@ -180,7 +181,7 @@ class ConfidenceClassifier:
         return self.calibration['global'] if self.fallback_to_global else None
 
     def _get_self_report_prior_for_participant(self, participant_id):
-        if self.calibration is None:
+        if self.calibration is None or participant_id is None:
             return None
         priors = self.calibration.get('self_report_priors') or {}
         participant_priors = priors.get('participants') or {}
@@ -282,9 +283,8 @@ class ConfidenceClassifier:
 
     def classify(self, features: dict) -> (float, str):
         probs = self.probs(features)
-        pid = features.get(PARTICIPANT_COL) or features.get('participant')
-        prior = self._get_self_report_prior_for_participant(pid)
+        prior = self._get_self_report_prior_for_participant(self.participant_id )
         if prior is not None:
-            probs = self.adjust_with_self_report_prior(probs, prior, features.get('self_report_alpha', self.DEFAULT_SELF_REPORT_ALPHA))
+            probs = self.adjust_with_self_report_prior(probs, prior)
         label = [CONFIDENCE_HIGH, CONFIDENCE_LOW, CONFIDENCE_MEDIUM][np.argmax(probs)]
         return probs, label
