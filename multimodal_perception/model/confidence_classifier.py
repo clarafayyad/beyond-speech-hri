@@ -241,7 +241,7 @@ class ConfidenceClassifier:
         logits = np.dot(self.W, x) + self.b  # shape (3,)
         return self._softmax(logits)
 
-    def adjust_with_self_report(self, probs: np.ndarray, self_report_prior: np.ndarray, alpha: float = DEFAULT_SELF_REPORT_ALPHA) -> np.ndarray:
+    def adjust_with_self_report_prior(self, probs: np.ndarray, self_report_prior: np.ndarray, alpha: float = DEFAULT_SELF_REPORT_ALPHA) -> np.ndarray:
         adjusted = np.array(probs, dtype=float)
         total = np.sum(adjusted)
         if total > 0:
@@ -270,11 +270,15 @@ class ConfidenceClassifier:
             adjusted = adjusted / denom
         return adjusted
 
+    # Backward-compatible alias
+    def adjust_with_self_report(self, probs: np.ndarray, self_report_prior: np.ndarray, alpha: float = DEFAULT_SELF_REPORT_ALPHA) -> np.ndarray:
+        return self.adjust_with_self_report_prior(probs, self_report_prior, alpha)
+
     def classify(self, features: dict) -> (float, str):
         probs = self.probs(features)
         pid = features.get(PARTICIPANT_COL) or features.get('participant')
         prior = self._get_self_report_prior_for_participant(pid)
         if prior is not None:
-            probs = self.adjust_with_self_report(probs, prior, features.get('self_report_alpha', self.DEFAULT_SELF_REPORT_ALPHA))
+            probs = self.adjust_with_self_report_prior(probs, prior, features.get('self_report_alpha', self.DEFAULT_SELF_REPORT_ALPHA))
         label = [CONFIDENCE_HIGH, CONFIDENCE_LOW, CONFIDENCE_MEDIUM][np.argmax(probs)]
         return probs, label
