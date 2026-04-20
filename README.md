@@ -70,7 +70,7 @@ This is the calibration phase used to extract participant-specific feature distr
    - `python interaction/run_whisper_transcriber.py --device-index <MIC_INDEX>`
    - or pass an existing file: `python interaction/run_whisper_transcriber.py --audio-path /path/to/audio.wav`
 
-This will save extracted features to a file per participant under `multimodal_perception/data/calibrartion_phase`.
+This will save extracted features to a file per participant under `multimodal_perception/data/calibration_phase`.
 These features will then be used for normalization before confidence estimation during the actual experiment.
 
 ---
