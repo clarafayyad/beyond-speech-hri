@@ -2,24 +2,27 @@ import whisper
 import re
 
 DEFAULT_INITIAL_PROMPT = (
-    "This is a Codenames spymaster speaking. "
-    "Transcribe everything exactly as spoken, including filler words like 'um' or 'uh', hesitations, and corrections. "
-    "The speaker may think out loud before giving the final clue. "
-    "The final clue is always at the end and consists of one single word followed by a number. "
-    "Return the full transcription."
+    "This is spoken English in the board game Codenames. "
+    "Transcribe exactly what is spoken. "
+    "The final clue is usually one single word followed by a number from 1 to 8. "
+    "Prefer plain English clue words, for example: 'urban two', 'shell two', 'animal four', 'glass two'. "
+    "Do not output non-English text unless it was clearly spoken."
 )
 
 
 class WhisperTranscriber:
     def __init__(self):
-        self.model = whisper.load_model("base")
+        self.model = whisper.load_model("small.en")
 
     def transcribe_audio(self, audio_path):
         result = self.model.transcribe(
             audio_path,
+            task="transcribe",
             language="en",
             fp16=False,
             word_timestamps=True,
+            temperature=0.0,
+            condition_on_previous_text=False,
             initial_prompt=DEFAULT_INITIAL_PROMPT
         )
         transcript = result["text"]
