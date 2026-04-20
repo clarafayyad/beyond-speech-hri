@@ -66,6 +66,9 @@ run-gpt
 This is the calibration phase used to extract participant-specific feature distribution and improve robustness. 
 1.  Run `python -m sounddevice` to list devices and find the correct index for your microphone
 2. Run the [calibration script](interaction/run_calibration.py) by setting the appropriate `participant_id` and `device_index`
+3. To quickly test Whisper transcription quality, run:
+   - `python interaction/run_whisper_transcriber.py --device-index <MIC_INDEX>`
+   - or pass an existing file: `python interaction/run_whisper_transcriber.py --audio-path /path/to/audio.wav`
 
 This will save extracted features to a file per participant under `multimodal_perception/data/calibrartion_phase`.
 These features will then be used for normalization before confidence estimation during the actual experiment.
