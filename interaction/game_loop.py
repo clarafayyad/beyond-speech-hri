@@ -56,7 +56,7 @@ class GameLoop:
             if self.game_state.turn > 0:
                 continuity_text = self.guesser.get_continuity_remark(
                     self.game_state,
-                    "adaptive" if self.guesser.is_adaptive() else None,
+                    adaptive=self.guesser.is_adaptive(),
                 )
                 if continuity_text:
                     self.guesser.say(continuity_text)
