@@ -12,10 +12,10 @@ from agents.guesser import Guesser
 
 # Configurations
 participant_id = "1"
-is_adaptive = False
+is_adaptive = True
 stt_mic_device_index = 2  # This should be the robot's microphone (or desktop mic if not using the robot)
 audio_features_mic_device_index = 1  # This should be the external mic that the participant is wearing
-board_config_number = 1
+board_config_number = None
 robot_ip = '10.0.0.148'
 
 

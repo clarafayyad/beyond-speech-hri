@@ -1,7 +1,7 @@
 import time
 
 from agents.guesser import Guesser
-from interaction.prompts import SYSTEM_PROMPT, build_user_prompt
+from interaction.prompts import SYSTEM_PROMPT_ADAPTIVE, SYSTEM_PROMPT_CONTROL, build_user_prompt
 from interaction.game_state import RED, BLUE, NEUTRAL, ASSASSIN, TOTAL_BLUE, TOTAL_RED
 
 
@@ -16,8 +16,9 @@ class TurnManager:
         self.game_state = game_state
 
     def make_guess(self, clue_word, confidence_level=None):
+        system_prompt = SYSTEM_PROMPT_ADAPTIVE if confidence_level is not None else SYSTEM_PROMPT_CONTROL
         response = self.guesser.prompt_llm(
-            system_prompt=SYSTEM_PROMPT,
+            system_prompt=system_prompt,
             user_prompt=build_user_prompt(clue_word, self.game_state, confidence_level)
         )
 

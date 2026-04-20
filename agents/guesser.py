@@ -282,10 +282,10 @@ class Guesser:
         elif confidence_level == CONFIDENCE_HIGH:
             reactions = [
                 "Oh, you sound confident. I like that.",
-                "Alright! That was clear.",
-                "Nice, that sounded very certain.",
-                "Okay, I'm feeling good about this.",
-                "Got it — strong signal."
+                "Alright—that was very clear.",
+                "Nice, that sounded super certain.",
+                "Okay, strong signal—I’m into it.",
+                "Got it—that felt really deliberate."
             ]
 
         return random.choice(reactions) if reactions else None
