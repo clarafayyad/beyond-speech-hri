@@ -26,6 +26,17 @@ class WhisperTranscriber:
             initial_prompt=DEFAULT_INITIAL_PROMPT
         )
         transcript = result["text"]
+        if self._contains_prompt_leak(transcript):
+            result = self.model.transcribe(
+                audio_path,
+                task="transcribe",
+                language="en",
+                fp16=False,
+                word_timestamps=True,
+                temperature=0.0,
+                condition_on_previous_text=False,
+            )
+        transcript = result["text"]
         print("Transcript: {}".format(transcript))
 
         asr_words = []
@@ -38,6 +49,11 @@ class WhisperTranscriber:
                 })
 
         return transcript, asr_words
+
+    @staticmethod
+    def _contains_prompt_leak(transcript):
+        marker = "the final clue is usually one single word followed by a number"
+        return marker in transcript.lower()
 
     @staticmethod
     def clean_asr_word(word):
