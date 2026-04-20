@@ -15,7 +15,7 @@ class WhisperTranscriber:
         self.model = whisper.load_model("small.en")
 
     def transcribe_audio(self, audio_path):
-        result = self.model.transcribe(
+        final_result = self.model.transcribe(
             audio_path,
             task="transcribe",
             language="en",
@@ -25,9 +25,9 @@ class WhisperTranscriber:
             condition_on_previous_text=False,
             initial_prompt=DEFAULT_INITIAL_PROMPT
         )
-        transcript = result["text"]
+        transcript = final_result["text"]
         if self._contains_prompt_leak(transcript):
-            result = self.model.transcribe(
+            final_result = self.model.transcribe(
                 audio_path,
                 task="transcribe",
                 language="en",
@@ -36,11 +36,11 @@ class WhisperTranscriber:
                 temperature=0.0,
                 condition_on_previous_text=False,
             )
-        transcript = result["text"]
+        transcript = final_result["text"]
         print("Transcript: {}".format(transcript))
 
         asr_words = []
-        for seg in result['segments']:
+        for seg in final_result['segments']:
             for w in seg['words']:
                 asr_words.append({
                     "word": self.clean_asr_word(w['word']),

@@ -11,6 +11,7 @@ def _load_transcribe_module_with_fake_whisper(monkeypatch):
         def transcribe(self, *args, **kwargs):
             model_holder["transcribe_args"] = args
             model_holder["transcribe_kwargs"] = kwargs
+            model_holder["call_count"] = model_holder.get("call_count", 0) + 1
             return {
                 "text": "urban two",
                 "segments": [
@@ -64,6 +65,7 @@ def test_transcribe_audio_uses_more_constrained_whisper_settings(monkeypatch):
     assert kwargs["condition_on_previous_text"] is False
     assert "urban two" in kwargs["initial_prompt"]
     assert "shell two" in kwargs["initial_prompt"]
+    assert model_holder["call_count"] == 1
 
 
 def test_transcribe_audio_retries_without_prompt_on_prompt_leak(monkeypatch):
