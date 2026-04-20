@@ -53,8 +53,8 @@ def get_baseline_continuity_utterance(game_state):
             "Last round was rough, but let's bounce back!",
             "We've had better rounds, but I'm still optimistic!",
             "Okay, last round didn't go our way. Fresh start!",
-            "Tough luck before, but we've got another chance!",
-            "That was a setback, but we're not giving up!",
+            "Tough luck before this round, but we've got another chance!",
+            "Last round was a setback, but we're not giving up!",
         ]
 
     return random.choice(reactions)
