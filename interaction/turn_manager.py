@@ -42,15 +42,9 @@ class TurnManager:
 
     def play_turn(self, clue_word, max_guesses, confidence_level=None, features=None):
         # Say exactly one pre-guess utterance, chosen by a simple fallback:
-        #   Turn 0 (no history): confidence reaction → thinking filler
-        #   Later turns: continuity remark → confidence reaction → thinking filler
+        #   confidence reaction → thinking filler
         confidence_text = self.guesser.get_confidence_level_reaction(confidence_level, features)
-        continuity_text = self.guesser.get_continuity_remark(self.game_state, confidence_level)
-
-        if self.game_state.turn == 0:
-            utterance = confidence_text or self.guesser.get_random_thinking()
-        else:
-            utterance = continuity_text or confidence_text or self.guesser.get_random_thinking()
+        utterance = confidence_text or self.guesser.get_random_thinking()
 
         self.game_state.confidence_history.append(confidence_level)
 
