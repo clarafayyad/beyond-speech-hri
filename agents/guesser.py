@@ -15,6 +15,7 @@ from agents.llm_agent import LLMAgent
 from agents.pepper_tablet.display_service import PepperTabletDisplayService
 from agents.stt_manager import RealTimeSTTService
 from interaction.audio_pipeline import AudioPipeline
+from interaction.state_acknowledgment import get_additional_state_acknowledgment
 
 from interaction.continuity import get_baseline_continuity_utterance, get_adaptive_continuity_utterance
 from multimodal_perception.model.confidence_classifier import CONFIDENCE_LOW, CONFIDENCE_HIGH, CONFIDENCE_MEDIUM
@@ -256,6 +257,10 @@ class Guesser:
             Optional audio-feature dict.  When a notable feature is found,
             a feature-grounded comment replaces the generic reaction.
         """
+        state_comment = get_additional_state_acknowledgment(features) if features else ""
+        if state_comment:
+            return state_comment
+
         comment = Guesser._feature_comment(features, confidence_level) if features else ""
 
         if comment:

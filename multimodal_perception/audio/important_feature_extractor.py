@@ -15,6 +15,13 @@ class ImportantFeaturesExtractor:
 
     def __init__(self, whisper):
         self.whisper = whisper
+        self.disfluency_detector = None
+        try:
+            # Optional pretrained disfluency model used for richer state inference.
+            from multimodal_perception.audio.disfluency import DisfluencyDetector
+            self.disfluency_detector = DisfluencyDetector()
+        except Exception:
+            self.disfluency_detector = None
 
     def extract(self, audio_path: str) -> dict:
         """Extract features from `audio_path` and return raw base features only."""
@@ -27,6 +34,12 @@ class ImportantFeaturesExtractor:
 
         # transcription
         transcript, asr_words = self.whisper.transcribe_audio(audio_path)
+        disfluency_score = None
+        if self.disfluency_detector is not None and transcript:
+            try:
+                disfluency_score = self.disfluency_detector.get_disfluency(transcript)
+            except Exception:
+                disfluency_score = None
 
         # compute raw features
         duration = librosa.get_duration(y=y, sr=sr)
@@ -50,4 +63,5 @@ class ImportantFeaturesExtractor:
             'energy_std': energy_std,
             'pause_mid_speech': pause_mid,
             'pause_count': pause_count,
+            'disfluency_score': disfluency_score,
         }
