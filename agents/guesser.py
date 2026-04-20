@@ -98,40 +98,14 @@ class Guesser:
     def is_adaptive(self):
         return self.dialog_manager.interaction_conf.adaptive
 
-    def get_continuity_remark(self, game_state, confidence_level=None, adaptive=None):
+    @staticmethod
+    def get_continuity_remark(game_state, adaptive=None):
         """Return a context-aware remark referencing previous turn performance,
         or ``None`` when nothing should be said (e.g. first turn).
-
-        Parameters
-        ----------
-        game_state : GameState
-            Current game state; must expose ``turn``, ``history``, and
-            ``confidence_history`` attributes.
-        confidence_level : str | None
-            Backward-compatible signal used to decide adaptive mode when
-            *adaptive* is not explicitly provided.
-        adaptive : bool | None
-            When ``True`` an adaptive remark is generated; when ``False`` a
-            baseline remark is used.  When ``None``, behavior falls back to
-            checking whether *confidence_level* is ``None``.
         """
-        if adaptive is None:
-            adaptive = confidence_level is not None
-
         if adaptive:
             return get_adaptive_continuity_utterance(game_state)
         return get_baseline_continuity_utterance(game_state)
-
-    def say_continuity_remark(self, game_state, confidence_level=None):
-        """Utter a context-aware remark referencing previous turn performance.
-
-        In adaptive mode (*confidence_level* is not ``None``) the remark also
-        considers recent confidence trends.  In baseline mode it references
-        prior performance in a general way.  Does nothing on the first turn.
-        """
-        utterance = self.get_continuity_remark(game_state, confidence_level)
-        if utterance:
-            self.say(utterance)
 
     @staticmethod
     def _feature_comment(features: dict, confidence_level: str) -> str:

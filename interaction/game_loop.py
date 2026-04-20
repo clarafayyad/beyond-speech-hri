@@ -54,10 +54,7 @@ class GameLoop:
             self.guesser.pause_recording()
 
             if self.game_state.turn > 0:
-                continuity_text = self.guesser.get_continuity_remark(
-                    self.game_state,
-                    adaptive=self.guesser.is_adaptive(),
-                )
+                continuity_text = self.guesser.get_continuity_remark(self.game_state,  adaptive=self.guesser.is_adaptive())
                 if continuity_text:
                     self.guesser.say(continuity_text)
 
