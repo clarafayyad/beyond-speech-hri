@@ -119,7 +119,7 @@ class Guesser:
             adaptive = confidence_level is not None
 
         if adaptive:
-            return get_adaptive_continuity_utterance(game_state, confidence_level)
+            return get_adaptive_continuity_utterance(game_state)
         return get_baseline_continuity_utterance(game_state)
 
     def say_continuity_remark(self, game_state, confidence_level=None):

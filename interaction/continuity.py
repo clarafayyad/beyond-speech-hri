@@ -60,7 +60,7 @@ def get_baseline_continuity_utterance(game_state):
     return random.choice(reactions)
 
 
-def get_adaptive_continuity_utterance(game_state, confidence_level):
+def get_adaptive_continuity_utterance(game_state):
     """Return an adaptive continuity utterance, or ``None`` on turn 0."""
     if game_state.turn == 0:
         return None
