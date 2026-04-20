@@ -1,15 +1,29 @@
 import random
+import re
 
 
-_RISK_KEYWORDS = (
+_GENERAL_RISK_KEYWORDS = (
     "risky",
     "dangerous",
     "watch out",
     "careful",
-    "assassin",
     "not sure",
     "uncertain",
 )
+_DOMAIN_RISK_KEYWORDS = (
+    # In Codenames, "assassin" is an explicit high-risk signal.
+    "assassin",
+)
+_RISK_KEYWORD_PATTERNS = tuple(
+    re.compile(rf"\b{re.escape(keyword)}\b")
+    for keyword in (_GENERAL_RISK_KEYWORDS + _DOMAIN_RISK_KEYWORDS)
+)
+
+HESITATION_COUNT_THRESHOLD = 2
+LONG_PAUSE_THRESHOLD = 2.5
+SLOW_SPEECH_RATE_THRESHOLD = 1.5
+DISFLUENCY_THRESHOLD = 0.70
+RISK_DURATION_THRESHOLD = 12
 
 
 def _safe_float(value, default=0.0):
@@ -17,12 +31,29 @@ def _safe_float(value, default=0.0):
         if value is None:
             return default
         return float(value)
-    except Exception:
+    except (TypeError, ValueError):
         return default
 
 
+def _contains_risk_keyword(text: str) -> bool:
+    return any(pattern.search(text) for pattern in _RISK_KEYWORD_PATTERNS)
+
+
 def detect_additional_audio_states(features: dict | None) -> list[str]:
-    """Detect non-confidence conversational states from extracted audio features."""
+    """Detect non-confidence conversational states from extracted audio features.
+
+    Parameters
+    ----------
+    features : dict | None
+        Optional feature dictionary with keys such as ``transcript``,
+        ``verbal_hesitation_count``, ``pause_max``, ``speech_rate``,
+        ``duration``, and optional ``disfluency_score``.
+
+    Returns
+    -------
+    list[str]
+        Zero or more state labels from ``{"hesitation", "risk"}``.
+    """
     if not features:
         return []
 
@@ -37,17 +68,18 @@ def detect_additional_audio_states(features: dict | None) -> list[str]:
         if disfluency_score_raw is not None
         else None
     )
+    has_speech_rate = features.get("speech_rate") is not None
     transcript = str(features.get("transcript") or "").lower()
 
     hesitation_detected = (
-        hesitation_count >= 2
-        or pause_max >= 2.5
-        or (0 < speech_rate < 1.5)
-        or (disfluency_score is not None and disfluency_score >= 0.70)
+        hesitation_count >= HESITATION_COUNT_THRESHOLD
+        or pause_max >= LONG_PAUSE_THRESHOLD
+        or (has_speech_rate and speech_rate < SLOW_SPEECH_RATE_THRESHOLD)
+        or (disfluency_score is not None and disfluency_score >= DISFLUENCY_THRESHOLD)
     )
 
-    risk_detected = any(keyword in transcript for keyword in _RISK_KEYWORDS) or (
-        duration >= 12 and hesitation_detected
+    risk_detected = _contains_risk_keyword(transcript) or (
+        duration >= RISK_DURATION_THRESHOLD and hesitation_detected
     )
 
     states = []

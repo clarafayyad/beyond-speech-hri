@@ -2,8 +2,11 @@ import librosa
 import numpy as np
 import pandas as pd
 import os
+import logging
 
 from multimodal_perception.audio import feature_extractor
+
+logger = logging.getLogger(__name__)
 
 
 # Fixed calibration folder (relative to this module)
@@ -20,7 +23,8 @@ class ImportantFeaturesExtractor:
             # Optional pretrained disfluency model used for richer state inference.
             from multimodal_perception.audio.disfluency import DisfluencyDetector
             self.disfluency_detector = DisfluencyDetector()
-        except Exception:
+        except (ImportError, ModuleNotFoundError, OSError) as exc:
+            logger.debug("Disfluency detector unavailable: %s", exc)
             self.disfluency_detector = None
 
     def extract(self, audio_path: str) -> dict:
@@ -38,7 +42,8 @@ class ImportantFeaturesExtractor:
         if self.disfluency_detector is not None and transcript:
             try:
                 disfluency_score = self.disfluency_detector.get_disfluency(transcript)
-            except Exception:
+            except (RuntimeError, ValueError, TypeError) as exc:
+                logger.debug("Disfluency scoring failed: %s", exc)
                 disfluency_score = None
 
         # compute raw features
