@@ -114,7 +114,7 @@ class TestBaselineContinuity:
 class TestAdaptiveContinuity:
     def test_returns_none_on_turn_zero(self):
         gs = _FakeGameState(turn=0)
-        assert get_adaptive_continuity_utterance(gs, "high") is None
+        assert get_adaptive_continuity_utterance(gs) is None
 
     def test_all_correct_low_trend(self):
         gs = _FakeGameState(
@@ -125,7 +125,7 @@ class TestAdaptiveContinuity:
             ],
             confidence_history=["low", "low"],
         )
-        utterance = get_adaptive_continuity_utterance(gs, "low")
+        utterance = get_adaptive_continuity_utterance(gs)
         assert isinstance(utterance, str)
         assert len(utterance) > 0
 
@@ -138,7 +138,7 @@ class TestAdaptiveContinuity:
             ],
             confidence_history=["high", "high"],
         )
-        utterance = get_adaptive_continuity_utterance(gs, "high")
+        utterance = get_adaptive_continuity_utterance(gs)
         assert isinstance(utterance, str)
         assert len(utterance) > 0
 
@@ -151,7 +151,7 @@ class TestAdaptiveContinuity:
             ],
             confidence_history=["low", "low"],
         )
-        utterance = get_adaptive_continuity_utterance(gs, "low")
+        utterance = get_adaptive_continuity_utterance(gs)
         assert isinstance(utterance, str)
         assert len(utterance) > 0
 
@@ -165,7 +165,7 @@ class TestAdaptiveContinuity:
             ],
             confidence_history=["high", "medium"],
         )
-        assert get_adaptive_continuity_utterance(gs, "medium") is None
+        assert get_adaptive_continuity_utterance(gs) is None
 
     def test_empty_confidence_history_still_returns_utterance(self):
         gs = _FakeGameState(
@@ -175,6 +175,6 @@ class TestAdaptiveContinuity:
             ],
             confidence_history=[],
         )
-        utterance = get_adaptive_continuity_utterance(gs, "high")
+        utterance = get_adaptive_continuity_utterance(gs)
         assert isinstance(utterance, str)
         assert len(utterance) > 0
