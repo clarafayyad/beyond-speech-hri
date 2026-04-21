@@ -4,7 +4,7 @@ from interaction.state_acknowledgment import (
 )
 
 
-def test_detects_hesitation_from_audio_cues():
+def test_detects_hesitation_from_long_pause():
     features = {
         "transcript": "river",
         "duration": 3.0,
@@ -22,6 +22,17 @@ def test_detects_hesitation_from_speech_rate():
         "pause_max": 0.2,
         "speech_rate": 1.0,
         "verbal_hesitation_count": 0,
+    }
+    assert detect_additional_audio_states(features) == ["hesitation"]
+
+
+def test_detects_hesitation_from_hesitation_count():
+    features = {
+        "transcript": "river",
+        "duration": 3.0,
+        "pause_max": 0.2,
+        "speech_rate": 2.5,
+        "verbal_hesitation_count": 2,
     }
     assert detect_additional_audio_states(features) == ["hesitation"]
 
