@@ -154,9 +154,8 @@ SPEECH RECOGNITION:
 - Consider similar-sounding words only if the clue seems unclear or does not match well.
 
 REASONING STYLE:
-The "reason" should sound like a natural spoken thought (1–2 sentences).
-- Be conversational and concise
-- You may briefly consider alternatives, but do not over-explore
+The "reason" should sound like a natural spoken thought (1 sentence).
+- Be concise
 - Keep a steady, neutral tone across turns
 
 DO:
