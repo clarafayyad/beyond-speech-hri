@@ -2,12 +2,8 @@ import librosa
 import numpy as np
 import pandas as pd
 import os
-import logging
 
 from multimodal_perception.audio import feature_extractor
-
-logger = logging.getLogger(__name__)
-
 
 # Fixed calibration folder (relative to this module)
 _CALIB_FOLDER = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'calibration_phase'))
@@ -18,14 +14,6 @@ class ImportantFeaturesExtractor:
 
     def __init__(self, whisper):
         self.whisper = whisper
-        self.disfluency_detector = None
-        try:
-            # Optional pretrained disfluency model used for richer state inference.
-            from multimodal_perception.audio.disfluency import DisfluencyDetector
-            self.disfluency_detector = DisfluencyDetector()
-        except (ImportError, ModuleNotFoundError, OSError) as exc:
-            logger.debug("Disfluency detector unavailable: %s", exc)
-            self.disfluency_detector = None
 
     def extract(self, audio_path: str) -> dict:
         """Extract features from `audio_path` and return raw base features only."""
@@ -38,13 +26,6 @@ class ImportantFeaturesExtractor:
 
         # transcription
         transcript, asr_words = self.whisper.transcribe_audio(audio_path)
-        disfluency_score = None
-        if self.disfluency_detector is not None and transcript:
-            try:
-                disfluency_score = self.disfluency_detector.get_disfluency(transcript)
-            except (RuntimeError, ValueError, TypeError) as exc:
-                logger.debug("Disfluency scoring failed: %s", exc)
-                disfluency_score = None
 
         # compute raw features
         duration = librosa.get_duration(y=y, sr=sr)
@@ -68,5 +49,4 @@ class ImportantFeaturesExtractor:
             'energy_std': energy_std,
             'pause_mid_speech': pause_mid,
             'pause_count': pause_count,
-            'disfluency_score': disfluency_score,
         }

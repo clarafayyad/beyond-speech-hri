@@ -22,7 +22,6 @@ _RISK_KEYWORD_PATTERNS = tuple(
 HESITATION_COUNT_THRESHOLD = 2
 LONG_PAUSE_THRESHOLD = 2.5
 SLOW_SPEECH_RATE_THRESHOLD = 1.5
-DISFLUENCY_THRESHOLD = 0.70
 RISK_DURATION_THRESHOLD = 12
 
 
@@ -47,7 +46,7 @@ def detect_additional_audio_states(features: dict | None) -> list[str]:
     features : dict | None
         Optional feature dictionary with keys such as ``transcript``,
         ``verbal_hesitation_count``, ``pause_max``, ``speech_rate``,
-        ``duration``, and optional ``disfluency_score``.
+        and ``duration``.
 
     Returns
     -------
@@ -62,12 +61,6 @@ def detect_additional_audio_states(features: dict | None) -> list[str]:
     speech_rate = _safe_float(features.get("speech_rate"))
     duration = _safe_float(features.get("duration"))
 
-    disfluency_score_raw = features.get("disfluency_score")
-    disfluency_score = (
-        _safe_float(disfluency_score_raw)
-        if disfluency_score_raw is not None
-        else None
-    )
     has_speech_rate = features.get("speech_rate") is not None
     transcript = str(features.get("transcript") or "").lower()
 
@@ -75,7 +68,6 @@ def detect_additional_audio_states(features: dict | None) -> list[str]:
         hesitation_count >= HESITATION_COUNT_THRESHOLD
         or pause_max >= LONG_PAUSE_THRESHOLD
         or (has_speech_rate and speech_rate < SLOW_SPEECH_RATE_THRESHOLD)
-        or (disfluency_score is not None and disfluency_score >= DISFLUENCY_THRESHOLD)
     )
 
     risk_detected = _contains_risk_keyword(transcript) or (
