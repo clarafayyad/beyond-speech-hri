@@ -46,6 +46,7 @@ class CodenamesGame:
         self.board_image = config["board_image"]
 
         # Show the chosen configuration
+        print("Displaying board image...")
         Image.open(os.path.join(BOARD_DIR, self.board_image)).show()
 
         print(f"Loaded board {self.board_id}")

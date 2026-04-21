@@ -26,7 +26,9 @@ class ImportantFeaturesExtractor:
         y = feature_extractor.reduce_noise(y, sr)
 
         # transcription
+        print("Transcribing audio with Whisper...")
         transcript, asr_words = self.whisper.transcribe_audio(audio_path)
+        print("Transcript: {}".format(transcript))
 
         # compute raw features
         duration = librosa.get_duration(y=y, sr=sr)

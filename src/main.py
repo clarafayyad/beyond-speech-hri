@@ -13,17 +13,19 @@ from agents.guesser import Guesser
 # Configurations
 participant_id = "1"
 is_adaptive = True
-stt_mic_device_index = 2  # This should be the robot's microphone (or desktop mic if not using the robot)
+stt_mic_device_index = 4  # This should be the robot's microphone (or desktop mic if not using the robot)
 audio_features_mic_device_index = 1  # This should be the external mic that the participant is wearing
-board_config_number = None
+board_config_number = 1
 robot_ip = '10.0.0.148'
+use_robot = False  # Set to False if you want to run without the robot (using desktop audio instead)
 
 
 def run():
     # Conversational Agent Setup
     mic_conf = MicrophoneConf(device_index=stt_mic_device_index)
-    # device_manager = Pepper(ip=robot_ip)
     device_manager = Desktop(speakers_conf=SpeakersConf(sample_rate=22050), mic_conf=mic_conf)
+    if use_robot:
+        device_manager = Pepper(ip=robot_ip)
     tts_conf = ElevenLabsTTSConf(voice_id='EXAVITQu4vr4xnSDxMaL', stability=0.2)
     int_conf = InteractionConf(
         real_time_stt=False,

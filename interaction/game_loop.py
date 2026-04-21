@@ -67,6 +67,8 @@ class GameLoop:
             features = None
             confidence_level =  None
             if self.guesser.is_adaptive():
+                self.guesser.say_random_sounds()  # to fill the silent gap while processing audio and make it feel more natural
+                print("Processing audio for confidence level classification...")
                 features, confidence_level = self.guesser.stop_and_process_audio(clue_word, self.game_state.turn)
 
             current_turn = self.game_state.turn

@@ -375,6 +375,15 @@ class Guesser:
         ]
         self.say(random.choice(reactions))
 
+    def say_random_sounds(self):
+        reactions = [
+            "Hmm.",
+            "Mm-hmm.",
+            "Okay.",
+            "Alright.",
+        ]
+        self.say(random.choice(reactions))
+
     def say_random_game_over(self):
         reactions = [
             "That’s the end of the game!",
