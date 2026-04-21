@@ -23,6 +23,7 @@ class ImportantFeaturesExtractor:
         # load + preprocess
         t0 = time.time()
         y, sr = feature_extractor.load_audio(audio_path)
+        y_for_transcription = y
         print("Load:", time.time() - t0)
 
         t1 = time.time()
@@ -34,7 +35,7 @@ class ImportantFeaturesExtractor:
         # transcription
         t2 = time.time()
         print("Transcribing audio with Whisper...")
-        transcript, asr_words = self.whisper.transcribe_audio(audio_path)
+        transcript, asr_words = self.whisper.transcribe_audio(y_for_transcription)
         print("Whisper:", time.time() - t2)
 
         # compute raw features

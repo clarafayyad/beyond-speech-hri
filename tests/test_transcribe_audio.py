@@ -103,3 +103,13 @@ def test_transcribe_audio_retries_without_prompt_on_prompt_leak(monkeypatch):
     assert calls[0]["args"] == ("/tmp/fake.wav",)
     assert calls[0]["kwargs"]["initial_prompt"] == module.DEFAULT_INITIAL_PROMPT
     assert "initial_prompt" not in calls[1]["kwargs"]
+
+
+def test_transcribe_audio_accepts_preloaded_audio_array(monkeypatch):
+    module, _, model_holder = _load_transcribe_module_with_fake_whisper(monkeypatch)
+    transcriber = module.WhisperTranscriber()
+    audio_buffer = object()
+
+    transcriber.transcribe_audio(audio_buffer)
+
+    assert model_holder["transcribe_args"] == (audio_buffer,)

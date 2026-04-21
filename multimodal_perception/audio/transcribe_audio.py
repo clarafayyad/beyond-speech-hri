@@ -14,9 +14,9 @@ class WhisperTranscriber:
     def __init__(self):
         self.model = whisper.load_model("small.en")
 
-    def transcribe_audio(self, audio_path):
+    def transcribe_audio(self, audio_input):
         final_result = self.model.transcribe(
-            audio_path,
+            audio_input,
             task="transcribe",
             language="en",
             fp16=False,
@@ -28,7 +28,7 @@ class WhisperTranscriber:
         transcript = final_result["text"]
         if self._contains_prompt_leak(transcript):
             final_result = self.model.transcribe(
-                audio_path,
+                audio_input,
                 task="transcribe",
                 language="en",
                 fp16=False,
