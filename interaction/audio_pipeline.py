@@ -11,9 +11,18 @@ from multimodal_perception.model.confidence_classifier import ConfidenceClassifi
 from multimodal_perception.audio.important_feature_extractor import ImportantFeaturesExtractor
 from multimodal_perception.audio.recorder import AudioRecorder
 from multimodal_perception.audio.transcribe_audio import WhisperTranscriber
+from multiprocessing import Process, Queue
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 LOG_DIR = os.path.join(_HERE, "..", "logs")
+
+
+def _run_extract(audio_path, q):
+    # create fresh instances inside the new process
+    whisper = WhisperTranscriber()
+    extractor = ImportantFeaturesExtractor(whisper)
+    features = extractor.extract(audio_path)
+    q.put(features)
 
 
 class AudioPipeline:
@@ -36,9 +45,6 @@ class AudioPipeline:
     def __init__(self, participant_id: str, audio_device_index=None, log_dir=LOG_DIR):
         self.participant_id = participant_id
         self.recorder = AudioRecorder(device_index=audio_device_index)
-        # create a Whisper transcriber and pass it to the extractor
-        whisper = WhisperTranscriber()
-        self.extractor = ImportantFeaturesExtractor(whisper)
         # construct classifier with participant so it can auto-load calibration
         self.classifier = ConfidenceClassifier(participant_id=self.participant_id)
 
@@ -146,7 +152,13 @@ class AudioPipeline:
         # Clip the last 60 seconds of the recording before extracting features.
         clipped_path = self._clip_last_seconds(audio_path, seconds=60)
 
-        features = self.extractor.extract(clipped_path)
+        # Extract features in a separate process to avoid blocking the main thread and to
+        q = Queue()
+        p = Process(target=_run_extract, args=(clipped_path, q))
+        p.start()
+        p.join()
+        features = q.get()
+        # Classify confidence level based on extracted features
         _, confidence_level = self.classifier.classify(features)
 
         # Clean up the temporary audio files now that features have been extracted
