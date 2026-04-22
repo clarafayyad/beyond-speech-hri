@@ -189,7 +189,7 @@ class ConfidenceClassifier:
 
     def classify(self, features: dict) -> tuple[np.ndarray, str | None]:
         probs = self.probs(features)
-        max_prob = float(np.max(probs))
+        max_prob = np.max(probs)
         label = None
         if max_prob >= CONFIDENCE_THRESHOLD:
             label = [CONFIDENCE_HIGH, CONFIDENCE_LOW, CONFIDENCE_MEDIUM][np.argmax(probs)]

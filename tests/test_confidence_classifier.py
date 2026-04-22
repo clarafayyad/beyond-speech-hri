@@ -15,8 +15,9 @@ def test_classify_returns_none_below_threshold():
         [lead_prob, remainder / 2, remainder / 2]
     )
 
-    _probs, label = classifier.classify({})
+    probs, label = classifier.classify({})
 
+    assert np.allclose(np.sum(probs), 1.0)
     assert label is None
 
 
@@ -26,6 +27,7 @@ def test_classify_keeps_label_at_threshold():
         [CONFIDENCE_THRESHOLD, (1 - CONFIDENCE_THRESHOLD) / 2, (1 - CONFIDENCE_THRESHOLD) / 2]
     )
 
-    _probs, label = classifier.classify({})
+    probs, label = classifier.classify({})
 
+    assert np.allclose(np.sum(probs), 1.0)
     assert label == CONFIDENCE_HIGH
