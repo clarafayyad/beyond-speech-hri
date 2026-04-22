@@ -215,7 +215,7 @@ def build_user_prompt(clue_word, game_state, confidence_level=None, clue_transcr
     previous_clues = list(turns_seen.values())
 
     confidence_str = confidence_level or "unknown"
-    transcript_str = clue_transcript or ""
+    transcript_str = clue_transcript or "(not available)"
 
     return f"""
 Current turn: {game_state.turn}

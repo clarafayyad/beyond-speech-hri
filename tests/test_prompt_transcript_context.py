@@ -29,3 +29,9 @@ def test_system_prompt_adaptive_mentions_uncertainty_override():
     lower = SYSTEM_PROMPT_ADAPTIVE.lower()
     assert "important override" in lower
     assert "do not act as high" in lower
+
+
+def test_build_user_prompt_marks_transcript_unavailable():
+    state = _FakeGameState()
+    prompt = build_user_prompt("grow", state, confidence_level="medium")
+    assert 'Transcribed clue utterance: "(not available)"' in prompt
