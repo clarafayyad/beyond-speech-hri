@@ -9,8 +9,10 @@ from multimodal_perception.model.confidence_classifier import (
 
 def test_classify_returns_none_below_threshold():
     classifier = ConfidenceClassifier()
+    lead_prob = CONFIDENCE_THRESHOLD - 0.01
+    remainder = 1.0 - lead_prob
     classifier.probs = lambda _features: np.array(
-        [CONFIDENCE_THRESHOLD - 0.01, (1.01 - CONFIDENCE_THRESHOLD) / 2, (1.01 - CONFIDENCE_THRESHOLD) / 2]
+        [lead_prob, remainder / 2, remainder / 2]
     )
 
     _probs, label = classifier.classify({})
