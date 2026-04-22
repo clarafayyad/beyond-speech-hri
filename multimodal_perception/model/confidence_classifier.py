@@ -5,6 +5,7 @@ import pandas as pd
 CONFIDENCE_LOW = "low"
 CONFIDENCE_MEDIUM = "medium"
 CONFIDENCE_HIGH = "high"
+CONFIDENCE_THRESHOLD = 0.8
 
 SELECTED_FEATURES = [
     'duration', 'pause_max', 'verbal_hesitation_count_dev', 'duration_dev',
@@ -186,7 +187,10 @@ class ConfidenceClassifier:
         logits = np.dot(self.W, x) + self.b  # shape (3,)
         return self._softmax(logits)
 
-    def classify(self, features: dict) -> (float, str):
+    def classify(self, features: dict) -> tuple[np.ndarray, str | None]:
         probs = self.probs(features)
-        label = [CONFIDENCE_HIGH, CONFIDENCE_LOW, CONFIDENCE_MEDIUM][np.argmax(probs)]
+        max_prob = float(np.max(probs))
+        label = None
+        if max_prob >= CONFIDENCE_THRESHOLD:
+            label = [CONFIDENCE_HIGH, CONFIDENCE_LOW, CONFIDENCE_MEDIUM][np.argmax(probs)]
         return probs, label

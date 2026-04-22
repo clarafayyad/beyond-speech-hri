@@ -136,10 +136,10 @@ class AudioPipeline:
 
         Returns
         -------
-        tuple[dict, str]
+        tuple[dict, str | None]
             A ``(features, confidence_level)`` pair where *features* is the
             raw feature dict and *confidence_level* is ``"low"``,
-            ``"medium"``, or ``"high"``.
+            ``"medium"``, ``"high"``, or ``None`` when model certainty is low.
         """
         audio_path = self.recorder.stop()
 
