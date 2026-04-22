@@ -1,3 +1,4 @@
+# python
 import json
 import os
 import subprocess
@@ -17,12 +18,16 @@ _HERE = os.path.dirname(os.path.abspath(__file__))
 LOG_DIR = os.path.join(_HERE, "..", "logs")
 
 
-def _run_extract(audio_path, q):
-    # create fresh instances inside the new process
+def worker_loop(task_q, result_q):
+    # Initialize heavy objects once in the worker process
     whisper = WhisperTranscriber()
     extractor = ImportantFeaturesExtractor(whisper)
-    features = extractor.extract(audio_path)
-    q.put(features)
+    while True:
+        audio_path = task_q.get()
+        if audio_path is None:
+            break
+        features = extractor.extract(audio_path)
+        result_q.put(features)
 
 
 class AudioPipeline:
@@ -52,6 +57,38 @@ class AudioPipeline:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.log_path = os.path.join(log_dir, f"session_{participant_id}_{timestamp}.json")
         self._log_entries = []
+
+        # Persistent worker setup
+        self.task_q = Queue()
+        self.result_q = Queue()
+        self._worker_proc = Process(target=worker_loop, args=(self.task_q, self.result_q), daemon=True)
+        self._worker_proc.start()
+
+    def __del__(self):
+        try:
+            self.shutdown()
+        except Exception:
+            pass
+
+    def shutdown(self, timeout: Optional[float] = 5.0):
+        """Cleanly stop the worker process by sending None and joining."""
+        proc = getattr(self, "_worker_proc", None)
+        if proc is None:
+            return
+        try:
+            # Signal worker to exit
+            self.task_q.put(None)
+            proc.join(timeout)
+        except Exception:
+            pass
+        finally:
+            try:
+                if proc.is_alive():
+                    proc.terminate()
+                    proc.join()
+            except Exception:
+                pass
+            self._worker_proc = None
 
     def start_recording(self):
         """Start capturing audio from the configured input device."""
@@ -152,12 +189,10 @@ class AudioPipeline:
         # Clip the last 60 seconds of the recording before extracting features.
         clipped_path = self._clip_last_seconds(audio_path, seconds=60)
 
-        # Extract features in a separate process to avoid blocking the main thread and to
-        q = Queue()
-        p = Process(target=_run_extract, args=(clipped_path, q))
-        p.start()
-        p.join()
-        features = q.get()
+        # Submit to persistent worker and wait for result
+        self.task_q.put(clipped_path)
+        features = self.result_q.get()
+
         # Classify confidence level based on extracted features
         _, confidence_level = self.classifier.classify(features)
 
