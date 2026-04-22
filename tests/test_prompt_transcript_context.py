@@ -14,7 +14,7 @@ class _FakeGameState:
         self.turn = 1
 
 
-def test_build_user_prompt_includes_transcribed_clue_utterance():
+def test_build_user_prompt_includes_transcript():
     state = _FakeGameState()
     prompt = build_user_prompt(
         "grow",
