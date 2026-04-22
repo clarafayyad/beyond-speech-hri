@@ -25,6 +25,11 @@ SPEECH RECOGNITION:
 
 CONFIDENCE LEVEL GUIDANCE (affects BOTH reasoning strategy and tone):
 
+IMPORTANT OVERRIDE:
+- If the transcribed clue utterance includes explicit uncertainty language
+  (e.g., "this is tricky", "not sure", "maybe"), do not act as HIGH.
+- In that case, use a MEDIUM-style strategy even when confidence level says HIGH.
+
 HIGH:
 - Assume the clue is precise and intentional.
 - Identify the strongest match immediately.
@@ -184,7 +189,7 @@ JSON schema:
 """
 
 
-def build_user_prompt(clue_word, game_state, confidence_level=None):
+def build_user_prompt(clue_word, game_state, confidence_level=None, clue_transcript=None):
     unrevealed = []
 
     for idx, card in enumerate(game_state.board):
@@ -210,10 +215,12 @@ def build_user_prompt(clue_word, game_state, confidence_level=None):
     previous_clues = list(turns_seen.values())
 
     confidence_str = confidence_level or "unknown"
+    transcript_str = clue_transcript or ""
 
     return f"""
 Current turn: {game_state.turn}
 Clue: "{clue_word}"
+Transcribed clue utterance: "{transcript_str}"
 Spymaster confidence level: {confidence_str}
 
 Unrevealed cards:
