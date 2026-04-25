@@ -248,10 +248,8 @@ class Guesser:
         if confidence_level == CONFIDENCE_LOW:
             reactions = [
                 "Hmm… you don't sound very sure.",
-                "Okay… I'll be careful with this one.",
-                "That sounded a bit uncertain… let's think.",
+                "That sounded a bit uncertain…",
                 "Alright… not super confident, I hear you.",
-                "Hmm… I might need to play this safe."
             ]
         elif confidence_level == CONFIDENCE_MEDIUM:
             reactions = [
@@ -272,10 +270,28 @@ class Guesser:
 
         return random.choice(reactions) if reactions else None
 
-    def say_confidence_level_reaction(self, confidence_level, features=None):
-        text = self.get_confidence_level_reaction(confidence_level, features)
-        if text:
-            self.say(text)
+    def say_confidence_based_thinking_style(self, confidence_level):
+        if confidence_level == CONFIDENCE_LOW:
+            self.say_random_low_confidence_thinking()
+        elif confidence_level == CONFIDENCE_HIGH:
+            self.say_random_high_confidence_thinking()
+
+    def say_random_low_confidence_thinking(self):
+        reactions = [
+            "I'll be careful with this one",
+            "I will try to avoid risky guesses",
+            "Let's think carefully",
+            "I might need to play this safe",
+        ]
+        self.say(random.choice(reactions))
+
+    def say_random_high_confidence_thinking(self):
+        reactions = [
+            "I'll be bold with this one!",
+            "Easy peasy, let's do this!",
+            "Let's go for it!",
+        ]
+        self.say(random.choice(reactions))
 
     def say_random_red_reaction(self):
         reactions = [

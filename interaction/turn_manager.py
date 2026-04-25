@@ -46,10 +46,10 @@ class TurnManager:
         #   confidence reaction → thinking filler
         confidence_text = self.guesser.get_confidence_level_reaction(confidence_level, features)
         utterance = confidence_text or self.guesser.get_random_thinking()
+        self.guesser.say(utterance)
+        self.guesser.say_confidence_based_thinking_style(confidence_level)
 
         self.game_state.confidence_history.append(confidence_level)
-
-        self.guesser.say(utterance)
 
         guesses = 0
         turn_guesses = []
