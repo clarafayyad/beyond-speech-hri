@@ -15,11 +15,12 @@ class TurnManager:
         self.guesser = guesser
         self.game_state = game_state
 
-    def make_guess(self, clue_word, confidence_level=None):
+    def make_guess(self, clue_word, confidence_level=None, features=None):
         system_prompt = SYSTEM_PROMPT_ADAPTIVE if confidence_level is not None else SYSTEM_PROMPT_CONTROL
+        transcript = features.get("transcript",  "") if features else ""
         response = self.guesser.prompt_llm(
             system_prompt=system_prompt,
-            user_prompt=build_user_prompt(clue_word, self.game_state, confidence_level)
+            user_prompt=build_user_prompt(clue_word, self.game_state, confidence_level, transcript)
         )
 
         guess_idx = response["guess_index"]
@@ -56,13 +57,9 @@ class TurnManager:
 
         while guesses < max_guesses and not self.game_state.game_over:
             self.guesser.dialog_manager.animate_thinking()
+            self.guesser.say_random_thinking()
 
-            # On subsequent guesses, say a thinking filler since the
-            # pre-turn utterance was only spoken before the first guess.
-            if guesses > 0:
-                self.guesser.say_random_thinking()
-
-            guess_idx = self.make_guess(clue_word, confidence_level)
+            guess_idx = self.make_guess(clue_word, confidence_level, features)
             result = self.get_feedback(guess_idx)
 
             self.game_state.revealed[guess_idx] = result
