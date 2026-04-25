@@ -54,8 +54,8 @@ class CodenamesGame:
 
         # Show the chosen configuration
         image_path = os.path.join(BOARD_DIR, self.board_image)
-        p = Process(target=show_image, args=(image_path,))
-        p.start()  # runs independently
+        self.image_process = Process(target=show_image, args=(image_path,))
+        self.image_process.start()  # runs independently
 
         print(f"Loaded board {self.board_id}")
         print(f"Board image: {self.board_image}")
@@ -68,3 +68,8 @@ class CodenamesGame:
         print("Board (row-wise indices 0–19):")
         for idx, card in enumerate(self.board):
             print(f"{idx}: {card}")
+
+    def shutdown(self):
+        if self.image_process.is_alive():
+            self.image_process.terminate()
+            self.image_process.join()
