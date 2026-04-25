@@ -2,6 +2,7 @@ import os
 import json
 import random
 from PIL import Image
+from multiprocessing import Process
 
 CONFIG_DIR = "../assets/configs"
 CARDS_DIR = "../assets/cards"
@@ -28,6 +29,12 @@ def _load_config(config_number):
         return json.load(f)
 
 
+def show_image(path):
+    print("Displaying board image...")
+    img = Image.open(path)
+    img.show()
+
+
 class CodenamesGame:
     def __init__(self, config_number=None):
         print("\nSETTING UP GAME")
@@ -46,8 +53,9 @@ class CodenamesGame:
         self.board_image = config["board_image"]
 
         # Show the chosen configuration
-        print("Displaying board image...")
-        Image.open(os.path.join(BOARD_DIR, self.board_image)).show()
+        image_path = os.path.join(BOARD_DIR, self.board_image)
+        p = Process(target=show_image, args=(image_path,))
+        p.start()  # runs independently
 
         print(f"Loaded board {self.board_id}")
         print(f"Board image: {self.board_image}")
