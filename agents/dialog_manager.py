@@ -109,8 +109,9 @@ class DialogManager:
                                                                             self.background_loop)
             try:
                 connect_to_elevenlabs_future.result()
-                asyncio.run_coroutine_threadsafe(self.tts.speak("Initializing text to speech"),
-                                                 self.background_loop).result()
+                asyncio.run_coroutine_threadsafe(self.tts.speak("Initializing text to speech"), self.background_loop).result()
+                elevenlabs_thread = Thread(target=self._connect_elevenlabs, daemon=True)
+                elevenlabs_thread.start()
                 print('Elevenlabs TTS activated')
             except Exception as e:
                 self.logger.error("Failed to connect to elevenlabs", exc_info=e)
@@ -178,6 +179,15 @@ class DialogManager:
             self._log_thread.join(timeout=2)
         self._log_queue = None
         self._log_thread = None
+
+    def _connect_elevenlabs(self):
+        while True:
+            try:
+                asyncio.run_coroutine_threadsafe(self.tts.speak("Initializing text to speech"), self.background_loop).result()
+                self.logger.info('Elevenlabs still connected')
+            except Exception as e:
+                self.logger.error("Failed to connect to elevenlabs", exc_info=e)
+            sleep(150)
 
     def naoqi_say(self, text, sleep_time=None, animated=False):
         self.device_manager.tts.request(
