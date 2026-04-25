@@ -5,7 +5,7 @@ import pandas as pd
 CONFIDENCE_LOW = "low"
 CONFIDENCE_MEDIUM = "medium"
 CONFIDENCE_HIGH = "high"
-CONFIDENCE_THRESHOLD = 0.8
+CONFIDENCE_THRESHOLD = 0.7
 
 SELECTED_FEATURES = [
     'duration', 'pause_max', 'verbal_hesitation_count_dev', 'duration_dev',
