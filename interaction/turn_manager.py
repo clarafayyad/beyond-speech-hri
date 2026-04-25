@@ -66,6 +66,7 @@ class TurnManager:
             self.game_state.history.append({
                 "turn": self.game_state.turn,
                 "clue": clue_word,
+                "confidence": confidence_level,
                 "guess_number": guesses + 1,
                 "guess": guess_idx,
                 "card": self.game_state.board[guess_idx],

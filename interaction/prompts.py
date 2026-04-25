@@ -176,7 +176,7 @@ def build_user_prompt(clue_word, game_state, confidence_level=None, transcript="
     for entry in game_state.history:
         key = (entry["turn"], entry["clue"])
         if key not in turns_seen:
-            turns_seen[key] = {"turn": entry["turn"], "clue": entry["clue"], "guesses": []}
+            turns_seen[key] = {"turn": entry["turn"], "clue": entry["clue"], "confidence_level": entry["confidence"], "guesses": []}
         turns_seen[key]["guesses"].append({
             "card": entry.get("card") or game_state.board[entry["guess"]],
             "result": entry["result"]
