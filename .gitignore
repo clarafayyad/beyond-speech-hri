@@ -23,7 +23,7 @@ logs/*.csv
 logs/*.txt
 
 # Bulky data
-multimodal_perception/audio/test_audio
+multimodal_perception/data/calibration_phase/*
 assets/audio
 assets/video
 src/tts_cache
