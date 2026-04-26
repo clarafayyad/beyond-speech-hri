@@ -21,21 +21,15 @@ class ImportantFeaturesExtractor:
         """Extract features from `audio_path` and return raw base features only."""
 
         # load + preprocess
-        t0 = time.time()
         y, sr = feature_extractor.load_audio(audio_path)
-        print("Load:", time.time() - t0)
 
-        t1 = time.time()
         y = feature_extractor.trim_silence(y)
         y = feature_extractor.normalize_audio(y)
         y = feature_extractor.reduce_noise(y, sr)
-        print("Preprocess:", time.time() - t1)
 
         # transcription
-        t2 = time.time()
         print("Transcribing audio with Whisper...")
         transcript, asr_words = self.whisper.transcribe_audio(audio_path)
-        print("Whisper:", time.time() - t2)
 
         # compute raw features
         duration = librosa.get_duration(y=y, sr=sr)
