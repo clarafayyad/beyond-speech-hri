@@ -57,6 +57,9 @@ class AudioPipeline:
         self.log_path = os.path.join(log_dir, f"session_{participant_id}_{timestamp}.json")
         self._log_entries = []
 
+        self.audio_dir = os.path.join(log_dir, "audio", self.participant_id)
+        os.makedirs(self.audio_dir, exist_ok=True)
+
         # Persistent worker setup
         self.task_q = Queue()
         self.result_q = Queue()
@@ -203,12 +206,18 @@ class AudioPipeline:
             except OSError:
                 pass
 
-        # Remove the original recording file
+        # Save original recording in participant-specific folder
+        saved_audio_path = None
         if audio_path is not None:
             try:
-                os.unlink(audio_path)
-            except OSError:
-                pass
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                saved_audio_path = os.path.join(
+                    self.audio_dir,
+                    f"turn_{turn}_{timestamp}.wav"
+                )
+                os.rename(audio_path, saved_audio_path)
+            except Exception:
+                saved_audio_path = None
 
         entry = {
             "participant_id": self.participant_id,
@@ -216,6 +225,7 @@ class AudioPipeline:
             "clue": clue,
             "features": _to_serializable(features),
             "confidence_level": confidence_level,
+            "audio_file": saved_audio_path,
         }
         self._log_entries.append(entry)
         self._save_log()
