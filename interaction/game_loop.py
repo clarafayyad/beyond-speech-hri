@@ -9,6 +9,7 @@ from interaction.game_state import GameState
 from interaction.turn_manager import TurnManager
 from interaction.utils import parse_clue
 from multimodal_perception.audio.verbal_hesitation import FILLERS
+from multimodal_perception.model.confidence_classifier import CONFIDENCE_MEDIUM
 
 # Number of silent retries before asking the user to repeat
 GRACE_PERIOD_RETRIES = 2
@@ -65,13 +66,18 @@ class GameLoop:
 
             # Stop recording immediately after the clue is received and classify
             features = None
-            confidence_level =  None
+            confidence_level = None
             if self.guesser.is_adaptive():
                 self.guesser.say_random_sounds()  # to fill the silent gap while processing audio and make it feel more natural
                 print("Processing audio for confidence level classification...")
                 features, confidence_level = self.guesser.stop_and_process_audio(clue_word, self.game_state.turn)
 
             current_turn = self.game_state.turn
+            # Default to medium confidence for the first turn, because it usually takes a moment for the spymaster to give a clue
+            # which could lead to low confidence predictions that don't reflect the user's true confidence level.
+            if current_turn == 0:
+                confidence_level = CONFIDENCE_MEDIUM
+
             turn_result = self.turn_manager.play_turn(clue_word, num, confidence_level, features)
             turn_duration = time.time() - turn_start
 
