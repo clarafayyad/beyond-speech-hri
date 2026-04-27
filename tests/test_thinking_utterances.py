@@ -21,8 +21,6 @@ def _get_thinking_utterances():
 
 def test_thinking_utterances_are_simple_thinking_signals():
     assert _get_thinking_utterances() == [
-        "Hmm.",
-        "Hmm…",
         "Hmm, let's see.",
         "Let's see…",
         "Okay…",

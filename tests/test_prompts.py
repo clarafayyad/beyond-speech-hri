@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from interaction.prompts import SYSTEM_PROMPT, build_user_prompt
+from interaction.prompts import SYSTEM_PROMPT_ADAPTIVE, build_user_prompt
 
 
 # ---------------------------------------------------------------------------
@@ -11,48 +11,48 @@ from interaction.prompts import SYSTEM_PROMPT, build_user_prompt
 
 class TestSystemPromptReasoningStyle:
     def test_system_prompt_contains_reasoning_style_section(self):
-        assert "REASONING STYLE" in SYSTEM_PROMPT
+        assert "REASONING STYLE" in SYSTEM_PROMPT_ADAPTIVE
 
     def test_system_prompt_high_confidence_style(self):
-        assert "high confidence" in SYSTEM_PROMPT
+        assert "high confidence" in SYSTEM_PROMPT_ADAPTIVE
         # High confidence should indicate decisive/short language
-        assert "decisive" in SYSTEM_PROMPT or "short" in SYSTEM_PROMPT or "minimal" in SYSTEM_PROMPT
+        assert "decisive" in SYSTEM_PROMPT_ADAPTIVE or "short" in SYSTEM_PROMPT_ADAPTIVE or "minimal" in SYSTEM_PROMPT_ADAPTIVE
 
     def test_system_prompt_medium_confidence_style(self):
-        assert "medium confidence" in SYSTEM_PROMPT
+        assert "medium confidence" in SYSTEM_PROMPT_ADAPTIVE
         # Medium confidence should mention 2 candidate options
-        assert "2 candidate" in SYSTEM_PROMPT or "two candidate" in SYSTEM_PROMPT
+        assert "2 candidate" in SYSTEM_PROMPT_ADAPTIVE or "two candidate" in SYSTEM_PROMPT_ADAPTIVE
         # Medium confidence should include an interpretation statement (implicit verification)
-        assert "I think you meant" in SYSTEM_PROMPT or "interpretation" in SYSTEM_PROMPT
+        assert "I think you meant" in SYSTEM_PROMPT_ADAPTIVE or "interpretation" in SYSTEM_PROMPT_ADAPTIVE
 
     def test_system_prompt_low_confidence_style(self):
-        assert "low confidence" in SYSTEM_PROMPT
+        assert "low confidence" in SYSTEM_PROMPT_ADAPTIVE
         # Low confidence should mention multiple hypotheses and uncertainty
-        assert "hypothes" in SYSTEM_PROMPT or "2–3" in SYSTEM_PROMPT
-        assert "uncertainty" in SYSTEM_PROMPT or "uncertain" in SYSTEM_PROMPT or "hesitation" in SYSTEM_PROMPT
+        assert "hypothes" in SYSTEM_PROMPT_ADAPTIVE or "2–3" in SYSTEM_PROMPT_ADAPTIVE
+        assert "uncertainty" in SYSTEM_PROMPT_ADAPTIVE or "uncertain" in SYSTEM_PROMPT_ADAPTIVE or "hesitation" in SYSTEM_PROMPT_ADAPTIVE
         # Low confidence should include an interpretation statement (implicit verification)
-        assert "I think you might be pointing" in SYSTEM_PROMPT
+        assert "I think you might be pointing" in SYSTEM_PROMPT_ADAPTIVE
 
     def test_system_prompt_high_confidence_no_interpretation(self):
-        assert "high confidence" in SYSTEM_PROMPT
+        assert "high confidence" in SYSTEM_PROMPT_ADAPTIVE
         # High confidence should explicitly skip the interpretation statement
-        assert "Do NOT include an interpretation statement" in SYSTEM_PROMPT
+        assert "Do NOT include an interpretation statement" in SYSTEM_PROMPT_ADAPTIVE
 
     def test_system_prompt_no_questions_in_medium_low(self):
         # The implicit verification must not ask questions
-        assert "No questions" in SYSTEM_PROMPT or "no questions" in SYSTEM_PROMPT
+        assert "No questions" in SYSTEM_PROMPT_ADAPTIVE or "no questions" in SYSTEM_PROMPT_ADAPTIVE
 
     def test_system_prompt_unknown_non_adaptive_style(self):
-        assert "unknown" in SYSTEM_PROMPT
+        assert "unknown" in SYSTEM_PROMPT_ADAPTIVE
         # unknown should use a fixed, non-adaptive style
-        assert "non-adaptive" in SYSTEM_PROMPT or "fixed" in SYSTEM_PROMPT
+        assert "non-adaptive" in SYSTEM_PROMPT_ADAPTIVE or "fixed" in SYSTEM_PROMPT_ADAPTIVE
 
     def test_system_prompt_reason_field_is_spoken_sentence(self):
         # The reason field description should mention it will be spoken aloud
-        assert "say aloud" in SYSTEM_PROMPT or "spoken" in SYSTEM_PROMPT
+        assert "say aloud" in SYSTEM_PROMPT_ADAPTIVE or "spoken" in SYSTEM_PROMPT_ADAPTIVE
 
     def test_system_prompt_avoids_explicit_confidence_labels_in_reason(self):
-        lower = SYSTEM_PROMPT.lower()
+        lower = SYSTEM_PROMPT_ADAPTIVE.lower()
         assert "do not explicitly mention confidence labels" in lower
         assert "with medium confidence" in lower
 
@@ -123,15 +123,15 @@ class TestBuildUserPromptConfidence:
 
 class TestSystemPromptGameHistory:
     def test_system_prompt_contains_game_history_section(self):
-        assert "GAME HISTORY" in SYSTEM_PROMPT
+        assert "GAME HISTORY" in SYSTEM_PROMPT_ADAPTIVE
 
     def test_system_prompt_instructs_to_avoid_wrong_guesses(self):
-        lower = SYSTEM_PROMPT.lower()
+        lower = SYSTEM_PROMPT_ADAPTIVE.lower()
         assert ("avoid" in lower and "incorrect" in lower) or \
                ("avoid" in lower and "wrong" in lower)
 
     def test_system_prompt_mentions_previous_clues(self):
-        lower = SYSTEM_PROMPT.lower()
+        lower = SYSTEM_PROMPT_ADAPTIVE.lower()
         assert ("previous clues" in lower) or \
                ("previous" in lower and "outcomes" in lower)
 

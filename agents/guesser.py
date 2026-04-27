@@ -455,6 +455,32 @@ class Guesser:
     def say_random_thinking(self):
         self.say(self.get_random_thinking())
 
+    def get_waiting_for_clue_hesitation_utterance(self):
+        """Return a short, empathetic utterance for when the spymaster expresses
+        difficulty or stress while thinking of a clue (adaptive condition only).
+        """
+        reactions = [
+            "Take your time!",
+            "No rush!",
+            "That's okay, it's a tough one!",
+            "Don't worry, I'm patient!",
+        ]
+        return random.choice(reactions)
+
+    @staticmethod
+    def get_waiting_for_clue_long_wait_utterance():
+        """Return a short utterance for when the spymaster has been thinking
+        for a long time without giving a clue (adaptive condition only).
+        """
+        reactions = [
+            "Take your time!",
+            "No rush, I can wait!",
+            "It's a tough one, isn't it?",
+            "Don't worry, I'm patient!",
+            "Don't worry, I'm here when you're ready!",
+        ]
+        return random.choice(reactions)
+
     def say_random_guess(self):
         reactions = [
             "I'm considering this card.",

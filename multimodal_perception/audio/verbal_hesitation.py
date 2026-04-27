@@ -35,6 +35,25 @@ STRESS_WORDS = {
 }
 
 
+def contains_hesitation_trigger(transcript: str) -> bool:
+    """Return True if the transcript contains a stress word or meta-difficulty
+    phrase that warrants a short acknowledgment from the robot while waiting
+    for the clue.
+
+    Examples that return True: "shit", "that's difficult", "this is hard".
+    """
+    if not transcript:
+        return False
+    text = transcript.lower()
+    for word in STRESS_WORDS:
+        if word in text:
+            return True
+    for phrase in META_DIFFICULTY_PHRASES:
+        if phrase in text:
+            return True
+    return False
+
+
 def count_hesitation_words(transcript):
     """
     Returns the total number of hesitation words/phrases in the transcript.

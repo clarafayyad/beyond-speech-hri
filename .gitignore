@@ -21,6 +21,7 @@ config/
 logs/*.json
 logs/*.csv
 logs/*.txt
+logs/audio/*
 
 # Bulky data
 multimodal_perception/data/calibration_phase/*
