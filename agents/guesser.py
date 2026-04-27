@@ -441,8 +441,6 @@ class Guesser:
         filler phrases.
         """
         reactions = [
-            "Hmm.",
-            "Hmm…",
             "Hmm, let's see.",
             "Let's see…",
             "Okay…",
