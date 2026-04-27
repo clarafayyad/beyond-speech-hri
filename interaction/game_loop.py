@@ -16,7 +16,9 @@ GRACE_PERIOD_RETRIES = 2
 # Seconds to wait between silent grace-period retries
 GRACE_PERIOD_WAIT_SECONDS = 1.0
 # Seconds of silence before the robot says a long-wait utterance (adaptive only)
-LONG_WAIT_THRESHOLD_SECONDS = 15
+LONG_WAIT_THRESHOLD_SECONDS = 20
+# Maximum number of long-wait reactions per clue-reception attempt
+MAX_LONG_WAIT_REACTIONS = 2
 
 
 class GameLoop:
@@ -113,19 +115,20 @@ class GameLoop:
 
     def receive_clue(self) -> tuple[str, int]:
         receive_start = time.time()
-        long_wait_said = False
+        long_wait_count = 0
+        hesitation_said = False
         failed_attempts = 0
         while True:
             # --- Listen until we get some non-empty input ---
             raw_clue = self.guesser.listen()
             while not raw_clue:
                 print("No input detected from listener; listening again")
-                # Say a long-wait utterance once if the spymaster has been silent
-                # for a while (adaptive condition only).
+                # Say a long-wait utterance (up to MAX_LONG_WAIT_REACTIONS times)
+                # if the spymaster has been silent for a while (adaptive only).
                 if (self.guesser.is_adaptive()
-                        and not long_wait_said
-                        and time.time() - receive_start > LONG_WAIT_THRESHOLD_SECONDS):
-                    long_wait_said = True
+                        and long_wait_count < MAX_LONG_WAIT_REACTIONS
+                        and time.time() - receive_start > LONG_WAIT_THRESHOLD_SECONDS * (long_wait_count + 1)):
+                    long_wait_count += 1
                     self.guesser.pause_recording()
                     self.guesser.say(self.guesser.get_waiting_for_clue_long_wait_utterance())
                     self.guesser.resume_recording()
@@ -133,8 +136,12 @@ class GameLoop:
 
             # --- Ignore utterances that are only filler/hesitation words ---
             if self._is_filler_only(raw_clue):
-                # React to stress / difficulty words in the filler (adaptive only).
-                if self.guesser.is_adaptive() and contains_hesitation_trigger(raw_clue):
+                # React to stress / difficulty words in the filler (adaptive only,
+                # at most once per clue-reception attempt).
+                if (self.guesser.is_adaptive()
+                        and not hesitation_said
+                        and contains_hesitation_trigger(raw_clue)):
+                    hesitation_said = True
                     self.guesser.pause_recording()
                     self.guesser.say(self.guesser.get_waiting_for_clue_hesitation_utterance())
                     self.guesser.resume_recording()
@@ -151,8 +158,12 @@ class GameLoop:
                     # Grace period: the user may still be formulating their
                     # clue.  Wait briefly and try again without interrupting.
                     # If the utterance contains hesitation/difficulty words,
-                    # react empathetically (adaptive condition only).
-                    if self.guesser.is_adaptive() and contains_hesitation_trigger(raw_clue):
+                    # react empathetically (adaptive condition only,
+                    # at most once per clue-reception attempt).
+                    if (self.guesser.is_adaptive()
+                            and not hesitation_said
+                            and contains_hesitation_trigger(raw_clue)):
+                        hesitation_said = True
                         self.guesser.pause_recording()
                         self.guesser.say(self.guesser.get_waiting_for_clue_hesitation_utterance())
                         self.guesser.resume_recording()
