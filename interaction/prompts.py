@@ -1,7 +1,7 @@
 import json
 
 
-SYSTEM_PROMPT = """
+SYSTEM_PROMPT_ADAPTIVE = """
 You are a robot playing Codenames Pictures as the guesser.
 
 Your job is to infer the spymaster's intended meaning and select exactly ONE card.
