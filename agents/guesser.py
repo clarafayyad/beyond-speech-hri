@@ -462,22 +462,22 @@ class Guesser:
         reactions = [
             "Take your time!",
             "No rush!",
-            "I can wait.",
             "That's okay, it's a tough one!",
             "Don't worry, I'm patient!",
         ]
         return random.choice(reactions)
 
-    def get_waiting_for_clue_long_wait_utterance(self):
+    @staticmethod
+    def get_waiting_for_clue_long_wait_utterance():
         """Return a short utterance for when the spymaster has been thinking
         for a long time without giving a clue (adaptive condition only).
         """
         reactions = [
-            "Still thinking?",
-            "I'm still here.",
-            "No rush, I can wait.",
+            "Take your time!",
+            "No rush, I can wait!",
             "It's a tough one, isn't it?",
-            "Whenever you're ready!",
+            "Don't worry, I'm patient!",
+            "Don't worry, I'm here when you're ready!",
         ]
         return random.choice(reactions)
 
