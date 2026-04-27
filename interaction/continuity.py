@@ -28,40 +28,18 @@ def _last_turn_performance(game_state):
 
 
 def get_baseline_continuity_utterance(game_state):
-    """Return a non-adaptive continuity utterance, or ``None`` on turn 0."""
-    if game_state.turn == 0:
-        return None
-
-    perf = _last_turn_performance(game_state)
-    if perf is None:
-        return None
-
-    if perf["all_correct"]:
-        reactions = [
-            "We nailed every guess last round, we've got this!",
-            "All correct last time! Let's keep it going.",
-            "Last round went perfectly. Let's do it again!",
-            "Every guess was right last round. Nice!",
-            "Great round before this one. Let's keep the momentum!",
-        ]
-    elif perf["any_correct"]:
-        # Mixed results aren't a clear pattern worth commenting on;
-        # let the fallback chain pick a different utterance type.
-        return None
-    else:
-        reactions = [
-            "Last round was rough, but let's bounce back!",
-            "We've had better rounds, but I'm still optimistic!",
-            "Okay, last round didn't go our way. Fresh start!",
-            "Tough luck before this round, but we've got another chance!",
-            "Last round was a setback, but we're not giving up!",
-        ]
-
-    return random.choice(reactions)
+    """Baseline mode does not include continuity utterances; always returns ``None``."""
+    return None
 
 
 def get_adaptive_continuity_utterance(game_state):
-    """Return an adaptive continuity utterance, or ``None`` on turn 0."""
+    """Return an adaptive continuity utterance only when low confidence or
+    hesitation was detected in recent turns, or ``None`` otherwise.
+
+    Continuity remarks are reserved for turns where the spymaster showed signs
+    of uncertainty (low confidence trend), so that the robot only comments when
+    there is a meaningful signal to react to.
+    """
     if game_state.turn == 0:
         return None
 
@@ -71,9 +49,12 @@ def get_adaptive_continuity_utterance(game_state):
 
     recent = game_state.confidence_history[-2:] if game_state.confidence_history else []
     low_trend = len(recent) > 0 and all(c == "low" for c in recent)
-    high_trend = len(recent) > 0 and all(c == "high" for c in recent)
 
-    if perf["all_correct"] and low_trend:
+    if not low_trend:
+        return None
+
+    # All branches below are reached only when low_trend is True.
+    if perf["all_correct"]:
         reactions = [
             "Those last ones were tough, but we still managed!",
             "Even with some uncertainty, we got through!",
@@ -81,18 +62,7 @@ def get_adaptive_continuity_utterance(game_state):
             "Not easy clues, but we still pulled it off!",
             "We guessed right even when it wasn't clear. Nice!",
         ]
-    elif perf["all_correct"] and high_trend:
-        reactions = [
-            "We've been confident and correct. Let's keep it up!",
-            "Strong clues, strong guesses. Great teamwork!",
-            "Everything clicked last round. More of that, please!",
-            "We're in sync! Confidence is high and so are results!",
-            "Clear signals and correct answers. Let's continue!",
-        ]
-    elif perf["any_correct"] and low_trend:
-        # Mixed results aren't a clear pattern worth commenting on.
-        return None
-    elif not perf["any_correct"] and low_trend:
+    elif not perf["any_correct"]:
         reactions = [
             "Those were really tricky rounds. Let's regroup.",
             "It's been uncertain and tough. Let's refocus.",
@@ -100,24 +70,8 @@ def get_adaptive_continuity_utterance(game_state):
             "The signals have been unclear, but we can turn it around.",
             "Rough stretch with uncertain clues. New opportunity now!",
         ]
-    elif perf["all_correct"]:
-        reactions = [
-            "Last round went well! Let's keep going.",
-            "Good results before. We're on track!",
-            "Nice guesses last time. Let's stay sharp!",
-            "We've been doing well. Keep it up!",
-            "Great teamwork last round!",
-        ]
-    elif perf["any_correct"]:
-        # Mixed results aren't a clear pattern worth commenting on.
-        return None
     else:
-        reactions = [
-            "Last round didn't go great, but here we go!",
-            "Tough round before. Let's make this one count!",
-            "That was a setback. Time to recover!",
-            "We missed last time, but I'm ready for this!",
-            "Fresh round, fresh chances. Let's do this!",
-        ]
+        # Mixed results with low confidence — not a clear pattern worth commenting on.
+        return None
 
     return random.choice(reactions)

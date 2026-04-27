@@ -441,6 +441,8 @@ class Guesser:
         filler phrases.
         """
         reactions = [
+            "Hmm.",
+            "Hmm…",
             "Hmm, let's see.",
             "Let's see…",
             "Okay…",
@@ -451,6 +453,40 @@ class Guesser:
             "Thinking…",
         ]
         return random.choice(reactions)
+
+    def get_state_acknowledgment_during_thinking(self, features):
+        """Return a thinking utterance that reacts to spymaster cues detected
+        during the clue-delivery phase (hesitation words, long thinking time).
+
+        Falls back to a generic thinking filler when no notable cues are found.
+
+        Parameters
+        ----------
+        features : dict | None
+            Audio-feature dict from the current turn.  Must contain
+            ``'verbal_hesitation_count'`` and ``'duration'`` keys.
+        """
+        if not features:
+            return self.get_random_thinking()
+
+        hesitation_count = features.get('verbal_hesitation_count') or 0
+        duration = features.get('duration') or 0
+
+        if hesitation_count >= 2:
+            return random.choice([
+                "You seemed a bit unsure there. Let me think carefully.",
+                "I noticed some hesitation. I'll take my time.",
+                "Sounds like this was tricky for you too. Let me think.",
+            ])
+
+        if duration > 12:
+            return random.choice([
+                "That took some thought from you. Let me work through this.",
+                "This seems complex. I'll think carefully.",
+                "I'll take my time with this one.",
+            ])
+
+        return self.get_random_thinking()
 
     def say_random_thinking(self):
         self.say(self.get_random_thinking())

@@ -57,7 +57,12 @@ class TurnManager:
 
         while guesses < max_guesses and not self.game_state.game_over:
             self.guesser.dialog_manager.animate_thinking()
-            self.guesser.say_random_thinking()
+            # On the first guess react to spymaster cues (hesitation, long thinking
+            # time); for subsequent guesses within the same turn use a generic filler.
+            if guesses == 0:
+                self.guesser.say(self.guesser.get_state_acknowledgment_during_thinking(features))
+            else:
+                self.guesser.say_random_thinking()
 
             guess_idx = self.make_guess(clue_word, confidence_level, features)
             result = self.get_feedback(guess_idx)
