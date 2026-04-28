@@ -12,6 +12,7 @@ from sic_framework.core import sic_logging
 from sic_framework.core.message_python2 import AudioRequest
 from sic_framework.core.sic_application import SICApplication
 from sic_framework.devices import Pepper
+from sic_framework.devices.common_naoqi.naoqi_leds import NaoFadeRGBRequest
 from sic_framework.devices.common_naoqi.naoqi_motion import NaoqiAnimationRequest
 from sic_framework.devices.common_naoqi.naoqi_text_to_speech import NaoqiTextToSpeechRequest
 from sic_framework.devices.desktop import Desktop
@@ -327,10 +328,14 @@ class DialogManager:
 
     def listen(self):
         print("Listening...")
+        if isinstance(self.device_manager, Pepper):
+            self.device_manager.leds.request(NaoFadeRGBRequest("FaceLeds", 0, 1, 0, 0))
         transcript = self.stt_service.listen()
         print("Heard: ", transcript)
         if transcript:
             self.log_utterance(speaker='spymaster', text=transcript)
+        if isinstance(self.device_manager, Pepper):
+            self.device_manager.leds.request(NaoFadeRGBRequest("FaceLeds", 0, 0, 0, 0))
         return transcript
 
     def _start_loop(self):
