@@ -142,9 +142,11 @@ class GameLoop:
                         and not hesitation_said
                         and contains_hesitation_trigger(raw_clue)):
                     hesitation_said = True
-                    self.guesser.pause_recording()
-                    self.guesser.say(self.guesser.get_waiting_for_clue_hesitation_utterance())
-                    self.guesser.resume_recording()
+                    continuity_utterance = self.guesser.get_continuity_remark(self.game_state, adaptive=self.guesser.is_adaptive())
+                    if continuity_utterance:
+                        self.guesser.pause_recording()
+                        self.guesser.say(continuity_utterance)
+                        self.guesser.resume_recording()
                 else:
                     print(f"Filler-only input detected ('{raw_clue}'); listening again silently")
                 continue
@@ -164,9 +166,11 @@ class GameLoop:
                             and not hesitation_said
                             and contains_hesitation_trigger(raw_clue)):
                         hesitation_said = True
-                        self.guesser.pause_recording()
-                        self.guesser.say(self.guesser.get_waiting_for_clue_hesitation_utterance())
-                        self.guesser.resume_recording()
+                        continuity_utterance = self.guesser.get_continuity_remark(self.game_state, adaptive=self.guesser.is_adaptive())
+                        if continuity_utterance:
+                            self.guesser.pause_recording()
+                            self.guesser.say(continuity_utterance)
+                            self.guesser.resume_recording()
                     else:
                         print(
                             f"Could not parse clue (attempt {failed_attempts}/{GRACE_PERIOD_RETRIES}); "

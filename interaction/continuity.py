@@ -28,36 +28,8 @@ def _last_turn_performance(game_state):
 
 
 def get_baseline_continuity_utterance(game_state):
-    """Return a non-adaptive continuity utterance, or ``None`` on turn 0."""
-    if game_state.turn == 0:
-        return None
-
-    perf = _last_turn_performance(game_state)
-    if perf is None:
-        return None
-
-    if perf["all_correct"]:
-        reactions = [
-            "We nailed every guess last round, we've got this!",
-            "All correct last time! Let's keep it going.",
-            "Last round went perfectly. Let's do it again!",
-            "Every guess was right last round. Nice!",
-            "Great round before this one. Let's keep the momentum!",
-        ]
-    elif perf["any_correct"]:
-        # Mixed results aren't a clear pattern worth commenting on;
-        # let the fallback chain pick a different utterance type.
-        return None
-    else:
-        reactions = [
-            "Last round was rough, but let's bounce back!",
-            "We've had better rounds, but I'm still optimistic!",
-            "Okay, last round didn't go our way. Fresh start!",
-            "Tough luck before this round, but we've got another chance!",
-            "Last round was a setback, but we're not giving up!",
-        ]
-
-    return random.choice(reactions)
+    """Return ``None`` — the baseline condition has no continuity utterances."""
+    return None
 
 
 def get_adaptive_continuity_utterance(game_state):

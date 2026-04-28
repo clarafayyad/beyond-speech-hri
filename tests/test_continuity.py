@@ -83,21 +83,17 @@ class TestBaselineContinuity:
         gs = _FakeGameState(turn=0)
         assert get_baseline_continuity_utterance(gs) is None
 
-    def test_returns_string_after_good_turn(self):
+    def test_returns_none_after_good_turn(self):
         gs = _FakeGameState(turn=1, history=[
             {"turn": 0, "clue": "water", "guess_number": 1, "guess": 0, "card": "river", "result": BLUE},
         ])
-        utterance = get_baseline_continuity_utterance(gs)
-        assert isinstance(utterance, str)
-        assert len(utterance) > 0
+        assert get_baseline_continuity_utterance(gs) is None
 
-    def test_returns_string_after_bad_turn(self):
+    def test_returns_none_after_bad_turn(self):
         gs = _FakeGameState(turn=1, history=[
             {"turn": 0, "clue": "water", "guess_number": 1, "guess": 0, "card": "river", "result": NEUTRAL},
         ])
-        utterance = get_baseline_continuity_utterance(gs)
-        assert isinstance(utterance, str)
-        assert len(utterance) > 0
+        assert get_baseline_continuity_utterance(gs) is None
 
     def test_returns_none_after_mixed_turn(self):
         gs = _FakeGameState(turn=1, history=[
