@@ -58,6 +58,7 @@ class ElevenLabsTTS:
         self.websocket = None
         self.speaking_rate = max(0.7, min(speaking_rate, 1.2)) if speaking_rate else speaking_rate
         self.stability = stability
+        self.lock = asyncio.Lock()
         # Development logging
         self.logger = logging.getLogger("codenames")
 
@@ -113,46 +114,47 @@ class ElevenLabsTTS:
             pass
 
     async def speak(self, text):
-        # Reconnect if no active connection.
-        if not self.websocket:
-            self.logger.warning("[TTS] Websocket not connected. Initiating reconnect.")
-            await self.connect()
-        if not await self.ping_connection():
-            self.logger.warning("[TTS] Websocket not connected. Initiating reconnect.")
-            await self.connect()
+        async with self.lock:
+            # Reconnect if no active connection.
+            if not self.websocket or self.websocket.closed:
+                self.logger.warning("[TTS] Websocket not connected. Initiating reconnect.")
+                await self.connect()
+            if not await self.ping_connection():
+                self.logger.warning("[TTS] Websocket not connected. Initiating reconnect.")
+                await self.connect()
 
-        await self.drain_socket()
-        # Send sentence
-        await self.websocket.send(dumps({"text": text, "flush": True}))
+            await self.drain_socket()
+            # Send sentence
+            await self.websocket.send(dumps({"text": text, "flush": True}))
 
-        while True:
-            try:
-                message = await asyncio.wait_for(self.websocket.recv(), timeout=5.0)
-                data = loads(message)
+            while True:
+                try:
+                    message = await asyncio.wait_for(self.websocket.recv(), timeout=5.0)
+                    data = loads(message)
 
-                if data.get("audio"):
-                    return base64.b64decode(data["audio"])
-                if data.get("isFinal"):
+                    if data.get("audio"):
+                        return base64.b64decode(data["audio"])
+                    if data.get("isFinal"):
+                        return None
+                except asyncio.TimeoutError:
+                    self.logger.error('[TTS] No audio received from Elevenlabs')
+                    self.websocket = None
                     return None
-            except asyncio.TimeoutError:
-                self.logger.error('[TTS] No audio received from Elevenlabs')
-                self.websocket = None
-                return None
-            except websockets.exceptions.ConnectionClosedOK:
-                # Normal closure (1000), nothing to worry about
-                self.logger.warning("[TTS] WebSocket closed cleanly by server.")
-                self.websocket = None
-                return None
-            except websockets.exceptions.ConnectionClosedError as e:
-                # Abnormal closure
-                self.logger.error(f"[TTS] WebSocket closed with error: {e}")
-                self.websocket = None
-                return None
-            except Exception as e:
-                # Catch-all for JSON parsing or other issues
-                self.logger.error(f"[TTS] Other failure in elevenlabs tts: {e}")
-                self.websocket = None
-                return None
+                except websockets.exceptions.ConnectionClosedOK:
+                    # Normal closure (1000), nothing to worry about
+                    self.logger.warning("[TTS] WebSocket closed cleanly by server.")
+                    self.websocket = None
+                    return None
+                except websockets.exceptions.ConnectionClosedError as e:
+                    # Abnormal closure
+                    self.logger.error(f"[TTS] WebSocket closed with error: {e}")
+                    self.websocket = None
+                    return None
+                except Exception as e:
+                    # Catch-all for JSON parsing or other issues
+                    self.logger.error(f"[TTS] Other failure in elevenlabs tts: {e}")
+                    self.websocket = None
+                    return None
 
 
 class TTSCacher:
