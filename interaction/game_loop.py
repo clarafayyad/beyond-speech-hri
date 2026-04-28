@@ -142,7 +142,7 @@ class GameLoop:
                         and not hesitation_said
                         and contains_hesitation_trigger(raw_clue)):
                     hesitation_said = True
-                    continuity_utterance = self.guesser.get_continuity_remark(self.game_state, adaptive=True)
+                    continuity_utterance = self.guesser.get_continuity_remark(self.game_state, adaptive=self.guesser.is_adaptive())
                     if continuity_utterance:
                         self.guesser.pause_recording()
                         self.guesser.say(continuity_utterance)
@@ -166,7 +166,7 @@ class GameLoop:
                             and not hesitation_said
                             and contains_hesitation_trigger(raw_clue)):
                         hesitation_said = True
-                        continuity_utterance = self.guesser.get_continuity_remark(self.game_state, adaptive=True)
+                        continuity_utterance = self.guesser.get_continuity_remark(self.game_state, adaptive=self.guesser.is_adaptive())
                         if continuity_utterance:
                             self.guesser.pause_recording()
                             self.guesser.say(continuity_utterance)
