@@ -116,7 +116,7 @@ class ElevenLabsTTS:
     async def speak(self, text):
         async with self.lock:
             # Reconnect if no active connection.
-            if not self.websocket or self.websocket.closed:
+            if not self.websocket:
                 self.logger.warning("[TTS] Websocket not connected. Initiating reconnect.")
                 await self.connect()
             if not await self.ping_connection():
