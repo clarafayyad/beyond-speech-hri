@@ -79,7 +79,7 @@ class GameLoop:
             current_turn = self.game_state.turn
             # Default to medium confidence for the first turn, because it usually takes a moment for the spymaster to give a clue
             # which could lead to low confidence predictions that don't reflect the user's true confidence level.
-            if current_turn == 0:
+            if current_turn == 0 and self.guesser.is_adaptive():
                 confidence_level = CONFIDENCE_MEDIUM
 
             turn_result = self.turn_manager.play_turn(clue_word, num, confidence_level, features)

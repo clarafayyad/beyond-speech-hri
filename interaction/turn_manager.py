@@ -16,7 +16,7 @@ class TurnManager:
         self.game_state = game_state
 
     def make_guess(self, clue_word, confidence_level=None, features=None):
-        system_prompt = SYSTEM_PROMPT_ADAPTIVE if confidence_level is not None else SYSTEM_PROMPT_CONTROL
+        system_prompt = SYSTEM_PROMPT_ADAPTIVE if self.guesser.is_adaptive() else SYSTEM_PROMPT_CONTROL
         transcript = features.get("transcript",  "") if features else ""
         response = self.guesser.prompt_llm(
             system_prompt=system_prompt,
