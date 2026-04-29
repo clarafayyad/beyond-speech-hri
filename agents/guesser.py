@@ -280,7 +280,7 @@ class Guesser:
         reactions = [
             "I'll be careful with this one",
             "I will try to avoid risky guesses",
-            "Let's think carefully",
+            "I'll think carefully",
             "I might need to play this safe",
         ]
         self.say(random.choice(reactions))
