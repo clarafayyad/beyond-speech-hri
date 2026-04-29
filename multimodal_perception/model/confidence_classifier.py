@@ -188,9 +188,16 @@ class ConfidenceClassifier:
 
     def classify(self, features: dict) -> (float, str):
         probs = self.probs(features)
+        high_prob = probs[0]
+        low_prob = probs[1]
+        medium_prob = probs[2]
         print("Confidence probabilities:")
-        print(f"  {CONFIDENCE_LOW}: {probs[1]:.4f}")
-        print(f"  {CONFIDENCE_MEDIUM}: {probs[2]:.4f}")
-        print(f"  {CONFIDENCE_HIGH}: {probs[0]:.4f}")
+        print(f"  {CONFIDENCE_LOW}: {low_prob:.4f}")
+        print(f"  {CONFIDENCE_MEDIUM}: {medium_prob:.4f}")
+        print(f"  {CONFIDENCE_HIGH}: {high_prob:.4f}")
         label = [CONFIDENCE_HIGH, CONFIDENCE_LOW, CONFIDENCE_MEDIUM][np.argmax(probs)]
+        max_prob = np.max(probs)
+        if max_prob < 0.66 and (low_prob > medium_prob and high_prob > medium_prob
+                                and abs(low_prob - high_prob) < 0.1):
+            label = CONFIDENCE_MEDIUM
         return probs, label
