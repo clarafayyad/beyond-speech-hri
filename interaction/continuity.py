@@ -55,11 +55,11 @@ def get_adaptive_continuity_utterance(game_state):
         ]
     elif perf["all_correct"] and high_trend:
         reactions = [
-            "We've been confident and correct. Let's keep it up!",
-            "Strong clues, strong guesses. Great teamwork!",
-            "Everything clicked last round. More of that, please!",
+            "We've been confident and correct! Let's keep it up!",
+            "Strong clues, strong guesses! Great teamwork!",
+            "Everything clicked last round! More of that, please!",
             "We're in sync! Confidence is high and so are results!",
-            "Clear signals and correct answers. Let's continue!",
+            "Clear signals and correct answers! Let's continue!",
         ]
     elif perf["any_correct"] and low_trend:
         # Mixed results aren't a clear pattern worth commenting on.
@@ -74,11 +74,11 @@ def get_adaptive_continuity_utterance(game_state):
         ]
     elif perf["all_correct"]:
         reactions = [
-            "Last round went well! Let's keep going.",
-            "Good results before. We're on track!",
-            "Nice guesses last time. Let's stay sharp!",
-            "We've been doing well. Keep it up!",
-            "Great teamwork last round!",
+            "Last round went well! We've got this!",
+            "We've had good results before. We're on track!",
+            "Nice guesses last time. We can do this!",
+            "We've been doing well. We've got this!!",
+            "Great teamwork last round! We can do this!",
         ]
     elif perf["any_correct"]:
         # Mixed results aren't a clear pattern worth commenting on.
