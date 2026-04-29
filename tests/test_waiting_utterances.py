@@ -173,3 +173,38 @@ class TestReceiveClueLongWaitEscalation:
 # ---------------------------------------------------------------------------
 # Guesser utterance methods (tested via AST to avoid hardware deps)
 # ---------------------------------------------------------------------------
+
+def _get_method_reactions(method_name):
+    """Parse guesser.py and return the list of strings in the 'reactions'
+    variable of the named Guesser method."""
+    source_path = Path(__file__).resolve().parents[1] / "agents" / "guesser.py"
+    tree = ast.parse(source_path.read_text(encoding="utf-8"))
+
+    for node in tree.body:
+        if isinstance(node, ast.ClassDef) and node.name == "Guesser":
+            for class_node in node.body:
+                if isinstance(class_node, ast.FunctionDef) and class_node.name == method_name:
+                    for stmt in class_node.body:
+                        if isinstance(stmt, ast.Assign):
+                            for target in stmt.targets:
+                                if isinstance(target, ast.Name) and target.id == "reactions":
+                                    if isinstance(stmt.value, ast.List):
+                                        return [
+                                            elt.value
+                                            for elt in stmt.value.elts
+                                            if isinstance(elt, ast.Constant)
+                                        ]
+    raise AssertionError(f"Could not find '{method_name}' reactions list in agents/guesser.py")
+
+
+class TestWaitingForClueLongWaitUtterances:
+    def test_returns_non_empty_list(self):
+        reactions = _get_method_reactions("get_waiting_for_clue_long_wait_utterance")
+        assert len(reactions) > 0
+
+    def test_all_items_are_short_strings(self):
+        reactions = _get_method_reactions("get_waiting_for_clue_long_wait_utterance")
+        for r in reactions:
+            assert isinstance(r, str)
+            assert len(r) > 0, "Utterance must not be empty"
+            assert len(r) <= 80, f"Utterance too long: {r!r}"
