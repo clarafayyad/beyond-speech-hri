@@ -128,9 +128,17 @@ class GameLoop:
                 if (self.guesser.is_adaptive()
                         and long_wait_count < MAX_LONG_WAIT_REACTIONS
                         and time.time() - receive_start > LONG_WAIT_THRESHOLD_SECONDS * (long_wait_count + 1)):
+                    is_first_long_wait = long_wait_count == 0
                     long_wait_count += 1
                     self.guesser.pause_recording()
-                    self.guesser.say(self.guesser.get_waiting_for_clue_long_wait_utterance())
+                    if is_first_long_wait:
+                        utterance = self.guesser.get_waiting_for_clue_long_wait_utterance()
+                    else:
+                        utterance = (
+                            self.guesser.get_continuity_remark(self.game_state, adaptive=self.guesser.is_adaptive())
+                            or self.guesser.get_waiting_for_clue_long_wait_utterance()
+                        )
+                    self.guesser.say(utterance)
                     self.guesser.resume_recording()
                 raw_clue = self.guesser.listen()
 
