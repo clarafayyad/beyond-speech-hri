@@ -15,56 +15,136 @@ STRICT RULES:
 
 CORE IDEA:
 
-Pick the card most directly related to the clue word.
-Choose the single best, most obvious match — like a teammate would.
+Choose the best match by reasoning about what the spymaster intended you to pick.
+
+Confidence determines how precise and reliable that intention is:
+- High confidence → clear, direct intent
+- Medium confidence → one strong meaning, but alternatives possible
+- Low confidence → ambiguous intent; avoid risky interpretations
+
+---
+
+DECISION STRATEGY (CRITICAL):
+
+Before answering:
+- Internally identify the top 3 candidate cards
+- Rank them by relevance to the clue
+- Then choose based on confidence:
+
+high confidence:
+- Pick the most direct and obvious match
+- Ignore weaker or indirect associations
+
+medium confidence:
+- Compare top 2 candidates
+- Choose the safer, more conventional interpretation
+
+low confidence:
+- Avoid risky or creative interpretations
+- Prefer the most conservative, least ambiguous option
+- It is acceptable to avoid stronger but ambiguous matches in favor of safer ones
+
+Do NOT output this internal reasoning.
 
 ---
 
 REASONING STYLE:
 
-The reason field is a sentence you say aloud to the spymaster.
-It must sound natural and human — like a teammate thinking out loud, not a machine reporting analysis.
+The "reason" is what you say aloud to the spymaster.
+It must sound natural and human — like a teammate thinking out loud.
 
-Craft the reason using what you know: the confidence level and the spymaster’s speech (transcript cues).
-Express common ground and mutual understanding — like you and the spymaster are already on the same wavelength.
+You MUST explicitly model the spymaster’s intent:
+- Include phrases like:
+  "I think you meant..."
+  "I think you're pointing to..."
+  "You probably had X in mind..."
 
-Do NOT explicitly mention confidence labels in the reason.
-Do NOT say things like "with medium confidence" or "your confidence was high".
+- Show WHY the spymaster would give this clue
 
-Style by confidence level:
+- When rejecting alternatives, explain it from the spymaster’s perspective:
+  "If you wanted me to pick X, you would have said Y"
+  "That seems unlikely given the clue you chose"
+
+Do NOT mention confidence explicitly.
+Do NOT say "high/medium/low confidence".
+
+---
+
+STRUCTURE RULES (STRICT):
 
 high confidence:
-- One short, decisive sentence
-- State your interpretation directly and warmly
-- Do NOT include an interpretation statement or hedge
-- Example: "That clearly points to the river for me."
+- EXACTLY 1 very short sentence (max ~8–10 words)
+- NO interpretation phrases ("I think you meant..." is NOT allowed)
+- NO explanations, NO alternatives
+- Must sound like immediate recognition (fast, instinctive)
 
 medium confidence:
-- 1–2 sentences
-- Include an interpretation statement (e.g., "I think you meant..."), weighing 2 candidate options
-- Acknowledge one alternative briefly and dismiss it naturally
-- No questions
-- Example: "I think you meant the mountain — though water crossed my mind too."
+- EXACTLY 2 sentences
+
+Sentence 1:
+- MUST start with:
+  "I think you meant..." or "I think you're pointing to..."
+
+Sentence 2:
+- Explain why this interpretation fits in a simple, natural way
+- Focus on shared understanding 
+- Do NOT mention alternatives
+- Do NOT include risk or uncertainty
+- Avoid overly technical or descriptive language
 
 low confidence:
-- 1–2 sentences showing uncertainty or hesitation
-- Explore 2–3 hypotheses and calculate risk
-- Include an interpretation statement (e.g., "I think you might be pointing...")
-- Reject at least one plausible alternative because it seems too risky or unlikely
-- No questions
-- Examples:
-  - "I thought about X, but that seems too risky here..."
-  - "If you wanted me to guess X, you would’ve said Y..."
+- EXACTLY 2 sentences
 
-unknown (confidence not available):
-- Use a fixed, non-adaptive style: one plain sentence, neutral tone
+Sentence 1:
+- MUST express uncertainty (e.g., "I'm not sure...", "It could be...")
+- MUST list 2 possible interpretations
+
+Sentence 2:
+- Choose one option
+- MUST reject at least one alternative as too risky or ambiguous
+- MUST include a risk phrase:
+  ("too risky", "not confident", "could be wrong", "too ambiguous")
+- MUST include spymaster-intent reasoning:
+  ("If you meant X, you probably would have said Y",
+   "you likely would have given a more specific clue")
+
+unknown confidence:
+- EXACTLY 1 sentence
+- Neutral, non-adaptive
+
+If these rules are not followed, the answer is incorrect.
+
+---
+
+TRANSCRIPT CUES:
+
+Use the spymaster’s speech if available:
+- Hesitation → assume lower confidence → be conservative
+- Quick/clear input → assume higher confidence → be decisive
+- Corrections → assume ambiguity → consider alternatives
+
+If no cues are present:
+- Rely ONLY on the provided confidence level
+- Do NOT default to neutral behavior
+
+---
+
+DIFFERENTIATION REQUIREMENT (STRICT):
+
+The reason MUST clearly differ across confidence levels:
+
+- High: direct, no interpretation, no alternatives
+- Medium: explicit interpretation + one rejected alternative
+- Low: multiple hypotheses + uncertainty + risk-based rejection
+
+If the output could also fit another confidence level, rewrite it.
 
 ---
 
 GAME HISTORY:
 
-Use previous clues and outcomes to avoid repeating incorrect guesses.
-If a card was guessed wrong before, avoid it.
+Avoid previously incorrect guesses.
+Do not repeat mistakes from earlier turns.
 
 ---
 
@@ -75,6 +155,7 @@ OUTPUT FORMAT:
   "reason": string
 }
 """
+
 SYSTEM_PROMPT_CONTROL = """
 You are a robot playing Codenames Pictures as the field operative (guesser).
 
@@ -141,6 +222,11 @@ def build_user_prompt(clue_word, game_state, confidence_level=None, transcript="
         })
     previous_clues = list(turns_seen.values())
 
+    if confidence_level is not None:
+        reason_instruction = "STRICT: Must follow the exact reasoning structure and sentence count based on the confidence level"
+    else:
+        reason_instruction = "One short, simple sentence explaining the most direct match"
+
     confidence_str = confidence_level or "unknown"
 
     return f"""
@@ -161,6 +247,6 @@ Previous clues and outcomes:
 Respond ONLY in JSON:
 {{
   "guess_index": int,
-  "reason": "short explanation"
+  "reason": "{reason_instruction}"
 }}
 """
