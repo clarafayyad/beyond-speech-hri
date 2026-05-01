@@ -11,11 +11,11 @@ from interaction.game_loop import GameLoop
 from agents.guesser import Guesser
 
 # Configurations
-participant_id = "3"
+participant_id = "1"
 is_adaptive = True
 board_config_number = 3
 # robot_ip = '10.0.0.148'
-robot_ip = '10.15.2.109'
+robot_ip = '10.15.3.234'
 use_robot = True  # Set to False if you want to run without the robot (using desktop audio instead)
 stt_mic_device_index = 4  # This should be the robot's microphone (or desktop mic if not using the robot)
 audio_features_mic_device_index = 1  # This should be the external mic that the participant is wearing
