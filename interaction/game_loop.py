@@ -118,9 +118,13 @@ class GameLoop:
         long_wait_count = 0
         hesitation_said = False
         failed_attempts = 0
+        pending_keyboard_clue = None
         while True:
             # --- Listen until we get some non-empty input ---
-            raw_clue = self.guesser.listen()
+            raw_clue = pending_keyboard_clue
+            pending_keyboard_clue = None
+            if raw_clue is None:
+                raw_clue = self.guesser.listen()
             while not raw_clue:
                 print("No input detected from listener; listening again")
                 # Say a long-wait utterance (up to MAX_LONG_WAIT_REACTIONS times)
@@ -191,7 +195,11 @@ class GameLoop:
                 failed_attempts = 0
                 self.guesser.pause_recording()
                 self.guesser.say_random_clue_not_understood()
+                self.guesser.say("If you want, type clue and number on the keyboard (for example: ocean 2).")
+                typed_clue = self._read_keyboard_clue_input()
                 self.guesser.resume_recording()
+                if typed_clue:
+                    pending_keyboard_clue = typed_clue
                 continue  # restart from listening
 
             failed_attempts = 0  # reset on successful parse
@@ -225,6 +233,13 @@ class GameLoop:
         tokens = [t.strip(".,!?;:'\"") for t in text.lower().split()]
         tokens = [t for t in tokens if t]
         return len(tokens) > 0 and all(t in FILLERS for t in tokens)
+
+    @staticmethod
+    def _read_keyboard_clue_input() -> str:
+        try:
+            return input("Type clue and guess count (or press Enter to keep speaking): ").strip()
+        except (EOFError, KeyboardInterrupt):
+            return ""
 
     @staticmethod
     def is_clue_well_received(feedback: str) -> bool:
