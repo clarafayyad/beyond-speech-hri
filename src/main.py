@@ -17,6 +17,7 @@ board_config_number = 3
 # robot_ip = '10.0.0.148'
 robot_ip = '10.15.3.234'
 use_robot = True  # Set to False if you want to run without the robot (using desktop audio instead)
+use_keyboard_input = False  # Set to True to type clues/answers instead of using STT
 stt_mic_device_index = 4  # This should be the robot's microphone (or desktop mic if not using the robot)
 audio_features_mic_device_index = 1  # This should be the external mic that the participant is wearing
 
@@ -32,7 +33,8 @@ def run():
         real_time_stt=False,
         external_audio_device_id=audio_features_mic_device_index,
         participant_id=participant_id,
-        adaptive=is_adaptive
+        adaptive=is_adaptive,
+        keyboard_input=use_keyboard_input,
     )
 
     guesser = Guesser(device_manager, tts_conf, int_conf)

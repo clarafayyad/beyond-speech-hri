@@ -76,9 +76,10 @@ These features will then be used for normalization before confidence estimation 
 ---
 ## C. Running the Experiment
 1. Configure the interaction settings [in the main script](src/main.py):
-   - **participant_id**: unique identifier for the participant 
-   - **is_adaptive**: experiment condition 
-   - **stt_mic_device_index**: index of the microphone used for speech-to-text (STT) processing 
+    - **participant_id**: unique identifier for the participant 
+    - **is_adaptive**: experiment condition 
+    - **use_keyboard_input**: set `True` to type spymaster inputs in the terminal (no STT listening)
+    - **stt_mic_device_index**: index of the microphone used for speech-to-text (STT) processing 
    - **audio_features_mic_device_index**: index of the microphone used for audio feature extraction (worn by the participant)
    - **board_config_number**: configuration number for the game (see `assets/configs` for details)
    - **robot_ip**: IP address of the robot 
