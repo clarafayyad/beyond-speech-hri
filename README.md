@@ -115,7 +115,7 @@ These features will then be used for normalization before confidence estimation 
 3. You can access the Game UI at `http://127.0.0.1:8765/ui`
 4. Spymaster and robot utterances are saved in `logs/utterances_<participant_id>_<YYYYMMDD>.txt`
 
-## D. How the game works (brief)
+## D. How the game works 
 
 1. A Codenames board configuration is loaded from `assets/configs`, and `GameState` starts a local Flask server for state/UI endpoints.
 2. At the beginning, the spymaster places the initial red cards and confirms they are ready.
