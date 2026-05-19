@@ -30,7 +30,7 @@ class InteractionConf:
 
     def __init__(self, speaking_rate=None, sleep_time=0, animated=True, max_attempts=2, amplified=False,
                  always_regenerate=False, real_time_stt=True, external_audio_device_id=None, participant_id=None,
-                 adaptive=True):
+                 adaptive=True, keyboard_input=False):
         self.speaking_rate = speaking_rate
         self.sleep_time = sleep_time
         self.animated = animated
@@ -41,6 +41,7 @@ class InteractionConf:
         self.participant_id = participant_id
         self.external_audio_device_id = external_audio_device_id
         self.adaptive = adaptive
+        self.keyboard_input = keyboard_input
 
     @staticmethod
     def apply_config_defaults(config_attr, param_names):
@@ -143,7 +144,9 @@ class DialogManager:
         print("Complete")
 
         print("\n SETTING UP STT")
-        if self.interaction_conf.real_time_stt:
+        if self.interaction_conf.keyboard_input:
+            self.stt_service = None
+        elif self.interaction_conf.real_time_stt:
             self.stt_service = RealTimeSTTService(mic_index=self.device_manager.mic.device_index)
         else:
             self.stt_service = DialogFlowSTTService(mic_index=self.device_manager.mic, dialogflow_conf=dialogflow_conf)
@@ -328,14 +331,19 @@ class DialogManager:
 
     def listen(self):
         print("Listening...")
-        if isinstance(self.device_manager, Pepper):
-            self.device_manager.leds.request(NaoFadeRGBRequest("FaceLeds", 0, 1, 0, 0))
-        transcript = self.stt_service.listen()
-        print("Heard: ", transcript)
+        if self.interaction_conf.keyboard_input:
+            transcript = input("Type your input: ").strip()
+        else:
+            if isinstance(self.device_manager, Pepper):
+                self.device_manager.leds.request(NaoFadeRGBRequest("FaceLeds", 0, 1, 0, 0))
+            transcript = self.stt_service.listen()
+            if isinstance(self.device_manager, Pepper):
+                self.device_manager.leds.request(NaoFadeRGBRequest("FaceLeds", 0, 0, 0, 0))
+
         if transcript:
             self.log_utterance(speaker='spymaster', text=transcript)
-        if isinstance(self.device_manager, Pepper):
-            self.device_manager.leds.request(NaoFadeRGBRequest("FaceLeds", 0, 0, 0, 0))
+
+        print("Heard: ", transcript)
         return transcript
 
     def _start_loop(self):
