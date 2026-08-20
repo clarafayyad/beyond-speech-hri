@@ -1,0 +1,3 @@
+[submodule "RealtimeSTT"]
+	path = RealtimeSTT
+	url = https://github.com/KoljaB/RealtimeSTT

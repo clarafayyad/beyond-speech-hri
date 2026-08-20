@@ -1,0 +1,30 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+env/
+config/
+
+# IDE files
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+logs/*.json
+logs/*.csv
+logs/*.txt
+logs/audio/*
+
+# Bulky data
+multimodal_perception/data/calibration_phase/*
+assets/audio
+assets/video
+src/tts_cache
